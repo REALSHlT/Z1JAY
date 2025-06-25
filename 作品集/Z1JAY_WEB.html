@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作品集 - Z1JAY'S PORTFOLIO</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: #667eea;
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Sections */
+        section {
+            padding: 100px 0;
+            background: white;
+            margin: 2rem 0;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* About Section - Special styling */
+        #about {
+            background: white;
+            margin: 0;
+            border-radius: 0;
+            box-shadow: none;
+            padding: 120px 0 80px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #333;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            width: 50px;
+            height: 3px;
+            background: #667eea;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* About Section */
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .about-img {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .about-img img {
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 5px solid #667eea;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .about-img img:hover {
+            transform: scale(1.05);
+        }
+
+        .about-text h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .about-text p {
+            margin-bottom: 1.5rem;
+            color: #666;
+        }
+
+        .skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .skill {
+            background: #f8f9fa;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            color: #667eea;
+            border: 2px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .skill:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Portfolio Section */
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .portfolio-item {
+            background: #f8f9fa;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .portfolio-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .portfolio-img {
+            height: 200px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portfolio-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .portfolio-item:hover .portfolio-img img {
+            transform: scale(1.1);
+        }
+
+        .portfolio-content {
+            padding: 1.5rem;
+        }
+
+        .portfolio-content h4 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .portfolio-content p {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .portfolio-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tag {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+
+        /* Experience Section */
+        .experience-timeline {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .experience-timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #667eea;
+            transform: translateX(-50%);
+        }
+
+        .experience-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .experience-item:nth-child(odd) {
+            flex-direction: row;
+        }
+
+        .experience-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .experience-content {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 0 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .experience-content:hover {
+            transform: translateY(-5px);
+        }
+
+        .experience-date {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .experience-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #667eea;
+            margin: 0 1rem;
+        }
+
+        .experience-content h4 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .experience-content h5 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+
+        .experience-content p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* Contact Section */
+        .contact-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .contact-info {
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .contact-info h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .contact-info p {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .contact-details {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .contact-details li {
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .contact-details a {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .contact-details a:hover {
+            color: #764ba2;
+        }
+
+        /* Footer */
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .social-links a {
+            color: white;
+            font-size: 1.5rem;
+            transition: color 0.3s ease;
+            text-decoration: none;
+        }
+
+        .social-links a:hover {
+            color: #667eea;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .about-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .about-img img {
+                width: 250px;
+                height: 250px;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .portfolio-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .experience-timeline::before {
+                left: 30px;
+            }
+
+            .experience-item {
+                flex-direction: column !important;
+                align-items: flex-start;
+                padding-left: 60px;
+            }
+
+            .experience-date {
+                left: 30px;
+                transform: translateX(-50%);
+            }
+
+            .experience-content {
+                margin: 0;
+                margin-top: 2rem;
+            }
+
+            .experience-img {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        /* Scroll animations */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .animate-on-scroll.animated {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <a href="#" class="logo">Z1JAY'S PORTFOLIO</a>
+            <ul class="nav-links">
+                <li><a href="#about">關於我</a></li>
+                <li><a href="#portfolio">作品集</a></li>
+                <li><a href="#experience">過去經歷</a></li>
+                <li><a href="#contact">聯絡我</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- About Section -->
+    <section id="about" class="animate-on-scroll">
+        <div class="container">
+            <h2 class="section-title">關於我</h2>
+            <div class="about-content">
+                <div class="about-img">
+                    <img src="myPic.jpg" alt="Z1JAY個人照片">
+                </div>
+                <div class="about-text">
+                    <h3>Z1JAY</h3>
+		    <p>嶺東科技大學 數位媒體設計系 碩士畢業</p>
+                    <p>我是一位充滿熱忱的3D設計師，擁有豐富的創作經驗，致力於將創意轉化為具有影響力的作品。</p>
+                    
+                    <div class="skills">
+                        <span class="skill">3D建模與材質</span>
+                        <span class="skill">骨架設計</span>
+                        <span class="skill">Shader</span>
+                        <span class="skill">3D動態</span>
+                        <span class="skill">動態捕捉</span>
+                        <span class="skill">3D模擬</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <!-- Portfolio Section -->
+        <section id="portfolio" class="animate-on-scroll">
+            <h2 class="section-title">作品集</h2>
+            <div class="portfolio-grid">
+                <div class="portfolio-item" onclick="openProject('project1')">
+                    <div class="portfolio-img">
+                        <!-- 替換為您的專案圖片 -->
+                        <img src="TheGentleTrigger.png" alt="The Gentle Trigger" onerror="this.style.display='none'; this.parentElement.innerHTML='<span>專案預覽圖</span>'">
+                    </div>
+                    <div class="portfolio-content">
+                        <h4>《The Gentle Trigger》</h4>
+                        <p>從系統架構到完整製作皆由個人獨立製作的3D動畫。</p>
+                        <div class="portfolio-tags">
+                            <span class="tag">3D動畫</span>
+                            <span class="tag">立場論</span>
+                            <span class="tag">電車難題</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="portfolio-item" onclick="openProject('project2')">
+                    <div class="portfolio-img">
+                        <!-- 替換為您的專案圖片 -->
+                        <img src="maxresdefault.jpg" alt="專案名稱 2" onerror="this.style.display='none'; this.parentElement.innerHTML='<span>專案預覽圖</span>'">
+                    </div>
+                    <div class="portfolio-content">
+                        <h4>《骨牌物語》</h4>
+                        <p>與魔特創意Movect Studios合作，製作台中市政府動畫短片。</p>
+                        <div class="portfolio-tags">
+                            <span class="tag">3D軟體協作</span>
+                            <span class="tag">NPR Shading</span>
+                            <span class="tag">3D動畫</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="portfolio-item" onclick="openProject('project3')">
+                    <div class="portfolio-img">
+                        <!-- 替換為您的專案圖片 -->
+                        <img src="Order.png" alt="專案名稱 3" onerror="this.style.display='none'; this.parentElement.innerHTML='<span>專案預覽圖</span>'">
+                    </div>
+                    <div class="portfolio-content">
+                        <h4>《Order》</h4>
+                        <p>獨立開發、設計、製作的聲控遊戲，透過Unreal Engine 5製作。</p>
+                        <div class="portfolio-tags">
+                            <span class="tag">3D遊戲</span>
+                            <span class="tag">聲音辨識</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="portfolio-item" onclick="openProject('project4')">
+                    <div class="portfolio-img">
+                        <!-- 替換為您的專案圖片 -->
+                        <img src="noddy.jpg" alt="專案名稱 4" onerror="this.style.display='none'; this.parentElement.innerHTML='<span>專案預覽圖</span>'">
+                    </div>
+                    <div class="portfolio-content">
+                        <h4>《Where is Noddy?》</h4>
+                        <p>與魔特創意Movect Studios合作於高雄電影節的原創VR動畫。</p>
+                        <div class="portfolio-tags">
+                            <span class="tag">VR動畫</span>
+                            <span class="tag">動態捕捉</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experience Section -->
+        <section id="experience" class="animate-on-scroll">
+            <h2 class="section-title">過去經歷大事記</h2>
+            <div class="experience-timeline">
+                <div class="experience-item">
+                    <div class="experience-date">2024</div>
+                    <img src="experience1.jpg" alt="經歷圖片" class="experience-img" onerror="this.style.display='none'">
+                    <div class="experience-content">
+                        <h4>《The Gentle Trigger》</h4>
+                        <h5>碩士畢業</h5>
+                        <p>《The Gentle Trigger》製作完成，並完成論文「《以柔膛問心》之 3D 動畫創作論述」製作。</p>
+                    </div>
+                </div>
+
+                <div class="experience-item">
+                    <div class="experience-date">2023</div>
+                    <img src="experience2.jpg" alt="經歷圖片" class="experience-img" onerror="this.style.display='none'">
+                    <div class="experience-content">
+                        <h4>3D互動講師</h4>
+                        <h5>元宇宙場景設計概述</h5>
+                        <p>受勞動部發展署委託擔任講師，以MAYA與Unreal Engine5設計元宇宙場景的基本互動。同年完成「AI動態捕捉技術對3D動畫流程影響之技術報告書」、「語音辨識對遊玩意願之影響-以遊戲ORDER為例」兩篇論文。</p>
+                    </div>
+                </div>
+
+                <div class="experience-item">
+                    <div class="experience-date">2022</div>
+                    <img src="experience3.jpg" alt="經歷圖片" class="experience-img" onerror="this.style.display='none'">
+                    <div class="experience-content">
+                        <h4>大學畢業</h4>
+                        <h5>教師、碩士同步進行</h5>
+                        <p>於李東科技大學數位媒體設計系畢業，於畢業先後開始擔任嶺東高中、台中高工與明台高中的教師至2024年。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="animate-on-scroll">
+            <h2 class="section-title">聯絡我</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h3>讓我們開始合作</h3>
+                    <p>如果您對我的作品感興趣，或有任何專案合作的想法，歡迎隨時與我聯繫。我很樂意討論如何為您的專案帶來創意與價值。</p>
+                    
+                    <ul class="contact-details">
+                        <li>📧 <a href="mailto:w6619willy@gmail.com">w6619willy@gmail.com</a></li>
+                        <li>📱 <a href="tel:+886984527128">+886 984 527 128</a></li>
+                        <li>📍 台中市, 台灣</li>
+                        <li>💼 <a href="https://www.instagram.com/z_jay_0723" target="_blank">Instagram: @z_jay_0723</a></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="social-links">
+            <a href="mailto:w6619willy@gmail.com">📧</a>
+            <a href="tel:+886 984527128">📱</a>
+            <a href="https://www.instagram.com/z_jay_0723" target="_blank">💼</a>
+            <a href="#">🎨</a>
+        </div>
+        <p>&copy; 2025 Z1JAY. 版權所有.</p>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animated');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Header background change on scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 100) {
+                header.style.background = 'rgba(191, 202, 231, 0.98)';
+            } else {
+                header.style.background = 'rgba(255, 255, 255, 0.95)';
+            }
+        });
+
+        // Portfolio item hover effects
+        document.querySelectorAll('.portfolio-item').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-15px) scale(1.02)';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Project link function
+        function openProject(projectId) {
+            // 這裡可以設定每個專案的連結
+            const projectLinks = {
+                'project1': 'https://archive.org/details/the-gentle-trigger-trailer',
+                'project2': 'https://www.youtube.com/watch?v=FOZQS3OSPgU&t=1s',
+                'project3': 'https://youtu.be/E10dBYbr2Ck',
+                'project4': 'https://www.youtube.com/watch?v=lTqd_apnuCw'
+            };
+            
+            if (projectLinks[projectId]) {
+                window.open(projectLinks[projectId], '_blank');
+            } else {
+                alert('專案連結尚未設定');
+            }
+        }
+    </script>
+</body>
+</html>
