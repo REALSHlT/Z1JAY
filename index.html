@@ -344,6 +344,61 @@
             line-height: 1.6;
         }
 
+/* Certifications Section */
+        .certifications-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .certification-item {
+            background: #f8f9fa;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .certification-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .certification-img {
+            height: 250px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .certification-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .certification-item:hover .certification-img img {
+            transform: scale(1.05);
+        }
+
+        .certification-content {
+            padding: 1.5rem;
+        }
+
+        .certification-content h4 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .certification-content p {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
         /* Contact Section */
         .contact-content {
             display: flex;
@@ -506,6 +561,7 @@
                 <li><a href="#about">關於我</a></li>
                 <li><a href="#portfolio">作品集</a></li>
                 <li><a href="#experience">過去經歷</a></li>
+		<li><a href="#certifications">證書與認證</a></li>
                 <li><a href="#contact">聯絡我</a></li>
             </ul>
         </nav>
@@ -637,6 +693,46 @@
                         <h4>大學畢業</h4>
                         <h5>教師、碩士同步進行</h5>
                         <p>於嶺東科技大學數位媒體設計系畢業，於畢業先後開始擔任嶺東高中、台中高工與明台高中的教師至2024年。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+<!-- Certifications Section -->
+        <section id="certifications" class="animate-on-scroll">
+            <h2 class="section-title">證書與認證</h2>
+            <div class="certifications-grid">
+                <div class="certification-item">
+                    <div class="certification-img">
+                        <img src="autodesk-3dsmax-cert.jpg" alt="Autodesk 3ds Max 認證">
+                    </div>
+                    <div class="certification-content">
+                        <h4>Autodesk Certified Professional: 3ds Max®</h4>
+                        <p>認證日期：2020年12月19日</p>
+                        <p>證書編號：wMFJD-FavC</p>
+                    </div>
+                </div>
+
+                <div class="certification-item">
+                    <div class="certification-img">
+                        <img src="autodesk-maya-cert.jpg" alt="Autodesk Maya 認證">
+                    </div>
+                    <div class="certification-content">
+                        <h4>Autodesk Certified Professional: Maya®</h4>
+                        <p>認證日期：2020年11月15日</p>
+                        <p>證書編號：CxUA-XVzo</p>
+                    </div>
+                </div>
+
+                <div class="certification-item">
+                    <div class="certification-img">
+                        <img src="ling-tung-teaching-cert.jpg" alt="嶺東科技大學教學證明">
+                    </div>
+                    <div class="certification-content">
+                        <h4>嶺東科技大學推廣教育部</h4>
+                        <p>服務證明 - 講師</p>
+                        <p>授課內容：元宇宙場景設計概述、MAYA、Unreal</p>
+                        <p>授課期間：112年6月15日至112年9月1日</p>
                     </div>
                 </div>
             </div>
