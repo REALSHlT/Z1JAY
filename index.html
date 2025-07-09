@@ -485,7 +485,94 @@
                 transform: translateY(0);
             }
         }
+/* Image Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            animation: fadeIn 0.3s ease;
+        }
 
+        .modal-content {
+            display: block;
+            margin: auto;
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: zoomIn 0.3s ease;
+        }
+
+        .modal-caption {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            font-size: 1.1rem;
+        }
+
+        .close {
+            position: absolute;
+            top: 30px;
+            right: 50px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            z-index: 10000;
+        }
+
+        .close:hover {
+            color: #667eea;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes zoomIn {
+            from { transform: translate(-50%, -50%) scale(0.5); }
+            to { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* Make certification images clickable */
+        .certification-img {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .certification-img::after {
+            content: '🔍︎';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(102, 126, 234, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .certification-img:hover::after {
+            opacity: 1;
+        }
         /* Responsive Design */
         @media (max-width: 768px) {
             .nav-links {
@@ -838,6 +925,67 @@
                 alert('專案連結尚未設定');
             }
         }
+// Project link function
+        function openProject(projectId) {
+            // 這裡可以設定每個專案的連結
+            const projectLinks = {
+                'project1': 'https://archive.org/details/the-gentle-trigger-trailer',
+                'project2': 'https://www.youtube.com/watch?v=FOZQS3OSPgU&t=1s',
+                'project3': 'https://youtu.be/E10dBYbr2Ck',
+                'project4': 'https://www.youtube.com/watch?v=lTqd_apnuCw'
+            };
+            
+            if (projectLinks[projectId]) {
+                window.open(projectLinks[projectId], '_blank');
+            } else {
+                alert('專案連結尚未設定');
+            }
+        }
+
+        // Image Modal functionality - 等待DOM載入完成
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalCaption = document.getElementById('modalCaption');
+            const closeBtn = document.querySelector('.close');
+
+            // 確保元素存在後再綁定事件
+            if (modal && modalImage && modalCaption && closeBtn) {
+                // Add click event to all certification images
+                document.querySelectorAll('.certification-img img').forEach(img => {
+                    img.addEventListener('click', function() {
+                        modal.style.display = 'block';
+                        modalImage.src = this.src;
+                        modalCaption.textContent = this.alt;
+                    });
+                });
+
+                // Close modal when clicking the close button
+                closeBtn.addEventListener('click', function() {
+                    modal.style.display = 'none';
+                });
+
+                // Close modal when clicking outside the image
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+
+                // Close modal with Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && modal.style.display === 'block') {
+                        modal.style.display = 'none';
+                    }
+                });
+            }
+        });
     </script>
+<!-- Image Modal -->
+    <div id="imageModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modalImage">
+        <div class="modal-caption" id="modalCaption"></div>
+    </div>
 </body>
 </html>
