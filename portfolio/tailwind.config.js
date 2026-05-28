@@ -28,8 +28,8 @@ module.exports = {
         'surface-variant':           '#e9e1dc',
       },
       fontFamily: {
-        sans: ['"LXGW WenKai"', 'serif'],
-        serif: ['"LXGW WenKai"', 'serif'],
+        sans: ['"Swei Spring"', 'serif'],
+        serif: ['"Swei Spring"', 'serif'],
       },
       fontSize: {
         'display-lg':        ['64px',  { lineHeight: '1.1', letterSpacing: '-0.02em' }],
