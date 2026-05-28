@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ScrollRevealDirective } from '../../directives/scroll-reveal.directive';
+import { EXPERIENCE, ExperienceEntry } from '../../data/config';
 
 @Component({
   selector: 'app-experience',
@@ -8,4 +9,6 @@ import { ScrollRevealDirective } from '../../directives/scroll-reveal.directive'
   templateUrl: './experience.html',
   styleUrl: './experience.scss',
 })
-export class Experience {}
+export class Experience {
+  readonly experiences: ExperienceEntry[] = EXPERIENCE;
+}

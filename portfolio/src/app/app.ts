@@ -3,6 +3,7 @@ import { Nav } from './components/nav/nav';
 import { Hero } from './components/hero/hero';
 import { Skills } from './components/skills/skills';
 import { Projects } from './components/projects/projects';
+import { Platforms } from './components/platforms/platforms';
 import { Experience } from './components/experience/experience';
 import { Certifications } from './components/certifications/certifications';
 import { Contact } from './components/contact/contact';
@@ -17,6 +18,7 @@ import { CertModal } from './components/cert-modal/cert-modal';
     Hero,
     Skills,
     Projects,
+    Platforms,
     Experience,
     Certifications,
     Contact,

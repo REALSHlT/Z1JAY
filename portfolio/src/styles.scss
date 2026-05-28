@@ -138,6 +138,99 @@ body {
     padding-bottom: max(8px, env(safe-area-inset-bottom));
   }
 }
+
+/* ══ Shared design-system utilities ════════════
+   Centralise these here so a single change updates
+   every section that uses them.
+   ─────────────────────────────────────────── */
+
+/* Vertical section padding — replaces inline py-[120px] */
+.section-py {
+  padding-top:    80px;
+  padding-bottom: 80px;
+}
+@media (min-width: 768px) {
+  .section-py { padding-top: 120px; padding-bottom: 120px; }
+}
+
+/* Section h2 base style — add alignment utilities on top */
+.section-heading {
+  font-size:     32px;
+  line-height:   1.2;
+  color:         #1e1b18;   /* on-surface */
+  margin-bottom: 32px;
+}
+@media (min-width: 768px) {
+  .section-heading { font-size: 48px; margin-bottom: 48px; }
+}
+
+/* Primary filled action button */
+.btn-primary {
+  display:        inline-flex;
+  align-items:    center;
+  gap:            8px;
+  padding:        16px 32px;
+  background-color: #735c00; /* primary */
+  color:          #ffffff;
+  border-radius:  6px;
+  font-size:      12px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  transition:     all .3s;
+  &:hover {
+    transform:  translateY(-4px);
+    box-shadow: 0 15px 30px rgba(212,175,55,.3);
+  }
+}
+
+/* Outlined / ghost action button */
+.btn-outline {
+  display:         inline-flex;
+  align-items:     center;
+  gap:             8px;
+  padding:         16px 32px;
+  border:          1px solid #7f7663; /* outline */
+  background-color: rgba(255,248,245,.4);
+  backdrop-filter: blur(8px);
+  color:           #1e1b18; /* on-surface */
+  border-radius:   6px;
+  font-size:       12px;
+  letter-spacing:  .1em;
+  text-transform:  uppercase;
+  transition:      all .3s;
+  &:hover {
+    background-color: rgba(255,248,245,.6);
+    transform:        translateY(-4px);
+    border-color:     rgba(115,92,0,.5);
+    box-shadow:       0 15px 30px rgba(253,181,161,.3);
+  }
+}
+
+/* Footer / small nav link — replaces repeated inline styles */
+.link-sm {
+  display:        block;
+  font-size:      11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color:          #875040; /* secondary */
+  transition:     all .2s;
+  &:hover { color: #735c00; transform: translateY(-4px); }
+}
+
+/* Feature pill / badge inside product sections */
+.feature-pill {
+  display:        inline-flex;
+  align-items:    center;
+  gap:            6px;
+  padding:        6px 14px;
+  border-radius:  999px;
+  font-size:      11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  background-color: rgba(115,92,0,.08); /* primary/8 */
+  color:          #735c00;              /* primary */
+  border:         1px solid rgba(115,92,0,.15);
+}
 ::-webkit-scrollbar        { width: 8px; }
 ::-webkit-scrollbar-track  { background: #f5ece7; }
 ::-webkit-scrollbar-thumb  { background: #e1d8d4; border-radius: 4px; }

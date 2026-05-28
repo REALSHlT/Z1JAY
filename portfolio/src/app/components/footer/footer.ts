@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { LINKS } from '../../data/config';
 
 @Component({
   selector: 'app-footer',
@@ -7,4 +8,6 @@ import { Component } from '@angular/core';
   templateUrl: './footer.html',
   styleUrl: './footer.scss',
 })
-export class Footer {}
+export class Footer {
+  readonly links = LINKS;
+}

@@ -22,6 +22,8 @@ export type SkillEntry = {
   zh: string;
   image?: string;
   description?: string;
+  /** Material Symbol name shown in the text-only display panel */
+  icon?: string;
 };
 
 export const SKILLS: SkillEntry[] = [
@@ -35,11 +37,11 @@ export const SKILLS: SkillEntry[] = [
     description: '關鍵幀動畫與動作曲線調整，結合物理模擬打造充滿生命力的動畫敘事。' },
   { en: 'Motion Capture',   zh: '動態捕捉',       image: 'assets/images/noddy.jpg',
     description: 'AI 動態捕捉技術整合與資料清理，大幅縮短角色動畫的製作週期。' },
-  { en: '3D Simulation',    zh: '3D 模擬',
+  { en: '3D Simulation',    zh: '3D 模擬',    icon: 'scatter_plot',
     description: '流體、布料、粒子等動態模擬技術，搭配 Houdini 與 Maya nCloth / nParticles，打造高擬真的視覺特效與場景氛圍。' },
-  { en: 'Frontend Engineer', zh: '前端工程師',
+  { en: 'Frontend Engineer', zh: '前端工程師', icon: 'code',
     description: '以 Angular、Tailwind CSS 及 TypeScript 構建高品質的互動式介面，結合現代設計系統打造流暢的使用者體驗。' },
-  { en: 'AI Engineer',      zh: 'AI 工程師',
+  { en: 'AI Engineer',      zh: 'AI 工程師',   icon: 'auto_awesome',
     description: '運用生成式 AI 工具與 LLM API 整合、優化創作流程與數據分析管道，探索 AI 在媒體設計領域的應用可能。' },
 ];
 
@@ -120,5 +122,37 @@ export const CERTS: CertEntry[] = [
     subtitle: '服務證明 — 講師',
     detail: '元宇宙場景設計概述 · MAYA · Unreal',
     number: '112年6月15日 — 112年9月1日',
+  },
+];
+
+// ── Experience timeline ──────────────────────────────────────────────────────
+export type ExperienceEntry = {
+  year: string;
+  title: string;
+  org: string;
+  description: string;
+  /** Gold dot + primary-colour year label */
+  highlight?: boolean;
+};
+
+export const EXPERIENCE: ExperienceEntry[] = [
+  {
+    year: '2024',
+    title: '碩士畢業',
+    org: '嶺東科技大學',
+    description: '《The Gentle Trigger》製作完成，完成論文「《以柔膛問心》之 3D 動畫創作論述」，取得數位媒體設計系碩士學位。',
+    highlight: true,
+  },
+  {
+    year: '2023',
+    title: '3D 互動講師',
+    org: '勞動部發展署',
+    description: '受勞動部發展署委託擔任講師，以 MAYA 與 Unreal Engine 5 設計元宇宙場景基本互動。同年完成「AI 動態捕捉技術對 3D 動畫流程影響之技術報告書」與「語音辨識對遊玩意願之影響——以遊戲 ORDER 為例」兩篇論文。',
+  },
+  {
+    year: '2022',
+    title: '大學畢業 & 教師',
+    org: '嶺東科技大學',
+    description: '於嶺東科技大學數位媒體設計系畢業，同年起擔任嶺東高中、台中高工與明台高中教師直至 2024 年，並同步攻讀碩士學位。',
   },
 ];

@@ -1,0 +1,155 @@
+<section id="platforms" class="section-py">
+
+  <!-- ── Section header ──────────────────────── -->
+  <h2 class="section-heading text-center md:text-left" appScrollReveal>線上展示</h2>
+
+  <!-- ── Profile platform links ──────────────── -->
+  <div class="flex flex-col sm:flex-row gap-4 mb-12 md:mb-16" appScrollReveal revealClass="reveal-left">
+
+    <a href="https://sketchfab.com/z1jay.FollwMyInstagram" target="_blank" rel="noopener noreferrer"
+       class="group flex items-center gap-4 px-6 py-5 glass-panel rounded-xl
+              hover:shadow-[0_8px_40px_rgba(212,175,55,0.15)] hover:scale-[1.02]
+              transition-all duration-300 w-full sm:w-auto">
+      <div class="w-12 h-12 rounded-full bg-primary/10 border border-primary/20
+                  flex items-center justify-center flex-shrink-0">
+        <span class="material-symbols-outlined text-primary" style="font-size:24px;">view_in_ar</span>
+      </div>
+      <div class="min-w-0">
+        <div class="text-[14px] font-medium text-primary">Sketchfab</div>
+        <div class="text-[12px] text-on-surface-variant truncate">z1jay.FollwMyInstagram</div>
+      </div>
+      <span class="material-symbols-outlined text-secondary/40 ml-auto flex-shrink-0
+                   group-hover:text-primary group-hover:translate-x-1 transition-all">arrow_forward</span>
+    </a>
+
+    <a href="https://www.artstation.com/z_jay" target="_blank" rel="noopener noreferrer"
+       class="group flex items-center gap-4 px-6 py-5 glass-panel rounded-xl
+              hover:shadow-[0_8px_40px_rgba(212,175,55,0.15)] hover:scale-[1.02]
+              transition-all duration-300 w-full sm:w-auto">
+      <div class="w-12 h-12 rounded-full bg-secondary/10 border border-secondary/20
+                  flex items-center justify-center flex-shrink-0">
+        <span class="material-symbols-outlined text-secondary" style="font-size:24px;">palette</span>
+      </div>
+      <div class="min-w-0">
+        <div class="text-[14px] font-medium text-secondary">ArtStation</div>
+        <div class="text-[12px] text-on-surface-variant truncate">z_jay</div>
+      </div>
+      <span class="material-symbols-outlined text-secondary/40 ml-auto flex-shrink-0
+                   group-hover:text-secondary group-hover:translate-x-1 transition-all">arrow_forward</span>
+    </a>
+
+  </div>
+
+  <!-- ══ WebPhoto — Featured Product ═══════════════════════════════════════ -->
+  <div class="rounded-2xl overflow-hidden glass-panel p-0 mb-12 md:mb-16" appScrollReveal>
+
+    <!-- Product header bar -->
+    <div class="px-6 md:px-10 py-5 border-b border-white/30 flex flex-col sm:flex-row sm:items-center gap-4">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20
+                    border border-primary/15 flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined text-primary" style="font-size:20px;">texture</span>
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-[20px] font-semibold text-on-surface leading-tight">WebPhoto</span>
+            <span class="text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-full
+                         bg-primary/10 text-primary border border-primary/20">個人產品</span>
+            <span class="text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-full
+                         bg-green-500/10 text-green-700 border border-green-500/20">免費使用</span>
+          </div>
+          <p class="text-[12px] text-on-surface-variant mt-0.5">imtdgo.github.io/WebPhoto</p>
+        </div>
+      </div>
+      <a href="https://imtdgo.github.io/WebPhoto" target="_blank" rel="noopener noreferrer"
+         class="btn-primary sm:ml-auto text-center justify-center sm:justify-start flex-shrink-0">
+        <span class="material-symbols-outlined" style="font-size:16px;">open_in_new</span>
+        立即使用
+      </a>
+    </div>
+
+    <!-- Description + features -->
+    <div class="px-6 md:px-10 py-6 border-b border-white/30">
+      <p class="text-[15px] leading-[1.7] text-on-surface-variant max-w-3xl mb-5">
+        提供免費的 3D 材質製作功能。只需拍攝照片，即可自動生成 3D 軟體可用的
+        PBR（Physically Based Rendering）貼圖組，涵蓋 Albedo、Normal、Roughness 等通道。
+        支援行動裝置拍攝、HDR 多張合併與無縫貼圖輸出，需要創建帳號使用。
+      </p>
+      <div class="flex flex-wrap gap-2">
+        <span class="feature-pill">
+          <span class="material-symbols-outlined" style="font-size:14px;">photo_camera</span>
+          Mobile Capture
+        </span>
+        <span class="feature-pill">
+          <span class="material-symbols-outlined" style="font-size:14px;">hdr_on</span>
+          HDR Merge
+        </span>
+        <span class="feature-pill">
+          <span class="material-symbols-outlined" style="font-size:14px;">wb_auto</span>
+          Auto White Balance
+        </span>
+        <span class="feature-pill">
+          <span class="material-symbols-outlined" style="font-size:14px;">layers</span>
+          PBR Channel Maps
+        </span>
+        <span class="feature-pill">
+          <span class="material-symbols-outlined" style="font-size:14px;">view_in_ar</span>
+          Seamless Tiling
+        </span>
+      </div>
+    </div>
+
+    <!-- Iframe embed -->
+    <div class="relative w-full" style="height: 560px;">
+      <iframe [src]="webPhotoUrl"
+              title="WebPhoto — PBR Texture Generator"
+              class="w-full h-full border-0"
+              allow="autoplay; fullscreen"
+              loading="lazy">
+        <!-- Fallback if iframe is blocked -->
+        <div class="w-full h-full flex flex-col items-center justify-center bg-surface-container gap-4 p-8">
+          <span class="material-symbols-outlined text-primary text-5xl">texture</span>
+          <p class="text-on-surface-variant text-center">
+            請直接前往
+            <a href="https://imtdgo.github.io/WebPhoto" target="_blank" class="text-primary underline">
+              imtdgo.github.io/WebPhoto
+            </a>
+          </p>
+        </div>
+      </iframe>
+      <!-- Overlay open-in-new button -->
+      <a href="https://imtdgo.github.io/WebPhoto" target="_blank" rel="noopener noreferrer"
+         class="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg
+                bg-black/50 backdrop-blur-md text-white text-[11px] tracking-wide
+                hover:bg-black/70 transition-colors">
+        <span class="material-symbols-outlined" style="font-size:14px;">open_in_new</span>
+        全螢幕開啟
+      </a>
+    </div>
+
+  </div>
+
+  <!-- ── Sketchfab 3D model embed ────────────── -->
+  <div appScrollReveal>
+    <h3 class="text-[24px] md:text-[32px] leading-[1.2] text-on-surface mb-6">
+      互動 3D 作品展示
+    </h3>
+    <div class="relative w-full glass-panel p-2 rounded-xl overflow-hidden" style="aspect-ratio:16/9; min-height:300px;">
+      <div class="absolute inset-2 rounded-lg overflow-hidden">
+        <iframe [src]="sketchfabModelUrl"
+                title="Free Rigged Toothless Meme — 3D Model"
+                class="w-full h-full border-0"
+                allowfullscreen
+                mozallowfullscreen="true"
+                webkitallowfullscreen="true"
+                allow="autoplay; fullscreen; xr-spatial-tracking"
+                loading="lazy">
+        </iframe>
+      </div>
+      <div class="absolute bottom-4 right-4 text-[11px] text-on-surface-variant/50 tracking-wide pointer-events-none">
+        Sketchfab · Free Rigged Toothless Meme
+      </div>
+    </div>
+  </div>
+
+</section>
