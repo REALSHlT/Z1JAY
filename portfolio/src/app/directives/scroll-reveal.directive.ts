@@ -9,7 +9,6 @@ export class ScrollRevealDirective implements OnInit, OnDestroy {
   @Input() revealDelay = 0;
 
   private observer!: IntersectionObserver;
-  private lastScrollY = window.scrollY;
   private prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   constructor(private el: ElementRef<HTMLElement>) {}
@@ -28,26 +27,23 @@ export class ScrollRevealDirective implements OnInit, OnDestroy {
 
     this.observer = new IntersectionObserver(
       (entries) => {
-        const scrollY = window.scrollY;
-        this.lastScrollY = scrollY;
-
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
+            // Element entered viewport — reveal it
             el.removeAttribute('data-exit');
             el.classList.add('visible');
-          } else {
+          } else if (el.classList.contains('visible')) {
+            // Element WAS visible and is now leaving — animate the exit direction
             const rect = el.getBoundingClientRect();
-            const inRange = rect.top < window.innerHeight * 1.5 && rect.bottom > -window.innerHeight * 0.5;
-            if (inRange) {
-              // Element is near or at the viewport edge — set exit direction
-              // rect.top < half viewport → element is leaving from the top
-              el.setAttribute('data-exit', rect.top < window.innerHeight * 0.5 ? 'top' : 'bottom');
-              el.classList.remove('visible');
-            }
+            el.setAttribute('data-exit', rect.top < window.innerHeight * 0.5 ? 'top' : 'bottom');
+            el.classList.remove('visible');
           }
+          // else: element hasn't been seen yet — leave it at opacity 0, wait for real entry
         });
       },
-      { threshold: 0.1, rootMargin: '-80px 0px -60px 0px' }
+      // threshold 0.15: reveal fires when 15% is visible (entering);
+      // exit fires when <15% remains — element is still partially on screen so animation is perceptible
+      { threshold: 0.15 }
     );
 
     this.observer.observe(el);
