@@ -7,9 +7,14 @@ export const LINKS = {
     whereIsNoddy:  'https://www.youtube.com/watch?v=lTqd_apnuCw',
   },
   social: {
-    instagram: 'https://www.instagram.com/z_jay_0723',
-    email:     'mailto:w6619willy@gmail.com',
-    phone:     'tel:+886984527128',
+    instagram:  'https://www.instagram.com/z_jay_0723',
+    email:      'mailto:w6619willy@gmail.com',
+    phone:      'tel:+886984527128',
+    sketchfab:  'https://sketchfab.com/z1jay.FollwMyInstagram',
+    artstation: 'https://www.artstation.com/z_jay',
+  },
+  platforms: {
+    sketchfabModel: 'https://sketchfab.com/models/193ce9edac9c4576a6131ff7d588ec2b/embed',
   },
   font: {
     lxgwWenKai: 'https://github.com/lxgw/LxgwWenKai',

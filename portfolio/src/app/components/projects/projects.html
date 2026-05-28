@@ -28,4 +28,17 @@
       </a>
     }
   </div>
+
+  <!-- 精隅3D模型 -->
+  <div class="mt-12" appScrollReveal [revealClass]="'reveal-scale'">
+    <h3 class="text-[22px] font-semibold text-on-surface mb-1">精選 3D 模型</h3>
+    <p class="text-[14px] text-on-surface-variant mb-4">Free Rigged Toothless Meme &mdash; Sketchfab</p>
+    <div class="glass-panel rounded-xl overflow-hidden" style="aspect-ratio:16/9;">
+      <iframe [src]="modelEmbedUrl"
+              class="w-full h-full border-0"
+              allow="autoplay; fullscreen; xr-spatial-tracking"
+              allowfullscreen
+              title="Sketchfab 3D model"></iframe>
+    </div>
+  </div>
 </section>
