@@ -1,0 +1,64 @@
+<!-- ── Top App Bar ──────────────────────────────── -->
+<header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+  [class.bg-surface-container]="scrolled()"
+  [class.shadow-sm]="scrolled()"
+  style="background: rgba(255,248,245,0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(135,80,64,0.12);">
+
+  <div class="flex justify-between items-center px-5 md:px-16 h-16 max-w-[1280px] mx-auto">
+
+    <!-- Mobile left: hamburger placeholder -->
+    <button class="md:hidden text-primary w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+
+    <!-- Mobile center: brand (absolutely centered) -->
+    <div class="md:hidden absolute left-1/2 -translate-x-1/2 font-bold tracking-widest text-on-surface select-none"
+         style="font-family:'LXGW WenKai',serif; font-size:22px;">Z1JAY</div>
+
+    <!-- Desktop left: brand -->
+    <div class="hidden md:block font-bold tracking-tighter text-on-surface select-none"
+         style="font-family:'LXGW WenKai',serif; font-size:28px;">Z1JAY</div>
+
+    <!-- Desktop center: nav links -->
+    <ul class="hidden md:flex items-center gap-6">
+      <li><a (click)="smoothScroll('#work')"    class="text-[16px] text-primary font-bold border-b-2 border-primary pb-0.5 cursor-pointer hover:opacity-80 transition-all">作品集</a></li>
+      <li><a (click)="smoothScroll('#skills')"  class="text-[16px] text-secondary hover:text-primary cursor-pointer transition-colors">專業技能</a></li>
+      <li><a (click)="smoothScroll('#experience')" class="text-[16px] text-secondary hover:text-primary cursor-pointer transition-colors">過去經歷</a></li>
+      <li><a (click)="smoothScroll('#certifications')" class="text-[16px] text-secondary hover:text-primary cursor-pointer transition-colors">證書認證</a></li>
+    </ul>
+
+    <!-- Desktop right: CTA -->
+    <a (click)="smoothScroll('#contact')"
+       class="hidden md:block text-[12px] tracking-widest uppercase text-primary hover:opacity-80 transition-all cursor-pointer">聯繫我</a>
+
+    <!-- Mobile right: avatar dot -->
+    <div class="md:hidden w-8 h-8 rounded-full bg-secondary-container/60 border border-secondary/20 overflow-hidden">
+      <img src="assets/images/myPic.jpg" alt="Z1JAY" class="w-full h-full object-cover object-top" />
+    </div>
+
+  </div>
+</header>
+
+<!-- ── Bottom Nav (mobile only) ─────────────────── -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center h-16
+            bg-surface/90 backdrop-blur-xl border-t border-secondary/15 rounded-t-2xl
+            shadow-[0_-8px_32px_rgba(135,80,64,0.08)]">
+
+  <a (click)="smoothScroll('#hero')" class="flex flex-col items-center gap-0.5 text-primary cursor-pointer py-2 px-3">
+    <span class="material-symbols-outlined" style="font-size:22px;">home</span>
+    <span class="text-[9px] uppercase tracking-widest">首頁</span>
+  </a>
+  <a (click)="smoothScroll('#skills')" class="flex flex-col items-center gap-0.5 text-secondary/60 hover:text-secondary cursor-pointer py-2 px-3 transition-colors">
+    <span class="material-symbols-outlined" style="font-size:22px;">psychology</span>
+    <span class="text-[9px] uppercase tracking-widest">技能</span>
+  </a>
+  <a (click)="smoothScroll('#work')" class="flex flex-col items-center gap-0.5 text-secondary/60 hover:text-secondary cursor-pointer py-2 px-3 transition-colors">
+    <span class="material-symbols-outlined" style="font-size:22px;">view_in_ar</span>
+    <span class="text-[9px] uppercase tracking-widest">作品</span>
+  </a>
+  <a (click)="smoothScroll('#contact')" class="flex flex-col items-center gap-0.5 text-secondary/60 hover:text-secondary cursor-pointer py-2 px-3 transition-colors">
+    <span class="material-symbols-outlined" style="font-size:22px;">mail</span>
+    <span class="text-[9px] uppercase tracking-widest">聯繫</span>
+  </a>
+
+</nav>

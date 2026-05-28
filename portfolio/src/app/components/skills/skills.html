@@ -1,0 +1,83 @@
+<section id="skills" class="py-[80px] md:py-[120px]" appScrollReveal>
+  <h2 class="text-[32px] md:text-[48px] leading-[1.2] text-on-surface mb-8 md:mb-12 text-center md:text-left">核心專業</h2>
+
+  <!-- ── Desktop: tab + image switcher (hidden on mobile) ── -->
+  <div class="hidden md:flex flex-col md:flex-row gap-6">
+    <!-- Skill nav -->
+    <div class="w-full md:w-1/3 flex flex-col gap-4 border-l border-secondary-container/50 pl-6">
+      @for (skill of skills; track skill.en; let i = $index) {
+        <button
+          (click)="selectSkill(i)"
+          class="text-left py-2 relative group transition-colors duration-300"
+          [class.text-primary]="activeIndex() === i"
+          [class.text-secondary]="activeIndex() !== i">
+          <span class="absolute -left-7 top-1/2 -translate-y-1/2 w-1 bg-primary transition-all duration-300"
+                [style.height]="activeIndex() === i ? '100%' : '0'"></span>
+          <span class="text-[28px] leading-[1.3] block">{{ skill.en }}</span>
+          <span class="text-[16px] leading-[1.6] block mt-1 text-secondary"
+                [class.text-primary]="activeIndex() === i">{{ skill.zh }}</span>
+        </button>
+      }
+    </div>
+
+    <!-- Skill display panel -->
+    <div class="w-full md:w-2/3 relative min-h-[500px] rounded-lg overflow-hidden glass-panel p-2">
+      <div class="w-full h-full rounded-md overflow-hidden relative skill-slider-container">
+        @for (skill of skills; track skill.en; let i = $index) {
+          <div class="skill-slide h-full" [class.active]="activeIndex() === i">
+            @if (skill.image) {
+              <img [src]="skill.image" [alt]="skill.zh"
+                   class="w-full h-full object-cover"
+                   (error)="onImageError($event)" />
+            } @else {
+              <div class="h-full flex flex-col items-center justify-center bg-surface-container-high p-8 relative">
+                <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.1),transparent_70%)]"></div>
+                <div class="relative z-10 text-center space-y-6 flex flex-col items-center">
+                  <div class="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 shadow-[0_0_40px_rgba(212,175,55,0.2)]">
+                    <span class="material-symbols-outlined text-4xl text-primary">
+                      {{ i === 6 ? 'code' : 'auto_awesome' }}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 class="text-[40px] leading-[1.2] text-on-surface mb-2">{{ skill.zh }}</h3>
+                    <p class="text-[16px] leading-[1.6] text-on-surface-variant max-w-sm mx-auto">{{ skill.description }}</p>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Mobile: accordion (shown on mobile, hidden on desktop) ── -->
+  <div class="md:hidden flex flex-col gap-3">
+    @for (skill of skills; track skill.en; let i = $index) {
+      <details class="group bg-surface-container-low rounded-xl border border-secondary/10
+                      shadow-[0_4px_20px_rgba(229,160,141,0.06)] overflow-hidden">
+        <summary class="flex justify-between items-center p-5 cursor-pointer list-none
+                        hover:bg-surface-container transition-colors duration-200">
+          <div>
+            <span class="block text-[16px] font-medium text-primary leading-tight">{{ skill.en }}</span>
+            <span class="block text-[13px] text-secondary mt-0.5">{{ skill.zh }}</span>
+          </div>
+          <span class="material-symbols-outlined text-secondary/50 transition-transform duration-300
+                       group-open:rotate-180 flex-shrink-0 ml-3"
+                style="font-size:22px;">expand_more</span>
+        </summary>
+        <div class="px-5 pb-5">
+          @if (skill.image) {
+            <img [src]="skill.image" [alt]="skill.zh"
+                 class="w-full h-40 object-cover rounded-lg mb-4"
+                 (error)="onImageError($event)" />
+          }
+          @if (skill.description) {
+            <p class="text-[15px] leading-[1.7] text-on-surface-variant">{{ skill.description }}</p>
+          }
+        </div>
+      </details>
+    }
+  </div>
+
+</section>

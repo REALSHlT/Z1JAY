@@ -1,0 +1,8 @@
+# Build logs
+build*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Portfolio Angular app — node_modules and dist handled by portfolio/.gitignore

@@ -1,0 +1,21 @@
+<section id="certifications" class="py-[120px]">
+  <h2 class="text-[48px] leading-[1.2] text-on-surface mb-12 text-center" appScrollReveal>專業證照</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    @for (cert of certs; track cert.number; let i = $index) {
+      <div class="glass-panel rounded-lg overflow-hidden premium-hover"
+           appScrollReveal [revealDelay]="(i + 1) * 100">
+        <div class="cert-img-wrap h-[250px]" (click)="openModal(cert)">
+          <img [src]="cert.image" [alt]="cert.alt"
+               class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
+        </div>
+        <div class="p-6">
+          <h4 class="text-[28px] leading-[1.3] text-on-surface mb-1">{{ cert.title }}</h4>
+          <p class="text-[16px] font-semibold text-primary">{{ cert.subtitle }}</p>
+          <p class="text-[16px] leading-[1.6] text-on-surface-variant mt-2">{{ cert.detail }}</p>
+          <p class="text-[12px] tracking-widest uppercase text-secondary mt-1">{{ cert.number }}</p>
+        </div>
+      </div>
+    }
+  </div>
+</section>
