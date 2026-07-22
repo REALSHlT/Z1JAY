@@ -1,6 +1,12 @@
 <div class="bg-ambient"></div>
+
+<!-- Custom cursor (desktop only, styled in styles.scss) -->
+<div class="cursor-dot"  [style.transform]="'translate(' + cursorX() + 'px,' + cursorY() + 'px) translate(-50%,-50%)'"></div>
+<div class="cursor-ring" [class.is-hover]="cursorHover()"
+     [style.transform]="'translate(' + cursorX() + 'px,' + cursorY() + 'px) translate(-50%,-50%)'"></div>
+
 <app-nav></app-nav>
-<main class="max-w-[1280px] mx-auto px-5 md:px-16 w-full pb-20 md:pb-0">
+<main class="w-full pb-20 md:pb-0">
   <app-hero></app-hero>
   <app-skills></app-skills>
   <app-projects></app-projects>

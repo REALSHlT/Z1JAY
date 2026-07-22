@@ -1,10 +1,5 @@
-/* ── Swei Spring (獅尾四季春) — jsDelivr CDN ── */
-@font-face {
-  font-family: 'Swei Spring';
-  src: url('https://cdn.jsdelivr.net/gh/max32002/swei-spring@1.068/WebFont/CJK%20TC/SweiSpringCJKtc-Regular.woff2') format('woff2'),
-       url('https://cdn.jsdelivr.net/gh/max32002/swei-spring@1.068/WebFont/CJK%20TC/SweiSpringCJKtc-Regular.woff')  format('woff');
-  font-display: swap;
-}
+/* ── Fonts: Archivo Black (display) · Space Mono (labels) · Noto Sans TC (CJK) ── */
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
 @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap");
 
 @tailwind base;
@@ -17,60 +12,48 @@
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: "Swei Spring", serif;
-  background-color: #fff8f5;
-  color: #1e1b18;
+  font-family: "Noto Sans TC", system-ui, sans-serif;
+  background-color: #f3efe6;
+  color: #111111;
   overflow-x: hidden;
 }
 
-/* ── Ambient background ─────────────────────── */
+::selection { background: #ffd43a; color: #111; }
+
+/* ── Paper grid ambient background ──────────── */
 .bg-ambient {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background:
-    radial-gradient(ellipse at 20% 30%, rgba(212,175,55,0.06) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 70%, rgba(253,181,161,0.08) 0%, transparent 60%);
-
-  @media (prefers-reduced-motion: no-preference) {
-    animation: ambientShift 20s ease-in-out infinite alternate;
-  }
+  background-image:
+    linear-gradient(rgba(17,17,17,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17,17,17,0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
 }
 
-@keyframes ambientShift {
-  0%   { opacity: .8; transform: scale(1); }
-  100% { opacity: 1;  transform: scale(1.05); }
-}
-
-/* ── Scroll-reveal — direction-aware exits ──── */
-/* Expo ease-out: fast start, smooth settle (common in quality JP web design) */
+/* ── Scroll-reveal — brutalist entrances ────── */
 @media (prefers-reduced-motion: no-preference) {
 
-  /* ── Enter states (off-screen / not yet visible) ── */
-  .reveal       { opacity: 0; transform: translateY(32px); }
-  .reveal-left  { opacity: 0; transform: translateX(-40px); }
-  .reveal-right { opacity: 0; transform: translateX(40px); }
-  .reveal-scale { opacity: 0; transform: scale(.95) translateY(20px); }
+  .reveal       { opacity: 0; transform: translateY(40px); }
+  .reveal-left  { opacity: 0; transform: translateX(-48px) rotate(-1.5deg); }
+  .reveal-right { opacity: 0; transform: translateX(48px) rotate(1.5deg); }
+  .reveal-scale { opacity: 0; transform: scale(.92) rotate(-1deg); }
 
   .reveal, .reveal-left, .reveal-right, .reveal-scale {
-    transition: opacity .85s cubic-bezier(.16,1,.3,1),
-                transform .85s cubic-bezier(.16,1,.3,1);
+    transition: opacity .6s cubic-bezier(.2,1.4,.4,1),
+                transform .6s cubic-bezier(.2,1.4,.4,1);
   }
 
-  /* ── Visible ── */
   .reveal.visible,
   .reveal-left.visible,
   .reveal-right.visible,
   .reveal-scale.visible { opacity: 1; transform: none; }
 
-  /* ── Exit toward top (user scrolled down past the element) ── */
   .reveal[data-exit="top"],
   .reveal-left[data-exit="top"],
   .reveal-right[data-exit="top"] { opacity: 0; transform: translateY(-24px); }
-  .reveal-scale[data-exit="top"] { opacity: 0; transform: scale(.97) translateY(-18px); }
-  /* Exit toward bottom falls back to enter state (translateY/X positive) */
-
+  .reveal-scale[data-exit="top"] { opacity: 0; transform: scale(.96) translateY(-16px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -79,70 +62,291 @@ body {
   }
 }
 
-/* ── Skill slider ───────────────────────────── */
-.skill-slider-container {
-  position: relative;
-  height: 100%;
-}
+/* ── Skill slider (kept) ────────────────────── */
+.skill-slider-container { position: relative; height: 100%; }
 .skill-slide {
   position: absolute;
   inset: 0;
   opacity: 0;
-  transition: opacity .5s ease;
+  transition: opacity .35s steps(3, end);
   &.active { opacity: 1; }
 }
 
-/* ── Glass panel ────────────────────────────── */
-.glass-panel {
-  background: rgba(255,255,255,.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,.4);
-  box-shadow: 0 4px 40px rgba(115,92,0,.05), inset 0 1px 0 rgba(255,255,255,.6);
-  transition: background .3s, box-shadow .3s;
-  &:hover {
-    background: rgba(255,255,255,.75);
-    box-shadow: 0 8px 50px rgba(115,92,0,.08), inset 0 1px 0 rgba(255,255,255,.8);
-  }
+/* ══ Brutalist design system ═════════════════ */
+
+/* Card: hard border + offset shadow. Replaces the old glass panel. */
+.glass-panel,
+.brut-card {
+  background: #ffffff;
+  border: 3px solid #111;
+  box-shadow: 6px 6px 0 #111;
+  transition: transform .15s ease, box-shadow .15s ease;
 }
 
-/* ── Premium hover card ─────────────────────── */
-.premium-hover {
-  transition: transform .4s cubic-bezier(.25,.46,.45,.94), box-shadow .4s ease;
+.brut-hover {
   &:hover {
-    transform: translateY(-4px) scale(1.005);
-    box-shadow: 0 20px 60px rgba(115,92,0,.12), 0 8px 20px rgba(135,80,64,.06);
+    transform: translate(-2px, -2px);
+    box-shadow: 10px 10px 0 #111;
   }
 }
+.premium-hover { @extend .brut-hover; }
 
-/* ── Cert image wrapper ─────────────────────── */
+/* Pressed-in interaction (buttons) */
+.btn-primary,
+.brut-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: #ffd43a;
+  color: #111;
+  border: 3px solid #111;
+  box-shadow: 5px 5px 0 #111;
+  font-family: "Space Mono", monospace;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+  &:hover  { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 #111; background: #ffe066; }
+  &:active { transform: translate(3px,3px);  box-shadow: 0 0 0 #111; }
+}
+
+.btn-outline,
+.brut-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: #ffffff;
+  color: #111;
+  border: 3px solid #111;
+  box-shadow: 5px 5px 0 #111;
+  font-family: "Space Mono", monospace;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+  &:hover  { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 #111; background: #ffd43a; }
+  &:active { transform: translate(3px,3px);  box-shadow: 0 0 0 #111; }
+}
+
+.gradient-btn { @extend .brut-btn; border-radius: 0 !important; }
+
+/* Mono micro label */
+.brut-label {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+/* Tag chip */
+.feature-pill,
+.brut-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: #fff;
+  border: 2px solid #111;
+  box-shadow: 3px 3px 0 #111;
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #111;
+}
+
+/* Sticker (rotated badge) */
+.sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 3px solid #111;
+  box-shadow: 4px 4px 0 #111;
+  font-family: "Space Mono", monospace;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+/* Retro window chrome */
+.win {
+  background: #fff;
+  border: 3px solid #111;
+  box-shadow: 8px 8px 0 #111;
+}
+.win-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #111;
+  color: #f3efe6;
+  font-family: "Space Mono", monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  user-select: none;
+  .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #f3efe6; flex-shrink: 0; }
+  .dot-r { background: #ff5227; }
+  .dot-y { background: #ffd43a; }
+  .dot-g { background: #38c172; }
+}
+
+/* Marquee band */
+.marquee-band {
+  overflow: hidden;
+  white-space: nowrap;
+  background: #111;
+  color: #f3efe6;
+  border-top: 3px solid #111;
+  border-bottom: 3px solid #111;
+  user-select: none;
+}
+.marquee-track {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 22s linear infinite;
+  will-change: transform;
+  font-family: "Archivo Black", "Noto Sans TC", sans-serif;
+  span { display: inline-block; padding: 12px 0; }
+  .sep { color: #ffd43a; padding: 0 20px; }
+}
+.marquee-band:hover .marquee-track { animation-play-state: paused; }
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+}
+
+/* Spinning asterisk decoration */
+.spin-slow { animation: spin 9s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin-slow { animation: none; } }
+
+/* Image glitch-jitter on hover */
+.glitch-hover {
+  &:hover img { animation: jitter .3s steps(2, end) 2; }
+}
+@keyframes jitter {
+  0%   { transform: translate(0,0); filter: none; }
+  25%  { transform: translate(-3px,2px); filter: hue-rotate(40deg) saturate(1.6); }
+  50%  { transform: translate(3px,-2px); filter: none; }
+  75%  { transform: translate(-2px,-2px); filter: hue-rotate(-40deg) saturate(1.4); }
+  100% { transform: translate(0,0); filter: none; }
+}
+
+/* Outlined display text */
+.text-stroke {
+  color: transparent;
+  -webkit-text-stroke: 2px #111;
+}
+
+/* ── Shared layout utilities (kept names) ───── */
+.section-py {
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+@media (min-width: 768px) {
+  .section-py { padding-top: 120px; padding-bottom: 120px; }
+}
+
+/* Display font weight: Archivo Black is single-weight (400); CJK fallback
+   needs 900 so Chinese headings match the Latin blackness */
+.font-display, .section-heading {
+  font-weight: 900;
+}
+
+/* Section heading: mono index + massive display */
+.section-heading {
+  font-family: "Archivo Black", "Noto Sans TC", sans-serif;
+  font-size: 40px;
+  line-height: 1.05;
+  color: #111;
+  margin-bottom: 40px;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+@media (min-width: 768px) {
+  .section-heading { font-size: 72px; margin-bottom: 56px; }
+}
+
+/* Footer / small nav link */
+.link-sm {
+  display: block;
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #f3efe6;
+  transition: all .15s;
+  &:hover { color: #ffd43a; transform: translate(-1px,-1px); }
+}
+
+/* Cert image wrapper */
 .cert-img-wrap {
   cursor: pointer;
   position: relative;
   overflow: hidden;
   &::after {
-    content: '🔍';
+    content: '+ ZOOM';
     position: absolute;
     top: 10px; right: 10px;
-    background: rgba(115,92,0,.8);
-    color: #fff;
+    background: #111;
+    color: #ffd43a;
     padding: 4px 10px;
-    border-radius: 12px;
-    font-size: .85rem;
+    border: 2px solid #ffd43a;
+    font-family: "Space Mono", monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .1em;
     opacity: 0;
-    transition: opacity .3s;
+    transition: opacity .2s;
   }
   &:hover::after { opacity: 1; }
 }
 
-/* ── Gradient CTA button ────────────────────── */
-.gradient-btn {
-  background: linear-gradient(135deg, #fdb5a1 0%, #d4af37 100%);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 4px 16px rgba(212,175,55,0.2);
-  color: #554300;
-  &:hover {
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 6px 24px rgba(212,175,55,0.35);
+/* ── Custom cursor ─────────────────────────── */
+@media (pointer: fine) {
+  .cursor-dot, .cursor-ring {
+    position: fixed;
+    top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
   }
+  .cursor-dot {
+    width: 8px; height: 8px;
+    background: #111;
+    transform: translate(-50%, -50%);
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 2px solid #111;
+    transform: translate(-50%, -50%);
+    transition: width .18s ease, height .18s ease, background .18s ease, opacity .18s ease;
+    mix-blend-mode: multiply;
+    &.is-hover {
+      width: 56px; height: 56px;
+      background: rgba(255, 212, 58, .85);
+      border-color: #111;
+    }
+  }
+}
+@media (pointer: coarse) {
+  .cursor-dot, .cursor-ring { display: none; }
 }
 
 /* ── Mobile safe area for bottom nav ───────── */
@@ -152,102 +356,11 @@ body {
   }
 }
 
-/* ══ Shared design-system utilities ════════════
-   Centralise these here so a single change updates
-   every section that uses them.
-   ─────────────────────────────────────────── */
-
-/* Vertical section padding — replaces inline py-[120px] */
-.section-py {
-  padding-top:    80px;
-  padding-bottom: 80px;
-}
-@media (min-width: 768px) {
-  .section-py { padding-top: 120px; padding-bottom: 120px; }
-}
-
-/* Section h2 base style — add alignment utilities on top */
-.section-heading {
-  font-size:     32px;
-  line-height:   1.2;
-  color:         #1e1b18;   /* on-surface */
-  margin-bottom: 32px;
-}
-@media (min-width: 768px) {
-  .section-heading { font-size: 48px; margin-bottom: 48px; }
-}
-
-/* Primary filled action button */
-.btn-primary {
-  display:        inline-flex;
-  align-items:    center;
-  gap:            8px;
-  padding:        16px 32px;
-  background-color: #735c00; /* primary */
-  color:          #ffffff;
-  border-radius:  6px;
-  font-size:      12px;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  transition:     all .3s;
-  &:hover {
-    transform:  translateY(-4px);
-    box-shadow: 0 15px 30px rgba(212,175,55,.3);
-  }
-}
-
-/* Outlined / ghost action button */
-.btn-outline {
-  display:         inline-flex;
-  align-items:     center;
-  gap:             8px;
-  padding:         16px 32px;
-  border:          1px solid #7f7663; /* outline */
-  background-color: rgba(255,248,245,.4);
-  backdrop-filter: blur(8px);
-  color:           #1e1b18; /* on-surface */
-  border-radius:   6px;
-  font-size:       12px;
-  letter-spacing:  .1em;
-  text-transform:  uppercase;
-  transition:      all .3s;
-  &:hover {
-    background-color: rgba(255,248,245,.6);
-    transform:        translateY(-4px);
-    border-color:     rgba(115,92,0,.5);
-    box-shadow:       0 15px 30px rgba(253,181,161,.3);
-  }
-}
-
-/* Footer / small nav link — replaces repeated inline styles */
-.link-sm {
-  display:        block;
-  font-size:      11px;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color:          #875040; /* secondary */
-  transition:     all .2s;
-  &:hover { color: #735c00; transform: translateY(-4px); }
-}
-
-/* Feature pill / badge inside product sections */
-.feature-pill {
-  display:        inline-flex;
-  align-items:    center;
-  gap:            6px;
-  padding:        6px 14px;
-  border-radius:  999px;
-  font-size:      11px;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  background-color: rgba(115,92,0,.08); /* primary/8 */
-  color:          #735c00;              /* primary */
-  border:         1px solid rgba(115,92,0,.15);
-}
-::-webkit-scrollbar        { width: 8px; }
-::-webkit-scrollbar-track  { background: #f5ece7; }
-::-webkit-scrollbar-thumb  { background: #e1d8d4; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #d3c5ad; }
+/* ── Scrollbar ─────────────────────────────── */
+::-webkit-scrollbar        { width: 12px; }
+::-webkit-scrollbar-track  { background: #f3efe6; border-left: 3px solid #111; }
+::-webkit-scrollbar-thumb  { background: #111; }
+::-webkit-scrollbar-thumb:hover { background: #ff5227; }
 
 /* ── Material Symbols ──────────────────────── */
 .material-symbols-outlined {
@@ -261,5 +374,5 @@ body {
   white-space: nowrap;
   word-wrap: normal;
   direction: ltr;
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
 }

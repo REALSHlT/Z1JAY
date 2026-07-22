@@ -1,36 +1,41 @@
-<section id="experience" class="section-py max-w-3xl mx-auto">
-  <h2 class="section-heading text-center md:text-left" appScrollReveal>過去經歷</h2>
+<section id="experience" class="section-py">
+  <div class="max-w-[1440px] mx-auto px-5 md:px-12">
 
-  <div class="glass-panel rounded-lg p-8 md:p-12 relative overflow-hidden premium-hover" appScrollReveal>
-    <div class="border-l border-secondary-container/50 pl-8 space-y-16 ml-4 md:ml-0 relative z-10">
+  <div class="flex items-end gap-4 mb-10 md:mb-14" appScrollReveal>
+    <span class="brut-label text-punch">04 /</span>
+    <h2 class="section-heading !mb-0">過去經歷</h2>
+  </div>
 
-      @for (entry of experiences; track entry.year; let i = $index) {
-        <div class="relative" appScrollReveal revealClass="reveal-left" [revealDelay]="(i + 1) * 100">
+  <div class="flex flex-col gap-8 max-w-4xl">
+    @for (entry of experiences; track entry.year; let i = $index) {
+      <div class="brut-card brut-hover grid md:grid-cols-12 gap-4 md:gap-8 p-6 md:p-8 relative"
+           [class.md:-rotate-[0.4deg]]="i % 2 === 0"
+           [class.md:rotate-[0.4deg]]="i % 2 === 1"
+           appScrollReveal [revealClass]="i % 2 === 0 ? 'reveal-left' : 'reveal-right'">
 
-          <!-- Timeline dot -->
-          <div class="absolute -left-[37px] top-1.5 w-3 h-3 rounded-sm ring-4 ring-surface"
-               [class.bg-primary]="entry.highlight"
-               [class.bg-surface-variant]="!entry.highlight"
-               [style.boxShadow]="entry.highlight ? '0 0 10px rgba(212,175,55,0.5)' : 'none'">
-          </div>
+        @if (entry.highlight) {
+          <span class="sticker bg-punch text-white absolute -top-4 right-6 rotate-2 !text-[10px]">Highlight</span>
+        }
 
-          <div class="flex flex-col gap-1">
-            <span class="text-[12px] tracking-widest uppercase"
-                  [class.text-primary]="entry.highlight"
-                  [class.text-secondary]="!entry.highlight">{{ entry.year }}</span>
-            <h3 class="text-[28px] leading-[1.3] text-on-surface mt-2">
-              {{ entry.title }}
-              <span class="text-secondary font-normal">&#64; {{ entry.org }}</span>
-            </h3>
-            <p class="text-[16px] leading-[1.6] text-on-surface-variant mt-2 max-w-2xl">
-              {{ entry.description }}
-            </p>
-          </div>
-
+        <!-- Giant year -->
+        <div class="md:col-span-3 flex md:justify-center items-start">
+          <span class="font-display text-[40px] md:text-[56px] leading-none"
+                [class.text-punch]="entry.highlight"
+                [class.text-stroke]="!entry.highlight">{{ entry.year }}</span>
         </div>
-      }
 
-    </div>
+        <div class="md:col-span-9">
+          <h3 class="font-display text-[20px] md:text-[24px] leading-[1.3]">
+            {{ entry.title }}
+          </h3>
+          <p class="brut-label text-on-surface-variant mt-1.5 normal-case">&#64; {{ entry.org }}</p>
+          <p class="text-[15px] leading-[1.8] text-on-surface-variant mt-3">
+            {{ entry.description }}
+          </p>
+        </div>
+      </div>
+    }
+  </div>
+
   </div>
 </section>
-

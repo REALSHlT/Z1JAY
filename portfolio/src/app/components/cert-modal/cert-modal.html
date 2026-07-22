@@ -1,14 +1,17 @@
 @if (modal.state().open) {
   <div id="certModalBackdrop"
-       class="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center"
+       class="fixed inset-0 z-[9999] bg-ink/90 flex items-center justify-center"
        (click)="onBackdropClick($event)">
     <button (click)="modal.close()"
-            class="absolute top-5 right-9 text-white text-5xl font-bold leading-none cursor-pointer
-                   hover:text-[#d4af37] transition-colors z-[10000]">&times;</button>
-    <img [src]="modal.state().src" [alt]="modal.state().alt"
-         class="max-w-[90%] max-h-[90vh] object-contain rounded-lg" />
-    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-white text-center px-6 py-3
-                bg-black/65 rounded-lg text-base whitespace-nowrap">
+            class="absolute top-5 right-8 w-12 h-12 bg-punch text-white border-[3px] border-white
+                   font-display text-2xl leading-none cursor-pointer
+                   hover:bg-acid hover:text-ink transition-colors z-[10000]">&times;</button>
+    <div class="bg-white border-[3px] border-white shadow-[10px_10px_0_#ffd43a] p-2 max-w-[90%] max-h-[90vh]">
+      <img [src]="modal.state().src" [alt]="modal.state().alt"
+           class="max-w-full max-h-[80vh] object-contain block" />
+    </div>
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 bg-ink text-paper border-2 border-paper
+                font-mono text-[12px] tracking-widest uppercase px-6 py-3 whitespace-nowrap">
       {{ modal.state().alt }}
     </div>
   </div>

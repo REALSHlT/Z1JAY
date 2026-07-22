@@ -1,46 +1,74 @@
-<section id="hero"
-  class="pt-24 pb-[80px] md:pt-[200px] md:pb-[120px]
-         flex flex-col items-center text-center
-         md:flex-row md:items-center md:text-left
-         gap-8 md:gap-6">
+<section id="hero" class="pt-24 md:pt-32 overflow-hidden">
 
-  <!-- Mobile portrait photo -->
-  <div class="md:hidden w-48 h-64 rounded-2xl overflow-hidden
-              shadow-[0_10px_40px_rgba(229,160,141,0.2)] relative"
-       appScrollReveal>
-    <img src="assets/images/myPic.jpg" alt="Z1JAY Portrait"
-         class="w-full h-full object-cover object-top" />
-    <div class="absolute inset-0 ring-1 ring-inset ring-white/20 rounded-2xl pointer-events-none"></div>
-  </div>
+  <div class="max-w-[1440px] mx-auto px-5 md:px-12 relative">
 
-  <!-- Text block -->
-  <div class="w-full md:w-5/12 space-y-4 md:space-y-6" appScrollReveal revealClass="reveal-left">
-    <h1 class="text-[32px] md:text-[40px] lg:text-[64px]
-               leading-[1.1] tracking-[-0.02em] text-on-surface">
-      Hello,<br/>I am Z. Jay
+    <!-- Top meta row -->
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6 md:mb-10" appScrollReveal>
+      <span class="brut-label text-on-surface-variant">Portfolio — 2026 Edition</span>
+      <span class="sticker bg-acid rotate-2 hidden sm:inline-flex">
+        <span class="w-2.5 h-2.5 rounded-full bg-punch inline-block animate-pulse"></span>
+        Open for work
+      </span>
+    </div>
+
+    <!-- ══ Giant wordmark ══ -->
+    <h1 class="font-display leading-[0.88] tracking-tight select-none relative" appScrollReveal>
+      <span class="block text-[clamp(64px,17vw,250px)] text-ink">
+        Z1JAY<sup class="text-punch text-[0.25em] align-super">™</sup>
+      </span>
+      <span class="block text-stroke text-[clamp(34px,8.2vw,120px)] uppercase mt-1 md:mt-3">
+        3D Artist × Animator
+      </span>
+
+      <!-- Spinning asterisk decoration -->
+      <svg class="spin-slow absolute -top-4 right-0 md:top-2 md:right-4 w-12 h-12 md:w-20 md:h-20 text-punch"
+           viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M11 0h2v9.2l6.5-6.5 1.4 1.4L14.4 10.6H24v2h-9.6l6.5 6.5-1.4 1.4-6.5-6.5V24h-2v-9.6l-6.5 6.5-1.4-1.4 6.5-6.5H0v-2h9.2L2.7 4.1l1.4-1.4L11 9.2V0z"/>
+      </svg>
     </h1>
-    <p class="text-[16px] md:text-[18px] leading-[1.6] text-on-surface-variant max-w-sm mx-auto md:mx-0 md:max-w-md">
-      嶺東科技大學數位媒體設計系碩士。在設計與技術之間尋找平衡，
-      來自 3D 設計背景，習於用建模、動畫與材質，將抽象概念具象化。
-    </p>
-    <div class="flex justify-center md:justify-start pt-1">
-      <a href="#contact"
-         class="gradient-btn inline-flex items-center gap-2
-                px-8 py-4 rounded-full text-[12px] tracking-widest uppercase
-                text-on-tertiary-container font-medium
-                hover:opacity-90 hover:scale-[1.02] transition-all duration-300">
-        聯繫我
-        <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>
-      </a>
+
+    <!-- ══ Intro row: photo polaroid + statement ══ -->
+    <div class="mt-10 md:mt-16 mb-16 md:mb-24 flex flex-col md:flex-row gap-10 md:gap-16 items-start">
+
+      <!-- Photo polaroid -->
+      <div class="relative mx-auto md:mx-0 flex-shrink-0" appScrollReveal revealClass="reveal-left"
+           [style.transform]="'translateY(' + parallaxY() + 'px)'">
+        <div class="w-56 md:w-72 bg-white border-[3px] border-ink shadow-brut-lg -rotate-2 p-3 pb-10 relative">
+          <img src="assets/images/myPic.jpg" alt="Z1JAY Portrait"
+               class="w-full aspect-[4/5] object-cover object-top border-2 border-ink" />
+          <span class="brut-label absolute bottom-3 left-3">Z. Jay — 林子傑</span>
+          <!-- Tape -->
+          <span class="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-6 bg-acid/90 border-2 border-ink rotate-1"></span>
+        </div>
+        <span class="sticker bg-volt text-white absolute -bottom-4 -right-2 rotate-3">Taichung · TW</span>
+      </div>
+
+      <!-- Statement -->
+      <div class="max-w-xl space-y-6" appScrollReveal revealClass="reveal-right">
+        <p class="text-[20px] md:text-[26px] leading-[1.6] font-bold">
+          嶺東科技大學數位媒體設計系碩士。<br class="hidden md:block"/>
+          在設計與技術之間尋找平衡 —
+          用<span class="bg-acid px-1 border-b-[3px] border-ink">建模</span>、<span class="bg-acid px-1 border-b-[3px] border-ink">動畫</span>與<span class="bg-acid px-1 border-b-[3px] border-ink">材質</span>，
+          將抽象概念具象化。
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <a href="#contact" class="brut-btn">
+            聯繫我
+            <span class="material-symbols-outlined" style="font-size:16px;">north_east</span>
+          </a>
+          <a href="#work" class="brut-btn-ghost">
+            看作品
+            <span class="material-symbols-outlined" style="font-size:16px;">south</span>
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Desktop photo (hidden on mobile) -->
-  <div class="hidden md:block w-full md:w-7/12" appScrollReveal revealClass="reveal-right" [revealDelay]="200"
-       [style.transform]="'translateY(' + parallaxY() + 'px)'">
-    <div class="aspect-[4/5] md:aspect-square w-full rounded-lg bg-surface-container overflow-hidden glass-panel border-none p-2 premium-hover">
-      <img src="assets/images/myPic.jpg" alt="Z1JAY Portrait"
-           class="w-full h-full object-cover object-top rounded-md" />
+  <!-- ══ Full-bleed marquee band ══ -->
+  <div class="marquee-band">
+    <div class="marquee-track text-[20px] md:text-[28px] uppercase">
+      <span>3D Modeling<i class="sep">✳</i>Rigging<i class="sep">✳</i>Shader Design<i class="sep">✳</i>3D Animation<i class="sep">✳</i>Motion Capture<i class="sep">✳</i>Simulation<i class="sep">✳</i>Frontend<i class="sep">✳</i>AI Engineer<i class="sep">✳</i></span><span>3D Modeling<i class="sep">✳</i>Rigging<i class="sep">✳</i>Shader Design<i class="sep">✳</i>3D Animation<i class="sep">✳</i>Motion Capture<i class="sep">✳</i>Simulation<i class="sep">✳</i>Frontend<i class="sep">✳</i>AI Engineer<i class="sep">✳</i></span>
     </div>
   </div>
 </section>

@@ -1,39 +1,47 @@
-<section id="contact" class="py-[120px] flex flex-col items-center justify-center text-center min-h-[614px]">
-  <h2 class="text-[40px] md:text-[64px] leading-[1.1] tracking-[-0.02em] text-on-surface mb-6 max-w-4xl"
-      appScrollReveal>
-    準備好打造下一個<br/>
-    <span class="text-primary italic inline-block hover:scale-105 transition-transform duration-500 cursor-default"
-          style="text-shadow:0 0 40px rgba(212,175,55,0.3);">非凡的專案了嗎？</span>
-  </h2>
+<section id="contact" class="pt-[100px] md:pt-[140px] overflow-hidden">
 
-  <p class="text-[18px] leading-[1.6] text-on-surface-variant max-w-lg"
-     appScrollReveal [revealDelay]="100">
-    台中市, 台灣 · 歡迎隨時聯繫，共同打造高品質的視覺體驗。
-  </p>
+  <div class="max-w-[1440px] mx-auto px-5 md:px-12 flex flex-col items-center text-center">
 
-  <div class="flex flex-col sm:flex-row gap-6 mt-12" appScrollReveal [revealDelay]="200">
-    <a [href]="links.social.email"
-       class="btn-primary">
-      <span class="material-symbols-outlined text-sm">mail</span> Email
-    </a>
-    <a [href]="links.social.phone"
-       class="btn-primary">
-      <span class="material-symbols-outlined text-sm">call</span> +886 984 527 128
-    </a>
-    <a [href]="links.social.instagram" target="_blank" rel="noopener"
-       class="btn-outline">
-      <span class="material-symbols-outlined text-sm">alternate_email</span> Instagram
-    </a>
+    <span class="sticker bg-acid -rotate-2 mb-8" appScrollReveal>
+      <span class="w-2.5 h-2.5 rounded-full bg-punch inline-block animate-pulse"></span>
+      Available for projects
+    </span>
+
+    <h2 class="font-display uppercase leading-[0.95] tracking-tight mb-6" appScrollReveal>
+      <span class="block text-[clamp(48px,10vw,140px)]">Let's Talk</span>
+      <span class="block text-[clamp(20px,3.6vw,44px)] mt-4">準備好打造下一個<mark class="bg-acid px-2">非凡的專案</mark>了嗎？</span>
+    </h2>
+
+    <p class="text-[16px] leading-[1.8] text-on-surface-variant max-w-lg" appScrollReveal [revealDelay]="100">
+      台中市, 台灣 · 歡迎隨時聯繫，共同打造高品質的視覺體驗。
+    </p>
+
+    <div class="flex flex-col sm:flex-row flex-wrap justify-center gap-5 mt-12" appScrollReveal [revealDelay]="200">
+      <a [href]="links.social.email" class="brut-btn">
+        <span class="material-symbols-outlined" style="font-size:16px;">mail</span> Email
+      </a>
+      <a [href]="links.social.phone" class="brut-btn-ghost">
+        <span class="material-symbols-outlined" style="font-size:16px;">call</span> +886 984 527 128
+      </a>
+      <a [href]="links.social.instagram" target="_blank" rel="noopener" class="brut-btn-ghost">
+        <span class="material-symbols-outlined" style="font-size:16px;">alternate_email</span> Instagram
+      </a>
+    </div>
+
+    <div class="flex flex-col sm:flex-row flex-wrap justify-center gap-5 mt-5 mb-20 md:mb-28" appScrollReveal [revealDelay]="300">
+      <a [href]="links.social.sketchfab" target="_blank" rel="noopener" class="brut-btn-ghost">
+        <span class="material-symbols-outlined" style="font-size:16px;">view_in_ar</span> Sketchfab
+      </a>
+      <a [href]="links.social.artstation" target="_blank" rel="noopener" class="brut-btn-ghost">
+        <span class="material-symbols-outlined" style="font-size:16px;">palette</span> ArtStation
+      </a>
+    </div>
   </div>
 
-  <div class="flex flex-col sm:flex-row gap-4 mt-4" appScrollReveal [revealDelay]="300">
-    <a [href]="links.social.sketchfab" target="_blank" rel="noopener"
-       class="btn-outline">
-      <span class="material-symbols-outlined text-sm">view_in_ar</span> Sketchfab
-    </a>
-    <a [href]="links.social.artstation" target="_blank" rel="noopener"
-       class="btn-outline">
-      <span class="material-symbols-outlined text-sm">palette</span> ArtStation
-    </a>
+  <!-- Full-bleed marquee before footer -->
+  <div class="marquee-band !border-b-0">
+    <div class="marquee-track text-[18px] md:text-[24px] uppercase">
+      <span>Let's build something wild<i class="sep">✳</i>將抽象概念具象化<i class="sep">✳</i>Open for work<i class="sep">✳</i>Z1JAY<i class="sep">✳</i></span><span>Let's build something wild<i class="sep">✳</i>將抽象概念具象化<i class="sep">✳</i>Open for work<i class="sep">✳</i>Z1JAY<i class="sep">✳</i></span>
+    </div>
   </div>
 </section>

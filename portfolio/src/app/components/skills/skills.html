@@ -1,83 +1,103 @@
-<section id="skills" class="section-py" appScrollReveal>
-  <h2 class="section-heading text-center md:text-left">核心專業</h2>
+<section id="skills" class="section-py">
+  <div class="max-w-[1440px] mx-auto px-5 md:px-12">
 
-  <!-- ── Desktop: tab + image switcher (hidden on mobile) ── -->
-  <div class="hidden md:flex flex-col md:flex-row gap-6">
-    <!-- Skill nav -->
-    <div class="w-full md:w-1/3 flex flex-col gap-4 border-l border-secondary-container/50 pl-6">
+  <div class="flex items-end gap-4 mb-10 md:mb-14" appScrollReveal>
+    <span class="brut-label text-punch">01 /</span>
+    <h2 class="section-heading !mb-0">核心專業</h2>
+  </div>
+
+  <!-- ── Desktop: numbered list + viewer window ── -->
+  <div class="hidden md:flex gap-10 items-stretch">
+
+    <!-- Skill list -->
+    <div class="w-1/3 flex flex-col border-[3px] border-ink bg-white shadow-brut" appScrollReveal revealClass="reveal-left">
       @for (skill of skills; track skill.en; let i = $index) {
         <button
           (click)="selectSkill(i)"
-          class="text-left py-2 relative group transition-colors duration-300"
-          [class.text-primary]="activeIndex() === i"
-          [class.text-secondary]="activeIndex() !== i">
-          <span class="absolute -left-7 top-1/2 -translate-y-1/2 w-1 bg-primary transition-all duration-300"
-                [style.height]="activeIndex() === i ? '100%' : '0'"></span>
-          <span class="text-[28px] leading-[1.3] block">{{ skill.en }}</span>
-          <span class="text-[16px] leading-[1.6] block mt-1 text-secondary"
-                [class.text-primary]="activeIndex() === i">{{ skill.zh }}</span>
+          class="group text-left px-6 py-4 flex items-center gap-4 border-b-2 border-ink/15 last:border-b-0 transition-colors"
+          [class.bg-acid]="activeIndex() === i"
+          [class.hover:bg-paper]="activeIndex() !== i">
+          <span class="font-mono font-bold text-[12px] w-8 flex-shrink-0"
+                [class.text-punch]="activeIndex() === i">{{ (i + 1) < 10 ? '0' + (i + 1) : i + 1 }}</span>
+          <span class="min-w-0">
+            <span class="block font-display text-[19px] leading-[1.2] truncate">{{ skill.en }}</span>
+            <span class="brut-label block mt-0.5 text-on-surface-variant">{{ skill.zh }}</span>
+          </span>
+          <span class="material-symbols-outlined ml-auto flex-shrink-0 transition-transform"
+                [class.translate-x-0]="activeIndex() === i"
+                [class.-translate-x-2]="activeIndex() !== i"
+                [class.opacity-0]="activeIndex() !== i"
+                style="font-size:20px;">arrow_forward</span>
         </button>
       }
     </div>
 
-    <!-- Skill display panel -->
-    <div class="w-full md:w-2/3 relative min-h-[500px] rounded-lg overflow-hidden glass-panel p-2">
-      <div class="w-full h-full rounded-md overflow-hidden relative skill-slider-container">
-        @for (skill of skills; track skill.en; let i = $index) {
-          <div class="skill-slide h-full" [class.active]="activeIndex() === i">
-            @if (skill.image) {
-              <img [src]="skill.image" [alt]="skill.zh"
-                   class="w-full h-full object-cover"
-                   (error)="onImageError($event)" />
-            } @else {
-              <div class="h-full flex flex-col items-center justify-center bg-surface-container-high p-8 relative">
-                <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.1),transparent_70%)]"></div>
-                <div class="relative z-10 text-center space-y-6 flex flex-col items-center">
-                  <div class="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 shadow-[0_0_40px_rgba(212,175,55,0.2)]">
-                    <span class="material-symbols-outlined text-4xl text-primary">
-                      {{ skill.icon ?? 'stars' }}
-                    </span>
+    <!-- Viewer window -->
+    <div class="w-2/3 win flex flex-col" appScrollReveal revealClass="reveal-right">
+      <div class="win-titlebar">
+        <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+        <span class="ml-2">skill_viewer.exe — {{ skills[activeIndex()].en }}</span>
+      </div>
+      <div class="flex-1 min-h-[460px] relative overflow-hidden">
+        <div class="skill-slider-container">
+          @for (skill of skills; track skill.en; let i = $index) {
+            <div class="skill-slide h-full" [class.active]="activeIndex() === i">
+              @if (skill.image) {
+                <img [src]="skill.image" [alt]="skill.zh"
+                     class="w-full h-full object-cover"
+                     (error)="onImageError($event)" />
+                <div class="absolute bottom-0 left-0 right-0 bg-white border-t-[3px] border-ink p-5">
+                  <h3 class="font-display text-[24px] mb-1">{{ skill.zh }}</h3>
+                  <p class="text-[14px] leading-[1.7] text-on-surface-variant">{{ skill.description }}</p>
+                </div>
+              } @else {
+                <div class="h-full flex flex-col items-center justify-center gap-6 p-10 bg-paper relative">
+                  <div class="absolute inset-0 opacity-40"
+                       style="background-image: radial-gradient(#111 1.5px, transparent 1.5px); background-size: 22px 22px;"></div>
+                  <div class="relative z-10 w-24 h-24 bg-acid border-[3px] border-ink shadow-brut flex items-center justify-center rotate-3">
+                    <span class="material-symbols-outlined" style="font-size:44px;">{{ skill.icon ?? 'stars' }}</span>
                   </div>
-                  <div>
-                    <h3 class="text-[40px] leading-[1.2] text-on-surface mb-2">{{ skill.zh }}</h3>
-                    <p class="text-[16px] leading-[1.6] text-on-surface-variant max-w-sm mx-auto">{{ skill.description }}</p>
+                  <div class="relative z-10 text-center max-w-md">
+                    <h3 class="font-display text-[32px] mb-3">{{ skill.zh }}</h3>
+                    <p class="text-[15px] leading-[1.8] text-on-surface-variant">{{ skill.description }}</p>
                   </div>
                 </div>
-              </div>
-            }
-          </div>
-        }
+              }
+            </div>
+          }
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ── Mobile: accordion (shown on mobile, hidden on desktop) ── -->
-  <div class="md:hidden flex flex-col gap-3">
+  <!-- ── Mobile: accordion ── -->
+  <div class="md:hidden flex flex-col gap-4">
     @for (skill of skills; track skill.en; let i = $index) {
-      <details class="group bg-surface-container-low rounded-xl border border-secondary/10
-                      shadow-[0_4px_20px_rgba(229,160,141,0.06)] overflow-hidden">
-        <summary class="flex justify-between items-center p-5 cursor-pointer list-none
-                        hover:bg-surface-container transition-colors duration-200">
-          <div>
-            <span class="block text-[16px] font-medium text-primary leading-tight">{{ skill.en }}</span>
-            <span class="block text-[13px] text-secondary mt-0.5">{{ skill.zh }}</span>
+      <details class="group bg-white border-[3px] border-ink shadow-brut-sm overflow-hidden">
+        <summary class="flex justify-between items-center p-4 cursor-pointer list-none">
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="font-mono font-bold text-[11px] text-punch flex-shrink-0">{{ (i + 1) < 10 ? '0' + (i + 1) : i + 1 }}</span>
+            <div class="min-w-0">
+              <span class="block font-display text-[16px] leading-tight truncate">{{ skill.en }}</span>
+              <span class="brut-label block mt-0.5 text-on-surface-variant">{{ skill.zh }}</span>
+            </div>
           </div>
-          <span class="material-symbols-outlined text-secondary/50 transition-transform duration-300
-                       group-open:rotate-180 flex-shrink-0 ml-3"
+          <span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180 flex-shrink-0 ml-3"
                 style="font-size:22px;">expand_more</span>
         </summary>
-        <div class="px-5 pb-5">
+        <div class="px-4 pb-4 border-t-2 border-ink/15 pt-3">
           @if (skill.image) {
             <img [src]="skill.image" [alt]="skill.zh"
-                 class="w-full h-40 object-cover rounded-lg mb-4"
+                 class="w-full h-40 object-cover border-2 border-ink mb-3"
                  (error)="onImageError($event)" />
           }
           @if (skill.description) {
-            <p class="text-[15px] leading-[1.7] text-on-surface-variant">{{ skill.description }}</p>
+            <p class="text-[14px] leading-[1.7] text-on-surface-variant">{{ skill.description }}</p>
           }
         </div>
       </details>
     }
   </div>
 
+  </div>
 </section>
