@@ -34,6 +34,16 @@ export class AiLab implements AfterViewInit, OnDestroy {
   /** section 在視窗內時背景才顯示；捲到過去經歷/證書認證時淡出 */
   readonly bgVisible = signal(false);
 
+  // ── 開始使用門檻：按下前 AI 面板不可操作 ──
+  readonly started = signal(false);
+  readonly gateGone = signal(false);
+
+  start(): void {
+    if (this.started()) return;
+    this.started.set(true);
+    setTimeout(() => this.gateGone.set(true), 650);
+  }
+
   ngAfterViewInit(): void {
     this.observer = new IntersectionObserver(
       ([entry]) => this.bgVisible.set(entry.isIntersecting),
@@ -48,6 +58,7 @@ export class AiLab implements AfterViewInit, OnDestroy {
   }
 
   async sendChat(): Promise<void> {
+    if (!this.started()) return;
     const prompt = this.chatInput.trim();
     if (!prompt || this.chatLoading()) return;
 
@@ -80,6 +91,7 @@ export class AiLab implements AfterViewInit, OnDestroy {
   }
 
   async generateImage(): Promise<void> {
+    if (!this.started()) return;
     const prompt = this.imageInput.trim();
     if (!prompt || this.imageLoading()) return;
 

@@ -15,7 +15,32 @@
     </p>
   </div>
 
-  <div class="relative z-10 grid md:grid-cols-2 gap-6">
+  <div class="relative z-10">
+
+    <!-- ── 開始使用門檻（按下前面板不可操作）── -->
+    @if (!gateGone()) {
+      <div class="ai-gate" [class.leaving]="started()">
+        <div class="flex flex-col items-center gap-5 text-center px-6">
+          <div class="w-16 h-16 rounded-full bg-primary/10 border border-primary/20
+                      flex items-center justify-center shadow-[0_0_40px_rgba(212,175,55,0.25)]">
+            <span class="material-symbols-outlined text-primary" style="font-size:30px;">rocket_launch</span>
+          </div>
+          <div>
+            <p class="text-[20px] text-on-surface font-semibold mb-1.5">準備好體驗 AI 了嗎？</p>
+            <p class="text-[13px] leading-[1.7] text-on-surface-variant max-w-sm">
+              互動功能由我自建的 Cloudflare Workers AI 服務驅動。<br/>
+              資源有限，每人每日有使用額度，請理性使用。
+            </p>
+          </div>
+          <button (click)="start()" class="btn-primary">
+            <span class="material-symbols-outlined" style="font-size:16px;">play_arrow</span>
+            開始使用
+          </button>
+        </div>
+      </div>
+    }
+
+    <div class="grid md:grid-cols-2 gap-6">
 
     <!-- ══ Chat panel ══════════════════════════ -->
     <div class="glass-panel rounded-2xl p-6 flex flex-col" appScrollReveal revealClass="reveal-left">
@@ -116,5 +141,6 @@
       </div>
     </div>
 
+    </div>
   </div>
 </section>
