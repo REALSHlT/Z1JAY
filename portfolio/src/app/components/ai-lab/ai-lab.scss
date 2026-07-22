@@ -1,0 +1,42 @@
+/* ── 生成圖片環境背景：模糊 + 半透明，隨捲動淡入淡出 ── */
+.ai-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 24px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(24px) saturate(1.15);
+  transform: scale(1.06); /* 避免模糊邊緣露出 */
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  pointer-events: none;
+
+  &.show {
+    opacity: 0.35;
+  }
+}
+
+/* ── 聊天等待中的跳動點 ── */
+.chat-dots {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+
+  i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #875040;
+    opacity: 0.4;
+    animation: chatDot 1.2s ease-in-out infinite;
+
+    &:nth-child(2) { animation-delay: 0.15s; }
+    &:nth-child(3) { animation-delay: 0.3s; }
+  }
+}
+
+@keyframes chatDot {
+  0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+  30%           { opacity: 1;    transform: translateY(-3px); }
+}

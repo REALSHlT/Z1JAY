@@ -1,0 +1,120 @@
+<section id="ai-lab" class="section-py relative">
+
+  <!-- ── 生成圖片的環境背景（模糊 + 半透明，離開區塊時淡出）── -->
+  @if (imageUrl()) {
+    <div class="ai-bg" [class.show]="bgVisible()" [style.background-image]="'url(' + imageUrl() + ')'"></div>
+  }
+
+  <!-- ── Section header ──────────────────────── -->
+  <div class="relative z-10">
+    <h2 class="section-heading text-center md:text-left" appScrollReveal>AI 測試</h2>
+    <p class="text-[15px] leading-[1.7] text-on-surface-variant max-w-2xl mb-10 md:mb-14 text-center md:text-left mx-auto md:mx-0"
+       appScrollReveal>
+      這個區塊直接串接我部署在 Cloudflare Workers AI 上的模型 —
+      左邊可以和 AI 聊天，右邊輸入描述即可生成圖片，生成的圖片會化為這個區塊的背景。
+    </p>
+  </div>
+
+  <div class="relative z-10 grid md:grid-cols-2 gap-6">
+
+    <!-- ══ Chat panel ══════════════════════════ -->
+    <div class="glass-panel rounded-2xl p-6 flex flex-col" appScrollReveal revealClass="reveal-left">
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined text-primary" style="font-size:20px;">smart_toy</span>
+        </div>
+        <div class="min-w-0">
+          <div class="text-[16px] font-semibold text-on-surface leading-tight">AI 聊天助手</div>
+          <p class="text-[11px] text-on-surface-variant mt-0.5">Llama 3.1 8B · Workers AI</p>
+        </div>
+      </div>
+
+      <div #chatScroll class="flex-1 min-h-[300px] max-h-[360px] overflow-y-auto rounded-xl bg-white/40 border border-white/50 p-4 space-y-3">
+        @if (messages().length === 0) {
+          <div class="h-full min-h-[260px] flex flex-col items-center justify-center gap-3 text-center">
+            <span class="material-symbols-outlined text-primary/40" style="font-size:40px;">forum</span>
+            <p class="text-[13px] text-on-surface-variant">輸入任何問題開始對話</p>
+          </div>
+        }
+        @for (msg of messages(); track $index) {
+          <div class="flex" [class.justify-end]="msg.role === 'user'">
+            <div class="max-w-[85%] px-4 py-2.5 rounded-2xl text-[14px] leading-[1.6] whitespace-pre-wrap break-words"
+                 [class]="msg.role === 'user'
+                   ? 'bg-primary text-white rounded-br-md'
+                   : 'bg-white/80 text-on-surface border border-white/60 rounded-bl-md'">{{ msg.content }}</div>
+          </div>
+        }
+        @if (chatLoading()) {
+          <div class="flex">
+            <div class="px-4 py-2.5 rounded-2xl rounded-bl-md bg-white/80 border border-white/60">
+              <span class="chat-dots"><i></i><i></i><i></i></span>
+            </div>
+          </div>
+        }
+      </div>
+
+      @if (chatError()) {
+        <p class="text-[12px] text-red-600 mt-2">{{ chatError() }}</p>
+      }
+
+      <div class="flex gap-2 mt-4">
+        <input type="text" [(ngModel)]="chatInput" (keyup.enter)="sendChat()"
+               placeholder="想聊點什麼？"
+               class="flex-1 min-w-0 px-4 py-3 rounded-xl bg-white/60 border border-white/60 text-[14px] text-on-surface
+                      placeholder:text-on-surface-variant/60 outline-none focus:border-primary/40 transition-colors" />
+        <button (click)="sendChat()" [disabled]="chatLoading()"
+                class="btn-primary !px-5 !py-3 disabled:opacity-50 disabled:pointer-events-none flex-shrink-0">
+          <span class="material-symbols-outlined" style="font-size:18px;">send</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ Image generation panel ══════════════ -->
+    <div class="glass-panel rounded-2xl p-6 flex flex-col" appScrollReveal revealClass="reveal-right">
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-secondary/10 border border-secondary/20 flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined text-secondary" style="font-size:20px;">palette</span>
+        </div>
+        <div class="min-w-0">
+          <div class="text-[16px] font-semibold text-on-surface leading-tight">AI 生圖</div>
+          <p class="text-[11px] text-on-surface-variant mt-0.5">DreamShaper 8 LCM · Workers AI</p>
+        </div>
+      </div>
+
+      <div class="flex-1 min-h-[300px] max-h-[360px] rounded-xl bg-white/40 border border-white/50 overflow-hidden relative flex items-center justify-center">
+        @if (imageUrl()) {
+          <img [src]="imageUrl()" alt="AI 生成圖片" class="w-full h-full object-contain" />
+        } @else if (!imageLoading()) {
+          <div class="flex flex-col items-center justify-center gap-3 text-center p-6">
+            <span class="material-symbols-outlined text-secondary/40" style="font-size:40px;">image</span>
+            <p class="text-[13px] text-on-surface-variant">輸入描述生成圖片（英文效果較佳）<br/>生成後會成為這個區塊的背景</p>
+          </div>
+        }
+        @if (imageLoading()) {
+          <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/60 backdrop-blur-sm">
+            <span class="material-symbols-outlined text-secondary animate-spin" style="font-size:32px;">progress_activity</span>
+            <p class="text-[13px] text-on-surface-variant">生成中，約需數秒…</p>
+          </div>
+        }
+      </div>
+
+      @if (imageError()) {
+        <p class="text-[12px] text-red-600 mt-2">{{ imageError() }}</p>
+      }
+
+      <div class="flex gap-2 mt-4">
+        <input type="text" [(ngModel)]="imageInput" (keyup.enter)="generateImage()"
+               placeholder="a cozy cabin in snowy forest…"
+               class="flex-1 min-w-0 px-4 py-3 rounded-xl bg-white/60 border border-white/60 text-[14px] text-on-surface
+                      placeholder:text-on-surface-variant/60 outline-none focus:border-secondary/40 transition-colors" />
+        <button (click)="generateImage()" [disabled]="imageLoading()"
+                class="btn-primary !px-5 !py-3 disabled:opacity-50 disabled:pointer-events-none flex-shrink-0">
+          <span class="material-symbols-outlined" style="font-size:18px;">auto_awesome</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>

@@ -16,6 +16,9 @@ export const LINKS = {
   platforms: {
     sketchfabModel: 'https://sketchfab.com/models/193ce9edac9c4576a6131ff7d588ec2b/embed',
   },
+  ai: {
+    worker: 'https://z1jay-ai.z1jay.workers.dev',
+  },
   font: {
     lxgwWenKai: 'https://github.com/lxgw/LxgwWenKai',
     cdn:        'https://fontsapi.zeoseven.com/292/main/result.css',

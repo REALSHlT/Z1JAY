@@ -5,6 +5,7 @@ import { Skills } from './components/skills/skills';
 import { Projects } from './components/projects/projects';
 import { Platforms } from './components/platforms/platforms';
 import { Experience } from './components/experience/experience';
+import { AiLab } from './components/ai-lab/ai-lab';
 import { Certifications } from './components/certifications/certifications';
 import { Contact } from './components/contact/contact';
 import { Footer } from './components/footer/footer';
@@ -20,6 +21,7 @@ import { CertModal } from './components/cert-modal/cert-modal';
     Projects,
     Platforms,
     Experience,
+    AiLab,
     Certifications,
     Contact,
     Footer,
