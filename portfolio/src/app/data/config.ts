@@ -34,7 +34,7 @@ export type SkillEntry = {
 export const SKILLS: SkillEntry[] = [
   { en: '3D Modeling',      zh: '3D 建模與材質', image: 'assets/images/TheGentleTrigger.png',
     description: '精細的多邊形建模與 PBR 材質系統，應用於角色、道具與場景的高品質視覺化。' },
-  { en: 'Rigging',          zh: '骨架設計',       image: 'assets/images/TheGentleTrigger.png',
+  { en: 'Rigging',          zh: '骨架設計',       icon: 'accessibility_new',
     description: '精確的骨架綁定與蒙皮权重調整，打造自然流暢的角色關節與臉部控制系統。' },
   { en: 'Shader',           zh: '著色器設計',     image: 'assets/images/Order.png',
     description: '客製化 HLSL / GLSL 著色器與 NPR 風格渲染，實現高度個性化的視覺風格。' },

@@ -19,7 +19,7 @@ export class Platforms {
       'https://sketchfab.com/models/193ce9edac9c4576a6131ff7d588ec2b/embed'
     );
     this.webPhotoUrl = sanitizer.bypassSecurityTrustResourceUrl(
-      'https://imtdgo.github.io/WebPhoto'
+      'https://snapbrify.com/'
     );
   }
 }
