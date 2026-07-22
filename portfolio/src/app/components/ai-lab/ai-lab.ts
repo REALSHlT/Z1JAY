@@ -64,11 +64,13 @@ export class AiLab implements AfterViewInit, OnDestroy {
         // Worker 上限 20 則訊息，保留最近 12 則對話脈絡
         body: JSON.stringify({ messages: this.messages().slice(-12) }),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) throw new Error(String(res.status));
       const data = await res.json();
       this.messages.update((m) => [...m, { role: 'assistant', content: data.response ?? '(無回應)' }]);
-    } catch {
-      this.chatError.set('連線失敗，請稍後再試');
+    } catch (err) {
+      this.chatError.set(
+        (err as Error).message === '429' ? '訊息傳太快囉，休息一下再試' : '連線失敗，請稍後再試',
+      );
       this.messages.update((m) => m.slice(0, -1));
       this.chatInput = prompt;
     } finally {
@@ -90,14 +92,16 @@ export class AiLab implements AfterViewInit, OnDestroy {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, width: 768, height: 768 }),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) throw new Error(String(res.status));
       const blob = await res.blob();
 
       if (this.bgObjectUrl) URL.revokeObjectURL(this.bgObjectUrl);
       this.bgObjectUrl = URL.createObjectURL(blob);
       this.imageUrl.set(this.bgObjectUrl);
-    } catch {
-      this.imageError.set('生成失敗，請稍後再試');
+    } catch (err) {
+      this.imageError.set(
+        (err as Error).message === '429' ? '生圖太頻繁囉（每分鐘最多 3 張），休息一下再試' : '生成失敗，請稍後再試',
+      );
     } finally {
       this.imageLoading.set(false);
     }

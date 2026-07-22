@@ -8,5 +8,14 @@
   },
   "observability": {
     "enabled": true
-  }
+  },
+  // Per-IP rate limiting with exact counters (per-minute + per-day)
+  "durable_objects": {
+    "bindings": [
+      { "name": "IP_LIMITER", "class_name": "IpLimiter" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["IpLimiter"] }
+  ]
 }

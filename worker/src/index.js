@@ -28,6 +28,12 @@ const MAX_PROMPT_CHARS = 4000;
 const MAX_MESSAGES = 20;
 const MAX_OUTPUT_TOKENS = 1024;
 
+/** 每 IP 用量上限（滾動視窗：60 秒 / 24 小時） */
+const RATE_LIMITS = {
+  chat:  { perMinute: 10, perDay: 100 },
+  image: { perMinute: 3,  perDay: 20 },
+};
+
 function corsHeaders(request) {
   const origin = request.headers.get('Origin') ?? '';
   return {
@@ -44,6 +50,65 @@ function json(data, status, cors) {
     status,
     headers: { 'Content-Type': 'application/json; charset=utf-8', ...cors },
   });
+}
+
+/** POST 只接受來自允許網域的瀏覽器請求（curl 等無 Origin 的請求一律擋掉） */
+function checkOrigin(request, cors) {
+  const origin = request.headers.get('Origin') ?? '';
+  if (!ALLOWED_ORIGINS.includes(origin)) {
+    return json({ error: 'forbidden origin' }, 403, cors);
+  }
+  return null;
+}
+
+/** 每 IP 精確限速（Durable Object 計數）；超過回 429 */
+async function checkRateLimit(request, env, kind, cors) {
+  const ip = request.headers.get('CF-Connecting-IP') ?? '0.0.0.0';
+  const stub = env.IP_LIMITER.get(env.IP_LIMITER.idFromName(ip));
+  const res = await stub.fetch('https://limiter/', {
+    method: 'POST',
+    body: JSON.stringify({ kind, limits: RATE_LIMITS[kind] }),
+  });
+  const verdict = await res.json();
+  if (!verdict.ok) {
+    return json(
+      {
+        error: 'rate limited',
+        scope: verdict.daily ? 'day' : 'minute',
+        message: verdict.daily ? '今日免費額度已用完，明天再來吧' : '請求太頻繁，請稍後再試',
+      },
+      429,
+      cors,
+    );
+  }
+  return null;
+}
+
+/** 每個 IP 一個實例，維護分鐘/每日兩層計數器 */
+export class IpLimiter {
+  constructor(ctx) {
+    this.ctx = ctx;
+  }
+
+  async fetch(request) {
+    const { kind, limits } = await request.json();
+    const now = Date.now();
+
+    const state = (await this.ctx.storage.get(kind)) ?? {
+      m: 0, mReset: now + 60_000,
+      d: 0, dReset: now + 86_400_000,
+    };
+    if (now >= state.mReset) { state.m = 0; state.mReset = now + 60_000; }
+    if (now >= state.dReset) { state.d = 0; state.dReset = now + 86_400_000; }
+
+    if (state.d >= limits.perDay)    return Response.json({ ok: false, daily: true });
+    if (state.m >= limits.perMinute) return Response.json({ ok: false, daily: false });
+
+    state.m += 1;
+    state.d += 1;
+    await this.ctx.storage.put(kind, state);
+    return Response.json({ ok: true });
+  }
 }
 
 async function handleChat(request, env, cors) {
@@ -139,10 +204,14 @@ export default {
       }
 
       if (request.method === 'POST' && pathname === '/chat') {
+        const blocked = checkOrigin(request, cors) ?? (await checkRateLimit(request, env, 'chat', cors));
+        if (blocked) return blocked;
         return await handleChat(request, env, cors);
       }
 
       if (request.method === 'POST' && pathname === '/image') {
+        const blocked = checkOrigin(request, cors) ?? (await checkRateLimit(request, env, 'image', cors));
+        if (blocked) return blocked;
         return await handleImage(request, env, cors);
       }
 
