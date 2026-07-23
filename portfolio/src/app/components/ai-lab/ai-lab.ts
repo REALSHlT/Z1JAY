@@ -178,23 +178,17 @@ export class AiLab implements AfterViewInit, OnDestroy {
       picks.push({ h: (base.h + 120 * picks.length) % 360, s: base.s, l: base.l });
     }
 
-    // 角色分配：最亮 → acid（大面積底色），其餘依序 punch / volt
+    // 角色分配：最亮 → acid（大面積主色），其餘依序 punch / volt。
+    // 紙色與墨色（背景）刻意不動 — 版面保持穩定，強調色的變化才顯眼。
     const byLightness = [...picks].sort((a, b) => b.l - a.l);
-    const acid  = this.clampHsl(byLightness[0], [0.65, 1], [0.55, 0.7]);
-    const punch = this.clampHsl(byLightness[1], [0.6, 0.95], [0.48, 0.6]);
-    const volt  = this.clampHsl(byLightness[2], [0.55, 0.9], [0.42, 0.58]);
-
-    // 紙色與墨色：染上主色相的極淡 / 極深版本
-    const domH = ranked[0].h;
-    const paper: Hsl = { h: domH, s: 0.24, l: 0.94 };
-    const ink:   Hsl = { h: domH, s: 0.3,  l: 0.08 };
+    const acid  = this.clampHsl(byLightness[0], [0.7, 1], [0.55, 0.68]);
+    const punch = this.clampHsl(byLightness[1], [0.65, 1], [0.48, 0.6]);
+    const volt  = this.clampHsl(byLightness[2], [0.6, 0.95], [0.42, 0.58]);
 
     const root = document.documentElement.style;
     root.setProperty('--acid-rgb',  this.hslToTriplet(acid));
     root.setProperty('--punch-rgb', this.hslToTriplet(punch));
     root.setProperty('--volt-rgb',  this.hslToTriplet(volt));
-    root.setProperty('--paper-rgb', this.hslToTriplet(paper));
-    root.setProperty('--ink-rgb',   this.hslToTriplet(ink));
     this.themed.set(true);
   }
 
