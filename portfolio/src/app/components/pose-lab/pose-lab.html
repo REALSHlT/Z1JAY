@@ -1,0 +1,96 @@
+<section id="pose-lab" class="section-py relative overflow-hidden">
+  <!-- Comic decorations -->
+  <div class="hidden md:block absolute top-12 left-6 w-56 h-40 halftone-volt opacity-40 -rotate-2 pointer-events-none"></div>
+
+  <div class="max-w-[1440px] mx-auto px-5 md:px-12 relative">
+
+    <div class="flex items-end gap-4 mb-6" appScrollReveal>
+      <span class="brut-label text-punch">06 /</span>
+      <h2 class="section-heading !mb-0">動態捕捉 Live</h2>
+      <span class="sticker bg-acid rotate-2 hidden md:inline-flex mb-2 ml-4">On-Device AI</span>
+      <span class="burst w-24 h-24 rotate-12 hidden lg:inline-flex ml-auto -mb-4 !text-[11px]">No<br/>Server!</span>
+    </div>
+    <p class="text-[15px] leading-[1.8] text-on-surface-variant max-w-2xl mb-10 md:mb-14" appScrollReveal>
+      動態捕捉是我的核心專業之一 — 這裡讓它直接發生在你的瀏覽器裡：
+      MoveNet 姿態估計模型（INT8 量化，2.8MB）以 LiteRT.js 在<strong>你的裝置上</strong>即時推論，
+      追蹤 17 個骨架關鍵點。<strong>影像完全不離開你的電腦</strong>，沒有任何伺服器參與。
+    </p>
+
+    <div class="win max-w-3xl mx-auto md:-rotate-[0.3deg]" appScrollReveal revealClass="reveal-scale">
+      <div class="win-titlebar">
+        <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+        <span class="ml-2">pose.exe — movenet lightning</span>
+        @if (backend()) {
+          <span class="ml-auto bg-acid text-ink px-2 py-0.5 text-[10px] border border-paper">{{ backend() }}</span>
+        }
+      </div>
+
+      <div class="p-5">
+        <!-- 顯示區 -->
+        <div class="relative border-2 border-ink bg-ink aspect-[4/3] overflow-hidden flex items-center justify-center">
+
+          <video #video playsinline muted class="hidden"></video>
+          <canvas #display class="w-full h-full object-contain" [class.hidden]="state() !== 'running'"></canvas>
+
+          @if (state() !== 'running') {
+            <div class="flex flex-col items-center justify-center gap-5 text-center p-8">
+              @if (state() === 'idle' || state() === 'error') {
+                <div class="w-16 h-16 bg-volt border-[3px] border-ink shadow-brut flex items-center justify-center rotate-3">
+                  <span class="material-symbols-outlined text-white" style="font-size:30px;">accessibility_new</span>
+                </div>
+                <p class="text-paper text-[14px] leading-[1.8] max-w-sm">
+                  第一步會下載 AI 引擎與模型（共約 6MB）並在本機編譯，<br class="hidden md:block"/>之後才需要鏡頭權限。
+                </p>
+                <button (click)="initEngine()" class="brut-btn">
+                  <span class="material-symbols-outlined" style="font-size:16px;">memory</span>
+                  載入 AI 引擎
+                </button>
+              }
+              @if (state() === 'loading') {
+                <span class="material-symbols-outlined text-acid animate-spin" style="font-size:36px;">progress_activity</span>
+                <p class="brut-label text-paper">{{ statusText() }}</p>
+              }
+              @if (state() === 'ready') {
+                <div class="w-16 h-16 bg-acid border-[3px] border-ink shadow-brut flex items-center justify-center -rotate-3">
+                  <span class="material-symbols-outlined" style="font-size:30px;">videocam</span>
+                </div>
+                <p class="brut-label text-paper !normal-case">{{ statusText() }}</p>
+                <button (click)="startCamera()" class="brut-btn">
+                  <span class="material-symbols-outlined" style="font-size:16px;">play_arrow</span>
+                  開啟鏡頭
+                </button>
+              }
+            </div>
+          }
+
+          @if (state() === 'running') {
+            <div class="absolute top-3 left-3 flex items-center gap-2">
+              <span class="brut-tag !bg-ink !text-acid !border-acid">
+                <span class="w-2 h-2 rounded-full bg-punch inline-block animate-pulse"></span>
+                LIVE
+              </span>
+              <span class="brut-tag !bg-ink !text-paper !border-paper">{{ fps() }} FPS</span>
+            </div>
+            <button (click)="stopCamera()"
+                    class="absolute bottom-3 right-3 brut-tag !bg-punch !text-white !border-white cursor-pointer hover:!bg-ink transition-colors">
+              <span class="material-symbols-outlined" style="font-size:14px;">stop</span>
+              停止
+            </button>
+          }
+        </div>
+
+        @if (errorText()) {
+          <p class="brut-label text-punch mt-3 !normal-case">{{ errorText() }}</p>
+        }
+
+        <div class="flex flex-wrap gap-3 mt-4">
+          <span class="brut-tag"><span class="material-symbols-outlined" style="font-size:14px;">deployed_code</span>LiteRT.js</span>
+          <span class="brut-tag"><span class="material-symbols-outlined" style="font-size:14px;">compress</span>INT8 Quantized</span>
+          <span class="brut-tag"><span class="material-symbols-outlined" style="font-size:14px;">skeleton</span>17 Keypoints</span>
+          <span class="brut-tag"><span class="material-symbols-outlined" style="font-size:14px;">visibility_off</span>100% On-Device</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>

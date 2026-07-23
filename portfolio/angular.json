@@ -49,6 +49,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/@litertjs/core/wasm",
+                "output": "assets/litert-wasm"
               }
             ],
             "styles": [
