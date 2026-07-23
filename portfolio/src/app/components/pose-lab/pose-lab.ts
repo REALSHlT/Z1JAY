@@ -1,19 +1,19 @@
 import { Component, ElementRef, OnDestroy, ViewChild, signal } from '@angular/core';
 import { ScrollRevealDirective } from '../../directives/scroll-reveal.directive';
+import type {
+  FilesetResolver as FilesetResolverT,
+  PoseLandmarker as PoseLandmarkerT,
+  FaceLandmarker as FaceLandmarkerT,
+  NormalizedLandmark,
+} from '@mediapipe/tasks-vision';
 
-/** COCO 17 關鍵點的骨架連線（MoveNet 輸出順序） */
-const SKELETON: ReadonlyArray<[number, number]> = [
-  [0, 1], [0, 2], [1, 3], [2, 4],        // 頭部
-  [5, 6], [5, 7], [7, 9], [6, 8], [8, 10], // 手臂
-  [5, 11], [6, 12], [11, 12],             // 軀幹
-  [11, 13], [13, 15], [12, 14], [14, 16], // 腿
-];
-
-const MODEL_URL = 'assets/models/movenet-lightning-int8.tflite';
-const WASM_DIR = 'assets/litert-wasm/';
-const SCORE_THRESHOLD = 0.3;
-
+type Mode = 'pose' | 'face';
 type EngineState = 'idle' | 'loading' | 'ready' | 'running' | 'error';
+type Conn = { start: number; end: number };
+
+const WASM_PATH = 'assets/mediapipe-wasm';
+const POSE_MODEL = 'assets/models/pose_landmarker_lite.task';
+const FACE_MODEL = 'assets/models/face_landmarker.task';
 
 @Component({
   selector: 'app-pose-lab',
@@ -29,51 +29,69 @@ export class PoseLab implements OnDestroy {
   readonly state = signal<EngineState>('idle');
   readonly statusText = signal('');
   readonly backend = signal('');
-  readonly fps = signal(0);
   readonly errorText = signal('');
+  readonly mode = signal<Mode>('pose');
 
-  // LiteRT 相關（動態載入，避免拖慢首頁）
-  private litert?: typeof import('@litertjs/core');
-  private model?: import('@litertjs/core').CompiledModel;
-  private inputDtype: 'uint8' | 'float32' | 'int32' = 'uint8';
-  private inputSize = 192;
+  private pose?: PoseLandmarkerT;
+  private face?: FaceLandmarkerT;
+  private poseConnections: Conn[] = [];
+  private faceMesh: Conn[] = [];
+  private faceOval: Conn[] = [];
 
   private stream?: MediaStream;
+  private facingMode: 'user' | 'environment' = 'user';
   private rafId = 0;
   private running = false;
-  private inferring = false;
-  private sampleCanvas = document.createElement('canvas');
-  private lastFrameTime = 0;
+  private lastVideoTime = -1;
 
-  /** 步驟一：載入 WASM 引擎與模型（不需要鏡頭權限） */
+  /** 步驟一：載入 MediaPipe WASM 與兩個模型（不需要鏡頭權限） */
   async initEngine(): Promise<void> {
     if (this.state() !== 'idle' && this.state() !== 'error') return;
     this.state.set('loading');
     this.errorText.set('');
 
     try {
-      this.statusText.set('載入 LiteRT.js WASM 引擎…');
-      this.litert = await import('@litertjs/core');
-      await this.litert.loadLiteRt(WASM_DIR);
+      this.statusText.set('載入 MediaPipe 引擎…');
+      const vision = await import('@mediapipe/tasks-vision');
+      const { FilesetResolver, PoseLandmarker, FaceLandmarker } = vision;
 
-      this.statusText.set('下載並編譯 MoveNet 模型（2.8MB）…');
-      let accelerator: 'webgpu' | 'wasm' = 'webgpu';
+      const fileset = await (FilesetResolver as typeof FilesetResolverT).forVisionTasks(WASM_PATH);
+
+      this.statusText.set('下載並編譯骨架 + 臉部模型（約 9MB）…');
+      let delegate: 'GPU' | 'CPU' = 'GPU';
       try {
-        this.model = await this.litert.loadAndCompile(MODEL_URL, { accelerator: 'webgpu' });
+        [this.pose, this.face] = await Promise.all([
+          (PoseLandmarker as typeof PoseLandmarkerT).createFromOptions(fileset, {
+            baseOptions: { modelAssetPath: POSE_MODEL, delegate: 'GPU' },
+            runningMode: 'VIDEO',
+            numPoses: 1,
+          }),
+          (FaceLandmarker as typeof FaceLandmarkerT).createFromOptions(fileset, {
+            baseOptions: { modelAssetPath: FACE_MODEL, delegate: 'GPU' },
+            runningMode: 'VIDEO',
+            numFaces: 1,
+          }),
+        ]);
       } catch {
-        accelerator = 'wasm';
-        this.model = await this.litert.loadAndCompile(MODEL_URL, { accelerator: 'wasm' });
+        delegate = 'CPU';
+        [this.pose, this.face] = await Promise.all([
+          (PoseLandmarker as typeof PoseLandmarkerT).createFromOptions(fileset, {
+            baseOptions: { modelAssetPath: POSE_MODEL, delegate: 'CPU' },
+            runningMode: 'VIDEO',
+            numPoses: 1,
+          }),
+          (FaceLandmarker as typeof FaceLandmarkerT).createFromOptions(fileset, {
+            baseOptions: { modelAssetPath: FACE_MODEL, delegate: 'CPU' },
+            runningMode: 'VIDEO',
+            numFaces: 1,
+          }),
+        ]);
       }
-      this.backend.set(accelerator === 'webgpu' ? 'WebGPU · GPU 加速' : 'WASM · XNNPACK CPU');
 
-      const input = this.model.getInputDetails()[0];
-      console.info('[pose.exe] input:', JSON.stringify(this.model.getInputDetails()),
-                   'output:', JSON.stringify(this.model.getOutputDetails()));
-      this.inputDtype = (input.dtype as typeof this.inputDtype) ?? 'uint8';
-      // shape 形如 [1, H, W, 3]
-      if (input.shape?.length === 4) this.inputSize = Number(input.shape[1]) || 192;
-      this.sampleCanvas.width = this.inputSize;
-      this.sampleCanvas.height = this.inputSize;
+      this.poseConnections = (PoseLandmarker as typeof PoseLandmarkerT).POSE_CONNECTIONS as Conn[];
+      this.faceMesh = (FaceLandmarker as typeof FaceLandmarkerT).FACE_LANDMARKS_TESSELATION as Conn[];
+      this.faceOval = (FaceLandmarker as typeof FaceLandmarkerT).FACE_LANDMARKS_FACE_OVAL as Conn[];
+      this.backend.set(delegate === 'GPU' ? 'GPU · WebGL 加速' : 'CPU · WASM');
 
       this.state.set('ready');
       this.statusText.set('引擎就緒 — 開啟鏡頭開始追蹤');
@@ -83,14 +101,17 @@ export class PoseLab implements OnDestroy {
     }
   }
 
-  /** 步驟二：開鏡頭並開始即時推論 */
+  /** 步驟二：開鏡頭並開始即時追蹤 */
   async startCamera(): Promise<void> {
     if (this.state() !== 'ready') return;
-    this.errorText.set('');
+    await this.openStream();
+  }
 
+  private async openStream(): Promise<void> {
+    this.errorText.set('');
     try {
       this.stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: this.facingMode },
         audio: false,
       });
       const video = this.videoRef!.nativeElement;
@@ -102,16 +123,32 @@ export class PoseLab implements OnDestroy {
       display.height = video.videoHeight;
 
       this.running = true;
+      this.lastVideoTime = -1;
       this.state.set('running');
       this.statusText.set('');
       this.loop();
     } catch (err) {
+      this.state.set('ready');
       this.errorText.set(
         (err as Error)?.name === 'NotAllowedError'
           ? '需要鏡頭權限才能體驗 — 影像只在你的瀏覽器內處理，不會上傳'
           : `鏡頭開啟失敗：${(err as Error)?.message ?? err}`,
       );
     }
+  }
+
+  /** 前後鏡頭切換 */
+  async flipCamera(): Promise<void> {
+    if (this.state() !== 'running') return;
+    this.facingMode = this.facingMode === 'user' ? 'environment' : 'user';
+    this.running = false;
+    cancelAnimationFrame(this.rafId);
+    this.stream?.getTracks().forEach((t) => t.stop());
+    await this.openStream();
+  }
+
+  setMode(m: Mode): void {
+    this.mode.set(m);
   }
 
   stopCamera(): void {
@@ -123,110 +160,125 @@ export class PoseLab implements OnDestroy {
       this.state.set('ready');
       this.statusText.set('已停止 — 可再次開啟鏡頭');
     }
-    this.fps.set(0);
   }
 
   ngOnDestroy(): void {
     this.stopCamera();
-    this.model?.delete();
+    this.pose?.close();
+    this.face?.close();
   }
 
   private loop = (): void => {
     if (!this.running) return;
     this.rafId = requestAnimationFrame(this.loop);
-    if (this.inferring) return; // 上一幀還在推論就跳過
-    void this.inferFrame();
+    this.processFrame();
   };
 
-  private async inferFrame(): Promise<void> {
+  private processFrame(): void {
     const video = this.videoRef?.nativeElement;
     const display = this.displayRef?.nativeElement;
-    if (!video || !display || !this.model || !this.litert) return;
-    this.inferring = true;
+    if (!video || !display || video.readyState < 2) return;
+    if (video.currentTime === this.lastVideoTime) return; // 同一影格不重算
+    this.lastVideoTime = video.currentTime;
 
-    try {
-      // 取樣：把當前影格縮到模型輸入尺寸
-      const sctx = this.sampleCanvas.getContext('2d', { willReadFrequently: true })!;
-      sctx.drawImage(video, 0, 0, this.inputSize, this.inputSize);
-      const { data } = sctx.getImageData(0, 0, this.inputSize, this.inputSize);
-
-      const px = this.inputSize * this.inputSize;
-      let typed: Uint8Array<ArrayBuffer> | Float32Array<ArrayBuffer> | Int32Array<ArrayBuffer>;
-      if (this.inputDtype === 'float32') typed = new Float32Array(px * 3);
-      else if (this.inputDtype === 'int32') typed = new Int32Array(px * 3);
-      else typed = new Uint8Array(px * 3);
-      for (let i = 0, j = 0; i < px * 4; i += 4) {
-        typed[j++] = data[i];
-        typed[j++] = data[i + 1];
-        typed[j++] = data[i + 2];
-      }
-
-      const input = new this.litert.Tensor(typed, [1, this.inputSize, this.inputSize, 3]);
-      const outputs = await this.model.run(input);
-      input.delete();
-
-      const first = Array.isArray(outputs) ? outputs[0] : outputs;
-      const cpu = await first.moveTo('wasm');
-      const kp = cpu.toTypedArray() as Float32Array; // [1,1,17,3] → y,x,score
-      cpu.delete();
-      if (Array.isArray(outputs)) outputs.forEach((o) => { try { o.delete(); } catch { /* moved */ } });
-
-      this.drawFrame(video, display, kp);
-
-      // FPS
-      const now = performance.now();
-      if (this.lastFrameTime) this.fps.set(Math.round(1000 / (now - this.lastFrameTime)));
-      this.lastFrameTime = now;
-    } catch (err) {
-      this.running = false;
-      this.errorText.set(`推論錯誤：${(err as Error)?.message ?? err}`);
-      this.stopCamera();
-    } finally {
-      this.inferring = false;
-    }
-  }
-
-  private drawFrame(video: HTMLVideoElement, display: HTMLCanvasElement, kp: Float32Array): void {
+    const ts = performance.now();
+    const mirror = this.facingMode === 'user';
     const ctx = display.getContext('2d')!;
     const w = display.width;
     const h = display.height;
 
-    // 鏡像顯示
+    // 鏡像顯示影像
     ctx.save();
-    ctx.scale(-1, 1);
-    ctx.drawImage(video, -w, 0, w, h);
+    if (mirror) { ctx.translate(w, 0); ctx.scale(-1, 1); }
+    ctx.drawImage(video, 0, 0, w, h);
     ctx.restore();
 
-    const pt = (i: number) => ({
-      x: w - kp[i * 3 + 1] * w, // 鏡像後 x 反轉
-      y: kp[i * 3] * h,
-      score: kp[i * 3 + 2],
-    });
+    const acid = this.themeColor('--acid-rgb');
+    const punch = this.themeColor('--punch-rgb');
+    const ink = this.themeColor('--ink-rgb');
 
-    // 骨架線
+    try {
+      if (this.mode() === 'pose' && this.pose) {
+        const res = this.pose.detectForVideo(video, ts);
+        for (const lms of res.landmarks ?? []) this.drawPose(ctx, lms, w, h, mirror, acid, punch, ink);
+      } else if (this.mode() === 'face' && this.face) {
+        const res = this.face.detectForVideo(video, ts);
+        for (const lms of res.faceLandmarks ?? []) this.drawFace(ctx, lms, w, h, mirror, acid, punch);
+      }
+    } catch {
+      // 單一影格偵測失敗就跳過，不中斷串流
+    }
+  }
+
+  private drawPose(
+    ctx: CanvasRenderingContext2D, lms: NormalizedLandmark[], w: number, h: number,
+    mirror: boolean, acid: string, punch: string, ink: string,
+  ): void {
+    const X = (lm: NormalizedLandmark) => (mirror ? 1 - lm.x : lm.x) * w;
+    const Y = (lm: NormalizedLandmark) => lm.y * h;
+
+    ctx.strokeStyle = acid;
     ctx.lineWidth = 4;
-    ctx.strokeStyle = `rgb(${getComputedStyle(document.documentElement).getPropertyValue('--acid-rgb').trim().split(' ').join(',')})`;
-    for (const [a, b] of SKELETON) {
-      const p1 = pt(a);
-      const p2 = pt(b);
-      if (p1.score < SCORE_THRESHOLD || p2.score < SCORE_THRESHOLD) continue;
-      ctx.beginPath();
-      ctx.moveTo(p1.x, p1.y);
-      ctx.lineTo(p2.x, p2.y);
-      ctx.stroke();
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (const c of this.poseConnections) {
+      const a = lms[c.start], b = lms[c.end];
+      if (!a || !b) continue;
+      ctx.moveTo(X(a), Y(a));
+      ctx.lineTo(X(b), Y(b));
     }
+    ctx.stroke();
 
-    // 關鍵點
-    ctx.fillStyle = `rgb(${getComputedStyle(document.documentElement).getPropertyValue('--punch-rgb').trim().split(' ').join(',')})`;
-    for (let i = 0; i < 17; i++) {
-      const p = pt(i);
-      if (p.score < SCORE_THRESHOLD) continue;
+    ctx.fillStyle = punch;
+    ctx.strokeStyle = ink;
+    ctx.lineWidth = 2;
+    for (const lm of lms) {
       ctx.beginPath();
-      ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+      ctx.arc(X(lm), Y(lm), 5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = '#111';
-      ctx.lineWidth = 2;
       ctx.stroke();
     }
+  }
+
+  private drawFace(
+    ctx: CanvasRenderingContext2D, lms: NormalizedLandmark[], w: number, h: number,
+    mirror: boolean, acid: string, punch: string,
+  ): void {
+    const X = (lm: NormalizedLandmark) => (mirror ? 1 - lm.x : lm.x) * w;
+    const Y = (lm: NormalizedLandmark) => lm.y * h;
+
+    // 細網格（tesselation）
+    ctx.strokeStyle = this.rgba('--acid-rgb', 0.55);
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    for (const c of this.faceMesh) {
+      const a = lms[c.start], b = lms[c.end];
+      if (!a || !b) continue;
+      ctx.moveTo(X(a), Y(a));
+      ctx.lineTo(X(b), Y(b));
+    }
+    ctx.stroke();
+
+    // 臉部輪廓加粗
+    ctx.strokeStyle = punch;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (const c of this.faceOval) {
+      const a = lms[c.start], b = lms[c.end];
+      if (!a || !b) continue;
+      ctx.moveTo(X(a), Y(a));
+      ctx.lineTo(X(b), Y(b));
+    }
+    ctx.stroke();
+  }
+
+  private themeColor(varName: string): string {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    return `rgb(${v.split(/\s+/).join(',')})`;
+  }
+
+  private rgba(varName: string, alpha: number): string {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    return `rgba(${v.split(/\s+/).join(',')},${alpha})`;
   }
 }

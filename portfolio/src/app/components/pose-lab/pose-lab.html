@@ -7,25 +7,43 @@
     <div class="flex items-end gap-4 mb-6" appScrollReveal>
       <span class="brut-label text-punch">06 /</span>
       <h2 class="section-heading !mb-0">動態捕捉 Live</h2>
-      <span class="sticker bg-acid rotate-2 hidden md:inline-flex mb-2 ml-4">On-Device AI</span>
+      <span class="sticker inline-flex bg-acid rotate-2 hidden md:inline-flex mb-2 ml-4">On-Device AI</span>
       <span class="burst w-24 h-24 rotate-12 hidden lg:inline-flex ml-auto -mb-4 !text-[11px]">No<br/>Server!</span>
     </div>
     <p class="text-[15px] leading-[1.8] text-on-surface-variant max-w-2xl mb-10 md:mb-14" appScrollReveal>
       動態捕捉是我的核心專業之一 — 這裡讓它直接發生在你的瀏覽器裡：
-      MoveNet 姿態估計模型（INT8 量化，2.8MB）以 LiteRT.js 在<strong>你的裝置上</strong>即時推論，
-      追蹤 17 個骨架關鍵點。<strong>影像完全不離開你的電腦</strong>，沒有任何伺服器參與。
+      MediaPipe 以 <strong>你的裝置</strong>即時追蹤全身骨架（33 點）或臉部網格（478 點）。
+      <strong>影像完全不離開你的電腦</strong>，沒有任何伺服器參與。
     </p>
 
     <div class="win max-w-3xl mx-auto md:-rotate-[0.3deg]" appScrollReveal revealClass="reveal-scale">
       <div class="win-titlebar">
         <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-        <span class="ml-2">pose.exe — movenet lightning</span>
+        <span class="ml-2">mocap.exe — mediapipe</span>
         @if (backend()) {
           <span class="ml-auto bg-acid text-ink px-2 py-0.5 text-[10px] border border-paper">{{ backend() }}</span>
         }
       </div>
 
       <div class="p-5">
+        <!-- 模式切換（引擎就緒後就顯示） -->
+        @if (state() === 'ready' || state() === 'running') {
+          <div class="flex gap-3 mb-4">
+            <button (click)="setMode('pose')"
+                    class="brut-tag cursor-pointer transition-colors"
+                    [class]="mode() === 'pose' ? 'brut-tag !bg-ink !text-acid !border-ink cursor-pointer' : 'brut-tag cursor-pointer hover:bg-acid'">
+              <span class="material-symbols-outlined" style="font-size:14px;">accessibility_new</span>
+              骨架
+            </button>
+            <button (click)="setMode('face')"
+                    class="brut-tag cursor-pointer transition-colors"
+                    [class]="mode() === 'face' ? 'brut-tag !bg-ink !text-acid !border-ink cursor-pointer' : 'brut-tag cursor-pointer hover:bg-acid'">
+              <span class="material-symbols-outlined" style="font-size:14px;">face</span>
+              臉部網格
+            </button>
+          </div>
+        }
+
         <!-- 顯示區 -->
         <div class="relative border-2 border-ink bg-ink aspect-[4/3] overflow-hidden flex items-center justify-center">
 
@@ -39,7 +57,7 @@
                   <span class="material-symbols-outlined text-white" style="font-size:30px;">accessibility_new</span>
                 </div>
                 <p class="text-paper text-[14px] leading-[1.8] max-w-sm">
-                  第一步會下載 AI 引擎與模型（共約 6MB）並在本機編譯，<br class="hidden md:block"/>之後才需要鏡頭權限。
+                  第一步會下載 AI 引擎與模型（共約 10MB）並在本機編譯，<br class="hidden md:block"/>之後才需要鏡頭權限。
                 </p>
                 <button (click)="initEngine()" class="brut-btn">
                   <span class="material-symbols-outlined" style="font-size:16px;">memory</span>
@@ -69,13 +87,19 @@
                 <span class="w-2 h-2 rounded-full bg-punch inline-block animate-pulse"></span>
                 LIVE
               </span>
-              <span class="brut-tag !bg-ink !text-paper !border-paper">{{ fps() }} FPS</span>
             </div>
-            <button (click)="stopCamera()"
-                    class="absolute bottom-3 right-3 brut-tag !bg-punch !text-white !border-white cursor-pointer hover:!bg-ink transition-colors">
-              <span class="material-symbols-outlined" style="font-size:14px;">stop</span>
-              停止
-            </button>
+            <div class="absolute bottom-3 right-3 flex items-center gap-2">
+              <button (click)="flipCamera()"
+                      class="brut-tag !bg-ink !text-paper !border-paper cursor-pointer hover:!bg-volt transition-colors">
+                <span class="material-symbols-outlined" style="font-size:14px;">flip_camera_ios</span>
+                翻轉
+              </button>
+              <button (click)="stopCamera()"
+                      class="brut-tag !bg-punch !text-white !border-white cursor-pointer hover:!bg-ink transition-colors">
+                <span class="material-symbols-outlined" style="font-size:14px;">stop</span>
+                停止
+              </button>
+            </div>
           }
         </div>
 
@@ -84,9 +108,9 @@
         }
 
         <div class="flex flex-wrap gap-3 mt-4">
-          <span class="brut-tag"><span class="material-symbols-outlined" style="font-size:14px;">deployed_code</span>LiteRT.js</span>
-          <span class="brut-tag"><span class="material-symbols-outlined" style="font-size:14px;">compress</span>INT8 Quantized</span>
-          <span class="brut-tag"><span class="material-symbols-outlined" style="font-size:14px;">skeleton</span>17 Keypoints</span>
+          <span class="brut-tag"><span class="material-symbols-outlined" style="font-size:14px;">deployed_code</span>MediaPipe</span>
+          <span class="brut-tag"><span class="material-symbols-outlined" style="font-size:14px;">skeleton</span>33 + 478 Landmarks</span>
+          <span class="brut-tag"><span class="material-symbols-outlined" style="font-size:14px;">bolt</span>WebGL / WASM</span>
           <span class="brut-tag"><span class="material-symbols-outlined" style="font-size:14px;">visibility_off</span>100% On-Device</span>
         </div>
       </div>

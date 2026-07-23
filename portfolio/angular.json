@@ -52,8 +52,8 @@
               },
               {
                 "glob": "**/*",
-                "input": "node_modules/@litertjs/core/wasm",
-                "output": "assets/litert-wasm"
+                "input": "node_modules/@mediapipe/tasks-vision/wasm",
+                "output": "assets/mediapipe-wasm"
               }
             ],
             "styles": [
