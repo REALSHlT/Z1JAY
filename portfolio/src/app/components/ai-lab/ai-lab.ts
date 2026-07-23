@@ -4,7 +4,24 @@ import { ScrollRevealDirective } from '../../directives/scroll-reveal.directive'
 import { LINKS } from '../../data/config';
 import { ThemeService } from '../../services/theme.service';
 
-type ChatMessage = { role: 'user' | 'assistant'; content: string };
+type Msg = { role: 'user' | 'assistant'; content: string; imageLoading?: boolean; imageUrl?: string };
+type Mode = 'cloud' | 'local';
+type LocalState = 'idle' | 'loading' | 'ready' | 'error';
+
+const LOCAL_MODEL_ID = 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC';
+
+/** 本地模型用的精簡個資 + 生圖指令（雲端的系統提示在 Worker 端） */
+const LOCAL_SYSTEM_PROMPT = `你是在訪客瀏覽器內運行的本地 AI 助手，代表這個作品集網站的主人 Z1JAY（林子傑）。訪客問到「站主／他／你的主人」都是指 Z1JAY。
+
+Z1JAY 檔案：
+- 台灣台中人，嶺東科技大學數位媒體設計系碩士（2024）。3D 藝術家／動畫師，也做前端與 AI。
+- 技能：3D 建模、Rigging 骨架、著色器、3D 動畫、動態捕捉、3D 模擬、3D 燈光、AI 工程。
+- 代表作：《The Gentle Trigger》(碩士3D動畫)、《骨牌物語》(NPR,台中市府)、《Order》(UE5遊戲,聲控)、《Where is Noddy?》(VR動捕,高雄電影節)。
+- 個人產品 Snapbrify(snapbrify.com)：照片轉 PBR 材質。聯絡：Email w6619willy@gmail.com、IG @z_jay_0723。
+
+規則：
+- 用訪客的語言回答；中文一律用繁體中文，簡潔（2-3 句）。不知道就說不知道，別編造。你是助手不是本人，用第三人稱介紹他。
+- 當訪客想看圖、或一張圖能幫助說明時，在整段回答最後附上一行 [IMAGE: 英文的圖像描述]。標記會被自動換成圖片，訪客看不到它，所以標記前後不要再寫「另起一行」「以下是圖片」等字。不需要圖時就不要輸出標記。`;
 
 @Component({
   selector: 'app-ai-lab',
@@ -21,32 +38,44 @@ export class AiLab implements AfterViewInit, OnDestroy {
 
   @ViewChild('chatScroll') chatScroll?: ElementRef<HTMLDivElement>;
 
-  // ── Chat ──
-  readonly messages = signal<ChatMessage[]>([]);
+  // ── 模式：雲端 / 本地 ──
+  readonly mode = signal<Mode>('cloud');
+
+  // ── 雲端：開始使用門檻（防一載入就打 API）──
+  readonly cloudStarted = signal(false);
+
+  // ── 本地：WebLLM 載入狀態 ──
+  readonly localState = signal<LocalState>('idle');
+  readonly localProgress = signal(0);
+  readonly localProgressText = signal('');
+  readonly localError = signal('');
+  private engine?: import('@mlc-ai/web-llm').MLCEngine;
+
+  readonly isMobile =
+    (navigator as unknown as { userAgentData?: { mobile?: boolean } }).userAgentData?.mobile ??
+    /Mobi|Android|iPhone|iPad/.test(navigator.userAgent);
+
+  // ── 對話 ──
+  readonly messages = signal<Msg[]>([]);
   chatInput = '';
-  readonly chatLoading = signal(false);
+  readonly generating = signal(false);
   readonly chatError = signal('');
 
-  // ── Image generation ──
-  imageInput = '';
-  readonly imageLoading = signal(false);
-  readonly imageError = signal('');
-  readonly imageUrl = signal('');
-
-  /** 目前是否套用了由生成圖片取出的主題色（共用 service 狀態） */
-  readonly themed = this.theme.themed;
-
-  /** section 在視窗內時背景才顯示；捲到過去經歷/證書認證時淡出 */
+  // ── 生成圖片作為區塊模糊背景 ──
+  readonly bgUrl = signal('');
   readonly bgVisible = signal(false);
 
-  // ── 開始使用門檻：按下前 AI 面板不可操作 ──
-  readonly started = signal(false);
-  readonly gateGone = signal(false);
+  /** 目前模式是否可以聊天 */
+  readonly ready = () => (this.mode() === 'cloud' ? this.cloudStarted() : this.localState() === 'ready');
+  readonly themed = this.theme.themed;
 
-  start(): void {
-    if (this.started()) return;
-    this.started.set(true);
-    setTimeout(() => this.gateGone.set(true), 650);
+  display(content: string): string {
+    return content
+      .replace(/\[IMAGE:[^\]]*\]/gi, '')
+      // 清掉模型可能複誦的指令殘句
+      .replace(/(另起一行|以下是?(生成的)?圖片?|這是(生成的)?圖片?|幫你生成.*?圖片?)[:：]?\s*$/g, '')
+      .replace(/[:：]\s*$/, '')
+      .trim();
   }
 
   ngAfterViewInit(): void {
@@ -62,77 +91,157 @@ export class AiLab implements AfterViewInit, OnDestroy {
     if (this.bgObjectUrl) URL.revokeObjectURL(this.bgObjectUrl);
   }
 
-  async sendChat(): Promise<void> {
-    if (!this.started()) return;
-    const prompt = this.chatInput.trim();
-    if (!prompt || this.chatLoading()) return;
-
-    this.chatInput = '';
+  setMode(m: Mode): void {
+    this.mode.set(m);
     this.chatError.set('');
-    this.messages.update((m) => [...m, { role: 'user', content: prompt }]);
-    this.chatLoading.set(true);
-    this.scrollChatToBottom();
-
-    try {
-      const res = await fetch(`${LINKS.ai.worker}/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        // Worker 上限 20 則訊息，保留最近 12 則對話脈絡
-        body: JSON.stringify({ messages: this.messages().slice(-12) }),
-      });
-      if (!res.ok) throw new Error(String(res.status));
-      const data = await res.json();
-      this.messages.update((m) => [...m, { role: 'assistant', content: data.response ?? '(無回應)' }]);
-    } catch (err) {
-      this.chatError.set(
-        (err as Error).message === '429' ? '訊息傳太快囉，休息一下再試' : '連線失敗，請稍後再試',
-      );
-      this.messages.update((m) => m.slice(0, -1));
-      this.chatInput = prompt;
-    } finally {
-      this.chatLoading.set(false);
-      this.scrollChatToBottom();
-    }
   }
 
-  async generateImage(): Promise<void> {
-    if (!this.started()) return;
-    const prompt = this.imageInput.trim();
-    if (!prompt || this.imageLoading()) return;
-
-    this.imageError.set('');
-    this.imageLoading.set(true);
-
-    try {
-      const res = await fetch(`${LINKS.ai.worker}/image`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, width: 768, height: 768 }),
-      });
-      if (!res.ok) throw new Error(String(res.status));
-      const blob = await res.blob();
-
-      if (this.bgObjectUrl) URL.revokeObjectURL(this.bgObjectUrl);
-      this.bgObjectUrl = URL.createObjectURL(blob);
-      this.imageUrl.set(this.bgObjectUrl);
-
-      // 從生成圖片取色，替整個網站換上同色系主題
-      this.theme.applyFromImage(blob).catch(() => { /* 取色失敗就維持原主題 */ });
-    } catch (err) {
-      this.imageError.set(
-        (err as Error).message === '429' ? '生圖太頻繁囉（每分鐘最多 3 張），休息一下再試' : '生成失敗，請稍後再試',
-      );
-    } finally {
-      this.imageLoading.set(false);
-    }
+  startCloud(): void {
+    this.cloudStarted.set(true);
   }
 
-  /** 恢復網站預設配色 */
   resetTheme(): void {
     this.theme.reset();
   }
 
-  private scrollChatToBottom(): void {
+  /** 載入本地模型（一次性下載 + 快取） */
+  async loadLocal(): Promise<void> {
+    if (this.localState() !== 'idle' && this.localState() !== 'error') return;
+    this.localState.set('loading');
+    this.localError.set('');
+    this.localProgress.set(0);
+    this.localProgressText.set('正在快取中…');
+    try {
+      const webllm = await import('@mlc-ai/web-llm');
+      this.engine = await webllm.CreateMLCEngine(LOCAL_MODEL_ID, {
+        initProgressCallback: (r: import('@mlc-ai/web-llm').InitProgressReport) => {
+          this.localProgress.set(Math.round((r.progress ?? 0) * 100));
+          this.localProgressText.set(r.text?.includes('Loading') ? '編譯模型中…' : '正在快取中…');
+        },
+      });
+      this.localState.set('ready');
+    } catch (err) {
+      this.localState.set('error');
+      const msg = (err as Error)?.message ?? String(err);
+      this.localError.set(
+        /WebGPU|adapter|gpu/i.test(msg)
+          ? '你的瀏覽器不支援 WebGPU — 請用電腦版 Chrome/Edge，或較新的手機瀏覽器'
+          : `模型載入失敗：${msg}`,
+      );
+    }
+  }
+
+  async send(): Promise<void> {
+    const prompt = this.chatInput.trim();
+    if (!prompt || !this.ready() || this.generating()) return;
+
+    this.chatInput = '';
+    this.chatError.set('');
+    this.messages.update((m) => [...m, { role: 'user', content: prompt }, { role: 'assistant', content: '' }]);
+    this.generating.set(true);
+    this.scrollToBottom();
+
+    try {
+      const acc = this.mode() === 'cloud' ? await this.runCloud() : await this.runLocal();
+      const clean = this.display(acc);
+      this.updateLastAssistant(clean || '(無回應)');
+
+      const match = acc.match(/\[IMAGE:\s*([^\]]+)\]/i);
+      if (match) await this.generateImage(match[1].trim());
+    } catch (err) {
+      const code = (err as Error).message;
+      this.chatError.set(code === '429' ? '請求太頻繁囉，休息一下再試' : '發生錯誤，請稍後再試');
+      // 移除空的 assistant 佔位
+      this.messages.update((m) => (m[m.length - 1]?.content === '' ? m.slice(0, -1) : m));
+      this.chatInput = prompt;
+    } finally {
+      this.generating.set(false);
+      this.scrollToBottom();
+    }
+  }
+
+  /** 雲端：Cloudflare Worker /chat（系統提示在伺服器端） */
+  private async runCloud(): Promise<string> {
+    const history = this.messages()
+      .slice(0, -1)
+      .slice(-12)
+      .map((m) => ({ role: m.role, content: m.content }));
+    const res = await fetch(`${LINKS.ai.worker}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: history }),
+    });
+    if (!res.ok) throw new Error(String(res.status));
+    const data = await res.json();
+    const text = data.response ?? '';
+    this.updateLastAssistant(this.display(text));
+    return text;
+  }
+
+  /** 本地：WebLLM 串流 */
+  private async runLocal(): Promise<string> {
+    if (!this.engine) throw new Error('engine');
+    const history = this.messages().slice(0, -1).slice(-6).map((m) => ({ role: m.role, content: m.content }));
+    const stream = await this.engine.chat.completions.create({
+      messages: [{ role: 'system', content: LOCAL_SYSTEM_PROMPT }, ...history],
+      stream: true,
+      temperature: 0.6,
+      max_tokens: 400,
+    });
+    let acc = '';
+    for await (const chunk of stream) {
+      const delta = chunk.choices[0]?.delta?.content ?? '';
+      if (!delta) continue;
+      acc += delta;
+      this.updateLastAssistant(this.display(acc));
+      this.scrollToBottom();
+    }
+    return acc;
+  }
+
+  /** 偵測到 [IMAGE:] → 交給雲端 DreamShaper 生圖，內嵌對話 + 觸發換色 + 設為背景 */
+  private async generateImage(imgPrompt: string): Promise<void> {
+    this.patchLastAssistant({ imageLoading: true });
+    this.scrollToBottom();
+    try {
+      const res = await fetch(`${LINKS.ai.worker}/image`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: imgPrompt, width: 768, height: 768 }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      this.patchLastAssistant({ imageLoading: false, imageUrl: url });
+
+      if (this.bgObjectUrl) URL.revokeObjectURL(this.bgObjectUrl);
+      this.bgObjectUrl = url;
+      this.bgUrl.set(url);
+      this.theme.applyFromImage(blob).catch(() => { /* 取色失敗維持原主題 */ });
+    } catch {
+      this.patchLastAssistant({ imageLoading: false });
+    }
+  }
+
+  private updateLastAssistant(content: string): void {
+    this.messages.update((m) => {
+      const copy = [...m];
+      const last = copy[copy.length - 1];
+      if (last?.role === 'assistant') copy[copy.length - 1] = { ...last, content };
+      return copy;
+    });
+  }
+
+  private patchLastAssistant(patch: Partial<Msg>): void {
+    this.messages.update((m) => {
+      const copy = [...m];
+      const last = copy[copy.length - 1];
+      if (last?.role === 'assistant') copy[copy.length - 1] = { ...last, ...patch };
+      return copy;
+    });
+  }
+
+  private scrollToBottom(): void {
     setTimeout(() => {
       const el = this.chatScroll?.nativeElement;
       if (el) el.scrollTop = el.scrollHeight;

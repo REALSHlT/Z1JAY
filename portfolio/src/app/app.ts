@@ -7,7 +7,6 @@ import { Platforms } from './components/platforms/platforms';
 import { Experience } from './components/experience/experience';
 import { AiLab } from './components/ai-lab/ai-lab';
 import { PoseLab } from './components/pose-lab/pose-lab';
-import { LocalLlm } from './components/local-llm/local-llm';
 import { Certifications } from './components/certifications/certifications';
 import { Contact } from './components/contact/contact';
 import { Footer } from './components/footer/footer';
@@ -25,7 +24,6 @@ import { CertModal } from './components/cert-modal/cert-modal';
     Experience,
     AiLab,
     PoseLab,
-    LocalLlm,
     Certifications,
     Contact,
     Footer,
