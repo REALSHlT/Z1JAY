@@ -47,8 +47,8 @@ export const SKILLS: SkillEntry[] = [
     description: 'AI 動態捕捉技術整合與資料清理，大幅縮短角色動畫的製作週期。' },
   { en: '3D Simulation',    zh: '3D 模擬',    icon: 'scatter_plot',
     description: '流體、布料、粒子等動態模擬技術，搭配 Houdini 與 Maya nCloth / nParticles，打造高擬真的視覺特效與場景氛圍。' },
-  { en: 'Frontend Engineer', zh: '前端工程師', icon: 'code',
-    description: '以 Angular、Tailwind CSS 及 TypeScript 構建高品質的互動式介面，結合現代設計系統打造流暢的使用者體驗。' },
+  { en: '3D Lighting', zh: '燈光設計', icon: 'lightbulb',
+    description: '運用三點布光、HDRI 環境光與體積光效，塑造場景氛圍與情緒張力，讓渲染畫面更具電影感。' },
   { en: 'AI Engineer',      zh: 'AI 工程師',   icon: 'auto_awesome',
     description: '運用生成式 AI 工具與 LLM API 整合、優化創作流程與數據分析管道，探索 AI 在媒體設計領域的應用可能。' },
 ];

@@ -51,7 +51,7 @@ const SYSTEM_PROMPT = `你是 Z1JAY 個人作品集網站（realshlt.github.io/Z
 4. 3D Animation（3D 動態）— 關鍵幀動畫與動作曲線，結合物理模擬
 5. Motion Capture（動態捕捉）— AI 動態捕捉技術整合與資料清理
 6. 3D Simulation（3D 模擬）— 流體、布料、粒子（Houdini、Maya nCloth/nParticles）
-7. Frontend Engineer（前端工程師）— Angular、Tailwind CSS、TypeScript
+7. 3D Lighting（燈光設計）— 三點布光、HDRI 環境光與體積光效，營造場景氛圍
 8. AI Engineer（AI 工程師）— 生成式 AI 工具與 LLM API 整合
 
 ## 代表作品
