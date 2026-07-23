@@ -11,13 +11,13 @@ type LocalState = 'idle' | 'loading' | 'ready' | 'error';
 const LOCAL_MODEL_ID = 'gemma3-1b-it-q4f16_1-MLC';
 
 /** 本地模型用的精簡個資 + 生圖指令（雲端的系統提示在 Worker 端） */
-const LOCAL_SYSTEM_PROMPT = `你是作品集網站的助手，代表主人 Z1JAY（林子傑）。用繁體中文、第三人稱、簡潔回答關於他的問題。
+const LOCAL_SYSTEM_PROMPT = `你是這個作品集網站的 AI 助手（不是網站主人本人）。以下是網站主人 Z1JAY（林子傑）的資料，供你回答訪客問題時參考：
+Z1JAY 是台灣台中人，嶺東科技大學數位媒體設計碩士（2024）；3D 藝術家／動畫師，也做前端與 AI。技能：3D 建模、Rigging、著色器、動畫、動態捕捉、模擬、燈光、AI 工程。代表作《The Gentle Trigger》《骨牌物語》《Order》《Where is Noddy?》，個人產品 Snapbrify（照片轉 PBR 材質）。
 
-Z1JAY：台灣台中人，嶺東科技大學數位媒體設計碩士（2024）；3D 藝術家／動畫師，也做前端與 AI。技能有 3D 建模、Rigging、著色器、動畫、動態捕捉、模擬、燈光、AI 工程。代表作《The Gentle Trigger》《骨牌物語》《Order》《Where is Noddy?》，個人產品 Snapbrify（照片轉 PBR 材質）。
-
-當訪客要你畫圖／看圖時，「不要用文字描述圖片」，而是在回答最後單獨輸出一行標記，格式例如：
-[IMAGE: a shiba inu under cherry blossoms, soft light]
-系統會把這行標記自動換成真的圖片。不需要圖時就完全不要輸出這行。`;
+回答規則：
+- 用繁體中文、簡潔（2-4 句）。
+- 以第三人稱稱呼他（「Z1JAY」或「他」），絕對不要用「我」自稱成他。
+- 若訪客要你畫圖，不要用文字描述圖片，改成在回答最後單獨輸出一行：[IMAGE: 英文圖像描述]`;
 
 @Component({
   selector: 'app-ai-lab',
@@ -223,32 +223,37 @@ export class AiLab implements AfterViewInit, OnDestroy {
     return text;
   }
 
-  /** 本地：WebLLM 串流 */
+  /**
+   * 本地：WebLLM 串流。刻意「單輪無狀態」— 每次只送 bio + 這一句問題。
+   * 1B 小模型扛不住成長型多輪 context（滑動視窗一大就會卡住 / 跳針），
+   * 單輪最穩；多輪記憶留給雲端模式。另加逾時中斷，避免卡死鎖住介面。
+   */
   private async runLocal(): Promise<string> {
     if (!this.engine) throw new Error('engine');
-    const history = this.messages().slice(0, -1).slice(-6).map((m) => ({ role: m.role, content: m.content }));
-    // Gemma 沒有獨立 system role — 把指令併進第一則 user 訊息（對所有模型都通用）
-    if (history.length && history[0].role === 'user') {
-      history[0] = { role: 'user', content: `${LOCAL_SYSTEM_PROMPT}\n\n————\n\n${history[0].content}` };
-    } else {
-      history.unshift({ role: 'user', content: LOCAL_SYSTEM_PROMPT });
+    const question = this.messages().at(-2)?.content ?? '';
+    const userMsg = `${LOCAL_SYSTEM_PROMPT}\n\n————\n訪客的問題：${question}`;
+
+    const timeout = setTimeout(() => { try { this.engine?.interruptGenerate(); } catch { /* ignore */ } }, 30_000);
+    try {
+      const stream = await this.engine.chat.completions.create({
+        messages: [{ role: 'user', content: userMsg }],
+        stream: true,
+        temperature: 0.4, // 偏低 → 更貼著 bio 事實回答、少亂飄
+        frequency_penalty: 0.2, // 輕微抑制跳針，但不至於逼它避開 bio 用字
+        max_tokens: 400,
+      });
+      let acc = '';
+      for await (const chunk of stream) {
+        const delta = chunk.choices[0]?.delta?.content ?? '';
+        if (!delta) continue;
+        acc += delta;
+        this.updateLastAssistant(this.display(acc));
+        this.scrollToBottom();
+      }
+      return acc;
+    } finally {
+      clearTimeout(timeout);
     }
-    const stream = await this.engine.chat.completions.create({
-      messages: history,
-      stream: true,
-      temperature: 0.7,
-      frequency_penalty: 0.4, // 抑制小模型的跳針/重複
-      max_tokens: 400,
-    });
-    let acc = '';
-    for await (const chunk of stream) {
-      const delta = chunk.choices[0]?.delta?.content ?? '';
-      if (!delta) continue;
-      acc += delta;
-      this.updateLastAssistant(this.display(acc));
-      this.scrollToBottom();
-    }
-    return acc;
   }
 
   /** 偵測到 [IMAGE:] → 交給雲端 DreamShaper 生圖，內嵌對話 + 觸發換色 + 設為背景 */
