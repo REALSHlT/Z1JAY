@@ -57,7 +57,7 @@ export class PoseLab implements OnDestroy {
 
       const fileset = await (FilesetResolver as typeof FilesetResolverT).forVisionTasks(WASM_PATH);
 
-      this.statusText.set('下載並編譯骨架 + 臉部模型（約 9MB）…');
+      this.statusText.set('初始化骨架 + 臉部模型…');
       let delegate: 'GPU' | 'CPU' = 'GPU';
       try {
         [this.pose, this.face] = await Promise.all([
