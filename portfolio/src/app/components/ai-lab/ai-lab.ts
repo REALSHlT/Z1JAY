@@ -10,14 +10,33 @@ type LocalState = 'idle' | 'loading' | 'ready' | 'error';
 
 const LOCAL_MODEL_ID = 'gemma3-1b-it-q4f16_1-MLC';
 
-/** 本地模型用的精簡個資 + 生圖指令（雲端的系統提示在 Worker 端） */
-const LOCAL_SYSTEM_PROMPT = `你是這個作品集網站的 AI 助手（不是網站主人本人）。以下是網站主人 Z1JAY（林子傑）的資料，供你回答訪客問題時參考：
-Z1JAY 是台灣台中人，嶺東科技大學數位媒體設計碩士（2024）；3D 藝術家／動畫師，也做前端與 AI。技能：3D 建模、Rigging、著色器、動畫、動態捕捉、模擬、燈光、AI 工程。代表作《The Gentle Trigger》《骨牌物語》《Order》《Where is Noddy?》，個人產品 Snapbrify（照片轉 PBR 材質）。
+/** 本地模型（雲端的系統提示在 Worker 端）的回答規則 */
+const LOCAL_RULES = `你是這個作品集網站的 AI 助手（不是網站主人本人）。只根據下方【資料】回答，用繁體中文、第三人稱（稱他為「Z1JAY」或「他」，絕對不要用「我」自稱成他）、簡潔（2-4 句）。資料裡沒有的就說不知道，不要編造。
+若訪客要你畫圖，不要用文字描述圖片，改成在回答最後單獨輸出一行：[IMAGE: 英文圖像描述]。`;
 
-回答規則：
-- 用繁體中文、簡潔（2-4 句）。
-- 以第三人稱稱呼他（「Z1JAY」或「他」），絕對不要用「我」自稱成他。
-- 若訪客要你畫圖，不要用文字描述圖片，改成在回答最後單獨輸出一行：[IMAGE: 英文圖像描述]`;
+/**
+ * 迷你「檢索」知識庫：把 bio 切成標籤區塊，依問題關鍵字挑出相關區塊只餵那幾塊，
+ * 降低 1B 模型的分心/飄移。資料太小，用關鍵字比對就夠，不需要 embedding / 向量庫。
+ */
+const BIO_SECTIONS: { keys: RegExp; text: string }[] = [
+  { keys: /誰|介紹|背景|哪裡人|來自|台中|哪位|about|who/i,
+    text: 'Z1JAY（林子傑）是台灣台中人，3D 藝術家／動畫師，也具備前端與 AI 工程能力。' },
+  { keys: /學校|讀|念|畢業|學歷|大學|碩士|嶺東|科系|主修|school|study|degree/i,
+    text: '學歷：嶺東科技大學數位媒體設計系碩士，2024 年畢業。' },
+  { keys: /技能|會什麼|會啥|專長|專業|擅長|能做|會做|技術|skill|good at/i,
+    text: '技能：3D 建模、Rigging 骨架、著色器、3D 動畫、動態捕捉、3D 模擬、3D 燈光、AI 工程。' },
+  { keys: /作品|代表作|做過|專案|案子|影片|遊戲|gentle|order|noddy|骨牌|trigger|work|project/i,
+    text: '代表作：《The Gentle Trigger》（碩士 3D 動畫）、《骨牌物語》（NPR 風格，與台中市政府合作）、《Order》（Unreal Engine 5 遊戲，整合聲音辨識）、《Where is Noddy?》（VR 動態捕捉，入選高雄電影節）。' },
+  { keys: /經歷|工作|教|講師|老師|職涯|勞動部|經驗|career|teach/i,
+    text: '經歷：2023 年任勞動部發展署 3D 互動講師；2022–2024 年於嶺東高中、台中高工、明台高中任教。' },
+  { keys: /產品|snapbrify|材質|pbr|貼圖|工具|product/i,
+    text: '個人產品 Snapbrify（snapbrify.com）：拍張照片就能自動生成 3D 用的 PBR 材質貼圖。' },
+  { keys: /聯絡|聯繫|email|信箱|ig|instagram|找他|合作|contact/i,
+    text: '聯絡方式：Email w6619willy@gmail.com、Instagram @z_jay_0723。' },
+];
+
+/** 沒命中任何關鍵字時的預設概覽（身分 + 技能 + 作品） */
+const BIO_DEFAULT = [0, 2, 3];
 
 @Component({
   selector: 'app-ai-lab',
@@ -69,6 +88,15 @@ export class AiLab implements AfterViewInit, OnDestroy {
   /** 目前模式是否可以聊天 */
   readonly ready = () => (this.mode() === 'cloud' ? this.cloudStarted() : this.localState() === 'ready');
   readonly themed = this.theme.themed;
+
+  /** 迷你檢索：依問題關鍵字挑出相關 bio 區塊（沒命中就給預設概覽），只餵這幾塊給小模型 */
+  private focusedBio(question: string): string {
+    const hits = BIO_SECTIONS.filter((s) => s.keys.test(question));
+    const picked = hits.length ? hits : BIO_DEFAULT.map((i) => BIO_SECTIONS[i]);
+    // 一律附上身分區塊當錨點（避免只命中細節區塊時模型不知道「他」是誰）
+    const withAnchor = picked.includes(BIO_SECTIONS[0]) ? picked : [BIO_SECTIONS[0], ...picked];
+    return withAnchor.map((s) => `- ${s.text}`).join('\n');
+  }
 
   /** 使用者訊息是否明顯在要求生圖（模型漏發 [IMAGE:] 標記時的保險） */
   private wantsImage(text: string): boolean {
@@ -231,7 +259,7 @@ export class AiLab implements AfterViewInit, OnDestroy {
   private async runLocal(): Promise<string> {
     if (!this.engine) throw new Error('engine');
     const question = this.messages().at(-2)?.content ?? '';
-    const userMsg = `${LOCAL_SYSTEM_PROMPT}\n\n————\n訪客的問題：${question}`;
+    const userMsg = `${LOCAL_RULES}\n\n【資料】\n${this.focusedBio(question)}\n\n【訪客問題】${question}`;
 
     const timeout = setTimeout(() => { try { this.engine?.interruptGenerate(); } catch { /* ignore */ } }, 30_000);
     try {
