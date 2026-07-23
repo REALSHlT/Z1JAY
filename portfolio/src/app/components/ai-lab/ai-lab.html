@@ -173,6 +173,12 @@
         </div>
 
         <div class="flex flex-wrap gap-3 mt-3">
+          @if (messages().length) {
+            <button (click)="clearSession()" class="brut-tag cursor-pointer hover:bg-punch hover:text-white transition-colors">
+              <span class="material-symbols-outlined" style="font-size:14px;">delete_sweep</span>
+              清除對話紀錄
+            </button>
+          }
           @if (themed()) {
             <button (click)="resetTheme()" class="brut-tag cursor-pointer hover:bg-acid transition-colors">
               <span class="material-symbols-outlined" style="font-size:14px;">restart_alt</span>

@@ -10,6 +10,12 @@ type LocalState = 'idle' | 'loading' | 'ready' | 'error';
 
 const LOCAL_MODEL_ID = 'gemma3-1b-it-q4f16_1-MLC';
 
+// ── 本地對話記憶（存在使用者裝置，跨模型共用）──
+const SESSION_KEY = 'z1jay-chat-session'; // localStorage key
+const SUMMARY_TURNS = 4;   // 餵給模型的「最近幾輪摘要」— 有上限，context 才不會爆
+const PERSIST_MSGS = 24;   // localStorage 最多存幾則顯示訊息
+const MSG_CLIP = 1000;     // 每則存檔內容上限字數
+
 /** 本地模型（雲端的系統提示在 Worker 端）的回答規則 */
 const LOCAL_RULES = `你是這個作品集網站的 AI 助手（不是網站主人本人）。只根據下方【資料】回答，用繁體中文、第三人稱（稱他為「Z1JAY」或「他」，絕對不要用「我」自稱成他）、簡潔（2-4 句）。資料裡沒有的就說不知道，不要編造。
 若訪客要你畫圖，不要用文字描述圖片，改成在回答最後單獨輸出一行：[IMAGE: 英文圖像描述]。`;
@@ -98,6 +104,60 @@ export class AiLab implements AfterViewInit, OnDestroy {
     return withAnchor.map((s) => `- ${s.text}`).join('\n');
   }
 
+  private clip(s: string, n: number): string {
+    return s.length > n ? s.slice(0, n) + '…' : s;
+  }
+
+  /**
+   * 滾動摘要：從對話中取「已完成的最近幾輪」，每輪只留截短的問與答。
+   * 直接由 messages 推導 → 不論哪個模型答的都算數（自動涵蓋跨模型切換的內容），
+   * 且有輪數上限 → context 保持很小，不會重蹈成長型脈絡卡住的覆轍。
+   */
+  private conversationSummary(): string {
+    const msgs = this.messages();
+    const pairs: { q: string; a: string }[] = [];
+    for (let i = 0; i < msgs.length - 1; i++) {
+      if (msgs[i].role === 'user' && msgs[i + 1]?.role === 'assistant') {
+        const a = this.display(msgs[i + 1].content);
+        if (a) { pairs.push({ q: msgs[i].content, a }); i++; }
+      }
+    }
+    const recent = pairs.slice(-SUMMARY_TURNS);
+    if (!recent.length) return '';
+    const lines = recent.map((p, i) => `${i + 1}. 訪客問「${this.clip(p.q, 50)}」，你答「${this.clip(p.a, 90)}」`);
+    return `【先前對話摘要（僅摘要，供你保持連貫，不必逐字複述）】\n${lines.join('\n')}`;
+  }
+
+  /** 把對話（純文字、截短、限量）存到使用者裝置 */
+  private persistSession(): void {
+    try {
+      const slim = this.messages()
+        .filter((m) => this.display(m.content))
+        .slice(-PERSIST_MSGS)
+        .map((m) => ({ role: m.role, content: this.clip(m.content, MSG_CLIP) }));
+      localStorage.setItem(SESSION_KEY, JSON.stringify(slim));
+    } catch { /* localStorage 滿了或被禁用就算了 */ }
+  }
+
+  /** 從裝置還原上次的對話（圖片是暫時性的 blob，不還原） */
+  private restoreSession(): void {
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) return;
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr) && arr.length) {
+        this.messages.set(arr.map((m) => ({ role: m.role, content: m.content })));
+        this.cloudStarted.set(true); // 曾經用過 → 直接顯示歷史，不再擋開始門檻
+      }
+    } catch { /* 壞資料就忽略 */ }
+  }
+
+  /** 清除本地對話紀錄（保持裝置乾淨） */
+  clearSession(): void {
+    this.messages.set([]);
+    try { localStorage.removeItem(SESSION_KEY); } catch { /* ignore */ }
+  }
+
   /** 使用者訊息是否明顯在要求生圖（模型漏發 [IMAGE:] 標記時的保險） */
   private wantsImage(text: string): boolean {
     return /畫(一|個|張|出|下|給|成|幅|隻|條|朵|棵|我)|幫.{0,3}畫|生成.{0,5}圖|來(一|張).{0,5}圖|draw|generate.{0,12}(image|picture)|(image|picture) of/i.test(text);
@@ -118,6 +178,7 @@ export class AiLab implements AfterViewInit, OnDestroy {
       { threshold: 0.15 },
     );
     this.observer.observe(this.host.nativeElement);
+    this.restoreSession();
     this.checkCache();
   }
 
@@ -229,20 +290,20 @@ export class AiLab implements AfterViewInit, OnDestroy {
       this.chatInput = prompt;
     } finally {
       this.generating.set(false);
+      this.persistSession();
       this.scrollToBottom();
     }
   }
 
-  /** 雲端：Cloudflare Worker /chat（系統提示在伺服器端） */
+  /** 雲端：Cloudflare Worker /chat（系統提示在伺服器端）。用共用的滾動摘要當脈絡。 */
   private async runCloud(): Promise<string> {
-    const history = this.messages()
-      .slice(0, -1)
-      .slice(-12)
-      .map((m) => ({ role: m.role, content: m.content }));
+    const question = this.messages().at(-2)?.content ?? '';
+    const summary = this.conversationSummary();
+    const userMsg = summary ? `${summary}\n\n【訪客問題】${question}` : question;
     const res = await fetch(`${LINKS.ai.worker}/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: history }),
+      body: JSON.stringify({ messages: [{ role: 'user', content: userMsg }] }),
     });
     if (!res.ok) throw new Error(String(res.status));
     const data = await res.json();
@@ -259,7 +320,13 @@ export class AiLab implements AfterViewInit, OnDestroy {
   private async runLocal(): Promise<string> {
     if (!this.engine) throw new Error('engine');
     const question = this.messages().at(-2)?.content ?? '';
-    const userMsg = `${LOCAL_RULES}\n\n【資料】\n${this.focusedBio(question)}\n\n【訪客問題】${question}`;
+    const summary = this.conversationSummary();
+    const userMsg = [
+      LOCAL_RULES,
+      `【資料】\n${this.focusedBio(question)}`,
+      summary,
+      `【訪客問題】${question}`,
+    ].filter(Boolean).join('\n\n');
 
     const timeout = setTimeout(() => { try { this.engine?.interruptGenerate(); } catch { /* ignore */ } }, 30_000);
     try {
