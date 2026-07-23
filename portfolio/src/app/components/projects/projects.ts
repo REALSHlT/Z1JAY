@@ -11,7 +11,7 @@ import { PROJECTS, ProjectEntry } from '../../data/config';
 })
 export class Projects {
   readonly projects: ProjectEntry[] = PROJECTS;
-  /** 漫畫狀聲詞 + 分格底色，依序對應每個作品 */
+  /** 漫畫狀聲詞 + 分格底色（跟隨動態主題），依序對應每個作品 */
   readonly bursts = ['BANG!', 'RUN!', 'PLAY!', 'VR!'];
-  readonly tints = ['bg-white', 'bg-[#fff6d6]', 'bg-[#eef2ff]', 'bg-[#ffefe9]'];
+  readonly tints = ['panel-tint-0', 'panel-tint-1', 'panel-tint-2', 'panel-tint-3'];
 }

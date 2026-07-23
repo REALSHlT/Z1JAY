@@ -6,33 +6,34 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // ── Neo-brutalist palette ──
-        'surface':                   '#f3efe6', // warm paper canvas
+        // ── Neo-brutalist palette — driven by CSS vars so the AI image
+        //    generator can re-theme the whole site at runtime ──
+        'surface':                   'rgb(var(--paper-rgb) / <alpha-value>)',
         'surface-dim':               '#e6e1d4',
         'surface-container-lowest':  '#ffffff',
         'surface-container-low':     '#faf7f0',
         'surface-container':         '#ffffff',
         'surface-container-high':    '#fdfbf6',
         'surface-container-highest': '#ffffff',
-        'on-surface':                '#111111', // ink
+        'on-surface':                'rgb(var(--ink-rgb) / <alpha-value>)',
         'on-surface-variant':        '#3d3a33',
-        'outline':                   '#111111',
+        'outline':                   'rgb(var(--ink-rgb) / <alpha-value>)',
         'outline-variant':           '#c9c2b2',
-        'primary':                   '#111111', // ink is the brand
-        'on-primary':                '#f3efe6',
-        'primary-container':         '#ffd43a',
+        'primary':                   'rgb(var(--ink-rgb) / <alpha-value>)',
+        'on-primary':                'rgb(var(--paper-rgb) / <alpha-value>)',
+        'primary-container':         'rgb(var(--acid-rgb) / <alpha-value>)',
         'secondary':                 '#3d3a33',
         'on-secondary':              '#ffffff',
-        'secondary-container':       '#ffd43a',
-        'background':                '#f3efe6',
-        'on-background':             '#111111',
+        'secondary-container':       'rgb(var(--acid-rgb) / <alpha-value>)',
+        'background':                'rgb(var(--paper-rgb) / <alpha-value>)',
+        'on-background':             'rgb(var(--ink-rgb) / <alpha-value>)',
         'surface-variant':           '#e6e1d4',
         // accents
-        'acid':                      '#ffd43a', // yellow — evolved from the old gold
-        'punch':                     '#ff5227', // red-orange
-        'volt':                      '#3b6cff', // blue
-        'ink':                       '#111111',
-        'paper':                     '#f3efe6',
+        'acid':                      'rgb(var(--acid-rgb) / <alpha-value>)',
+        'punch':                     'rgb(var(--punch-rgb) / <alpha-value>)',
+        'volt':                      'rgb(var(--volt-rgb) / <alpha-value>)',
+        'ink':                       'rgb(var(--ink-rgb) / <alpha-value>)',
+        'paper':                     'rgb(var(--paper-rgb) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['"Noto Sans TC"', 'system-ui', 'sans-serif'],
@@ -40,10 +41,10 @@ module.exports = {
         mono: ['"Space Mono"', 'monospace'],
       },
       boxShadow: {
-        'brut':    '6px 6px 0 #111111',
-        'brut-sm': '3px 3px 0 #111111',
-        'brut-lg': '10px 10px 0 #111111',
-        'brut-acid': '6px 6px 0 #ffd43a',
+        'brut':    '6px 6px 0 rgb(var(--ink-rgb))',
+        'brut-sm': '3px 3px 0 rgb(var(--ink-rgb))',
+        'brut-lg': '10px 10px 0 rgb(var(--ink-rgb))',
+        'brut-acid': '6px 6px 0 rgb(var(--acid-rgb))',
       },
       maxWidth: {
         'container-max-width': '1280px',

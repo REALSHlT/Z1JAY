@@ -16,7 +16,8 @@
     </div>
     <p class="text-[15px] leading-[1.8] text-on-surface-variant max-w-2xl mb-10 md:mb-14" appScrollReveal>
       這個區塊直接串接我部署在 Cloudflare Workers AI 上的模型 —
-      左邊的 AI 認識我，歡迎問它任何關於我的問題；右邊輸入描述即可生成圖片，生成的圖片會化為這個區塊的背景。
+      左邊的 AI 認識我，歡迎問它任何關於我的問題；右邊輸入描述即可生成圖片，
+      生成的圖片會化為這個區塊的背景，<strong>整個網站也會換上它的色系</strong>。
     </p>
   </div>
 
@@ -73,12 +74,12 @@
               <div class="max-w-[85%] px-4 py-2.5 text-[14px] leading-[1.7] whitespace-pre-wrap break-words border-2 border-ink"
                    [class]="msg.role === 'user'
                      ? 'bg-ink text-paper shadow-brut-sm'
-                     : 'bg-white shadow-[3px_3px_0_#ffd43a]'">{{ msg.content }}</div>
+                     : 'bg-white shadow-[3px_3px_0_rgb(var(--acid-rgb))]'">{{ msg.content }}</div>
             </div>
           }
           @if (chatLoading()) {
             <div class="flex">
-              <div class="px-4 py-2.5 border-2 border-ink bg-white shadow-[3px_3px_0_#ffd43a]">
+              <div class="px-4 py-2.5 border-2 border-ink bg-white shadow-[3px_3px_0_rgb(var(--acid-rgb))]">
                 <span class="chat-dots"><i></i><i></i><i></i></span>
               </div>
             </div>
@@ -117,7 +118,7 @@
           } @else if (!imageLoading()) {
             <div class="flex flex-col items-center justify-center gap-3 text-center p-6">
               <span class="material-symbols-outlined text-ink/30" style="font-size:40px;">image</span>
-              <p class="brut-label text-on-surface-variant !normal-case">輸入描述生成圖片（英文效果較佳）<br/>生成後會成為這個區塊的背景</p>
+              <p class="brut-label text-on-surface-variant !normal-case">輸入描述生成圖片（英文效果較佳）<br/>生成後整個網站會換上圖片的色系</p>
             </div>
           }
           @if (imageLoading()) {
@@ -142,6 +143,14 @@
             <span class="material-symbols-outlined" style="font-size:18px;">auto_awesome</span>
           </button>
         </div>
+
+        @if (themed()) {
+          <button (click)="resetTheme()"
+                  class="brut-tag mt-3 self-start cursor-pointer hover:bg-acid transition-colors">
+            <span class="material-symbols-outlined" style="font-size:14px;">restart_alt</span>
+            恢復網站預設配色
+          </button>
+        }
       </div>
     </div>
 
