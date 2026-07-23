@@ -23,11 +23,12 @@
 
 html { scroll-behavior: smooth; }
 
+html, body { overflow-x: hidden; }
+
 body {
   font-family: "Noto Sans TC", system-ui, sans-serif;
   background-color: rgb(var(--paper-rgb));
   color: rgb(var(--ink-rgb));
-  overflow-x: hidden;
 }
 
 ::selection { background: rgb(var(--acid-rgb)); color: rgb(var(--ink-rgb)); }
@@ -182,9 +183,10 @@ body, section, footer, header,
   color: rgb(var(--ink-rgb));
 }
 
-/* Sticker (rotated badge) */
+/* Sticker (rotated badge)
+   注意：不設 display，讓 Tailwind 的 hidden / md:inline-flex 能生效；
+   使用處自行加上 inline-flex 或響應式 display class */
 .sticker {
-  display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
@@ -270,9 +272,9 @@ body, section, footer, header,
   background-size: 18px 18px;
 }
 
-/* Comic starburst badge */
+/* Comic starburst badge
+   同 .sticker：不設 display，使用處加 inline-flex 或響應式 class */
 .burst {
-  display: inline-flex;
   align-items: center;
   justify-content: center;
   text-align: center;
