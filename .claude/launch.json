@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "portfolio-dev",
+      "runtimeExecutable": "D:\\01-2.Internal\\Web\\tools\\node-v24.18.0-win-x64\\npm.cmd",
+      "runtimeArgs": ["--prefix", "D:\\01-2.Internal\\Web\\Z1JAY\\portfolio", "start"],
+      "port": 4200
+    }
+  ]
+}

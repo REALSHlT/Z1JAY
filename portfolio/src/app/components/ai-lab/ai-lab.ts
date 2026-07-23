@@ -8,7 +8,7 @@ type Msg = { role: 'user' | 'assistant'; content: string; imageLoading?: boolean
 type Mode = 'cloud' | 'local';
 type LocalState = 'idle' | 'loading' | 'ready' | 'error';
 
-const LOCAL_MODEL_ID = 'gemma3-1b-it-q4f16_1-MLC';
+const LOCAL_MODEL_ID = 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC';
 
 // ── 本地對話記憶（存在使用者裝置，跨模型共用）──
 const SESSION_KEY = 'z1jay-chat-session'; // localStorage key
@@ -17,8 +17,12 @@ const PERSIST_MSGS = 24;   // localStorage 最多存幾則顯示訊息
 const MSG_CLIP = 1000;     // 每則存檔內容上限字數
 
 /** 本地模型（雲端的系統提示在 Worker 端）的回答規則 */
-const LOCAL_RULES = `你是這個作品集網站的 AI 助手（不是網站主人本人）。只根據下方【資料】回答，用繁體中文、第三人稱（稱他為「Z1JAY」或「他」，絕對不要用「我」自稱成他）、簡潔（2-4 句）。資料裡沒有的就說不知道，不要編造。
-若訪客要你畫圖，不要用文字描述圖片，改成在回答最後單獨輸出一行：[IMAGE: 英文圖像描述]。`;
+const LOCAL_RULES = `你是「Z1JAY」這個作品集網站的 AI 助手（不是網站主人本人）。嚴格遵守以下規則：
+1. 語言：一律用「繁體中文」回答（台灣用語，禁止簡體字）；只有當訪客用英文提問時才改用英文。
+2. 依據：只根據下方【資料】回答，用第三人稱稱他為「Z1JAY」或「他」，絕對不要用「我」自稱成他。資料裡沒有的就直接說「這我不清楚」，嚴禁自行編造事實、人名、作品或數字。
+3. 簡潔：2-4 句話講完，不要重複同一句話、不要一直換行灌水。
+4. 政治與敏感：遇到政治、國家主權、宗教、色情、仇恨、違法等問題，一律回覆「這類問題我不方便回答，我們聊聊 Z1JAY 的作品吧」，不要展開討論、不要選邊站。
+5. 生圖：若訪客要你畫圖，不要用文字描述圖片，改成在回答最後單獨輸出一行：[IMAGE: 英文圖像描述]。`;
 
 /**
  * 迷你「檢索」知識庫：把 bio 切成標籤區塊，依問題關鍵字挑出相關區塊只餵那幾塊，
@@ -246,8 +250,6 @@ export class AiLab implements AfterViewInit, OnDestroy {
             this.localProgressText.set(r.text?.includes('Loading') ? '編譯模型中…' : '正在快取中…');
           },
         },
-        // Gemma 3 原生用滑動視窗：context_window_size 設 -1 保留滑動視窗，並補上 attention_sink_size:0（WebLLM 要求）
-        { context_window_size: -1, attention_sink_size: 0 },
       );
       this.localState.set('ready');
       this.modelCached.set(true);
@@ -313,29 +315,32 @@ export class AiLab implements AfterViewInit, OnDestroy {
   }
 
   /**
-   * 本地：WebLLM 串流。刻意「單輪無狀態」— 每次只送 bio + 這一句問題。
-   * 1B 小模型扛不住成長型多輪 context（滑動視窗一大就會卡住 / 跳針），
-   * 單輪最穩；多輪記憶留給雲端模式。另加逾時中斷，避免卡死鎖住介面。
+   * 本地：WebLLM 串流。刻意「單輪無狀態」— 每次只送 規則+bio+摘要 當 system、這一句問題當 user。
+   * Qwen 0.5B 有正常的 32k context，支援 system 角色 → 約束規則放 system 最能被遵守。
+   * 仍維持單輪（不累積歷史）避免小模型跳針；多輪連貫靠共用的滾動摘要。另加逾時中斷。
    */
   private async runLocal(): Promise<string> {
     if (!this.engine) throw new Error('engine');
     const question = this.messages().at(-2)?.content ?? '';
     const summary = this.conversationSummary();
-    const userMsg = [
+    const systemMsg = [
       LOCAL_RULES,
       `【資料】\n${this.focusedBio(question)}`,
       summary,
-      `【訪客問題】${question}`,
     ].filter(Boolean).join('\n\n');
 
     const timeout = setTimeout(() => { try { this.engine?.interruptGenerate(); } catch { /* ignore */ } }, 30_000);
     try {
       const stream = await this.engine.chat.completions.create({
-        messages: [{ role: 'user', content: userMsg }],
+        messages: [
+          { role: 'system', content: systemMsg },
+          { role: 'user', content: question },
+        ],
         stream: true,
-        temperature: 0.4, // 偏低 → 更貼著 bio 事實回答、少亂飄
-        frequency_penalty: 0.2, // 輕微抑制跳針，但不至於逼它避開 bio 用字
-        max_tokens: 400,
+        temperature: 0.5, // 適度隨機，避免完全貼字卻又不亂飄
+        frequency_penalty: 0.6, // 較重的跳針懲罰 — 小模型很容易鬼打牆
+        presence_penalty: 0.4,  // 鼓勵換話題詞彙，進一步降低整句重複
+        max_tokens: 300,
       });
       let acc = '';
       for await (const chunk of stream) {
