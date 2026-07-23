@@ -51,6 +51,11 @@ export class AiLab implements AfterViewInit, OnDestroy {
   readonly localError = signal('');
   private engine?: import('@mlc-ai/web-llm').MLCEngine;
 
+  // ── 本地模型快取狀態（讓使用者能清掉裝置上的 ~280MB）──
+  readonly modelCached = signal(false);
+  readonly cacheInfo = signal('');
+  readonly clearing = signal(false);
+
   readonly isMobile =
     (navigator as unknown as { userAgentData?: { mobile?: boolean } }).userAgentData?.mobile ??
     /Mobi|Android|iPhone|iPad/.test(navigator.userAgent);
@@ -84,6 +89,35 @@ export class AiLab implements AfterViewInit, OnDestroy {
       { threshold: 0.15 },
     );
     this.observer.observe(this.host.nativeElement);
+    this.checkCache();
+  }
+
+  /** 檢查本地模型是否已快取在裝置上（直接查 Cache Storage，不用載入 WebLLM） */
+  private async checkCache(): Promise<void> {
+    try {
+      const keys = await caches.keys();
+      this.modelCached.set(keys.some((k) => k.startsWith('webllm')));
+      if (navigator.storage?.estimate) {
+        const { usage } = await navigator.storage.estimate();
+        if (usage) this.cacheInfo.set(`此站目前在你裝置上約使用 ${Math.round(usage / 1048576)} MB`);
+      }
+    } catch { /* 忽略 */ }
+  }
+
+  /** 清除已下載的本地模型，釋放裝置空間 */
+  async clearCache(): Promise<void> {
+    if (this.clearing()) return;
+    this.clearing.set(true);
+    try {
+      const keys = await caches.keys();
+      await Promise.all(keys.filter((k) => k.startsWith('webllm')).map((k) => caches.delete(k)));
+      this.engine = undefined;
+      if (this.localState() === 'ready') this.localState.set('idle');
+      this.modelCached.set(false);
+      await this.checkCache();
+    } finally {
+      this.clearing.set(false);
+    }
   }
 
   ngOnDestroy(): void {
@@ -94,6 +128,7 @@ export class AiLab implements AfterViewInit, OnDestroy {
   setMode(m: Mode): void {
     this.mode.set(m);
     this.chatError.set('');
+    if (m === 'local') this.checkCache();
   }
 
   startCloud(): void {
@@ -120,6 +155,8 @@ export class AiLab implements AfterViewInit, OnDestroy {
         },
       });
       this.localState.set('ready');
+      this.modelCached.set(true);
+      this.checkCache();
     } catch (err) {
       this.localState.set('error');
       const msg = (err as Error)?.message ?? String(err);

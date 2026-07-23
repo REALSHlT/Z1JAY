@@ -67,18 +67,37 @@
                 <div class="w-14 h-14 bg-volt border-[3px] border-ink shadow-brut flex items-center justify-center rotate-3">
                   <span class="material-symbols-outlined text-white" style="font-size:26px;">memory</span>
                 </div>
-                <p class="text-[13px] leading-[1.8] text-on-surface-variant max-w-sm">
-                  在你的裝置上跑一顆 LLM。首次會下載並<strong>快取</strong>模型（約 <strong>280MB</strong>，只下載一次），
-                  之後秒開。運算完全在本機、<strong>會用到你裝置的 GPU / 記憶體</strong>。
-                </p>
-                <span class="brut-tag !normal-case {{ isMobile ? '!bg-punch !text-white !border-ink' : '' }}">
-                  <span class="material-symbols-outlined" style="font-size:14px;">{{ isMobile ? 'warning' : 'info' }}</span>
-                  {{ isMobile ? '行動裝置負荷較大，建議在 Wi-Fi 下、視效能酌情體驗' : '建議電腦版 Chrome / Edge（需 WebGPU）' }}
-                </span>
-                <button (click)="loadLocal()" class="brut-btn">
-                  <span class="material-symbols-outlined" style="font-size:16px;">download</span>
-                  載入本地 AI（約 280MB）
-                </button>
+                @if (modelCached()) {
+                  <p class="text-[13px] leading-[1.8] text-on-surface-variant max-w-sm">
+                    <strong>模型已快取在你的裝置上</strong>，可直接使用、免再下載。<br/>不想留在裝置上可隨時清除。
+                  </p>
+                  <div class="flex flex-wrap gap-3 justify-center">
+                    <button (click)="loadLocal()" class="brut-btn">
+                      <span class="material-symbols-outlined" style="font-size:16px;">play_arrow</span>
+                      直接使用
+                    </button>
+                    <button (click)="clearCache()" [disabled]="clearing()" class="brut-btn-ghost disabled:opacity-50">
+                      <span class="material-symbols-outlined" style="font-size:16px;">delete</span>
+                      {{ clearing() ? '清除中…' : '清除模型（約 280MB）' }}
+                    </button>
+                  </div>
+                } @else {
+                  <p class="text-[13px] leading-[1.8] text-on-surface-variant max-w-sm">
+                    在你的裝置上跑一顆 LLM。首次會下載並<strong>快取</strong>模型（約 <strong>280MB</strong>，只下載一次），
+                    之後秒開、<strong>可隨時清除</strong>。運算完全在本機、<strong>會用到你裝置的 GPU / 記憶體</strong>。
+                  </p>
+                  <span class="brut-tag !normal-case {{ isMobile ? '!bg-punch !text-white !border-ink' : '' }}">
+                    <span class="material-symbols-outlined" style="font-size:14px;">{{ isMobile ? 'warning' : 'info' }}</span>
+                    {{ isMobile ? '行動裝置負荷較大，建議在 Wi-Fi 下、視效能酌情體驗' : '建議電腦版 Chrome / Edge（需 WebGPU）' }}
+                  </span>
+                  <button (click)="loadLocal()" class="brut-btn">
+                    <span class="material-symbols-outlined" style="font-size:16px;">download</span>
+                    載入本地 AI（約 280MB）
+                  </button>
+                }
+                @if (cacheInfo()) {
+                  <p class="text-[11px] text-on-surface-variant/70">{{ cacheInfo() }}</p>
+                }
                 @if (localError()) {
                   <p class="brut-label text-punch !normal-case">{{ localError() }}</p>
                 }
@@ -153,12 +172,20 @@
           </button>
         </div>
 
-        @if (themed()) {
-          <button (click)="resetTheme()" class="brut-tag mt-3 cursor-pointer hover:bg-acid transition-colors">
-            <span class="material-symbols-outlined" style="font-size:14px;">restart_alt</span>
-            恢復網站預設配色
-          </button>
-        }
+        <div class="flex flex-wrap gap-3 mt-3">
+          @if (themed()) {
+            <button (click)="resetTheme()" class="brut-tag cursor-pointer hover:bg-acid transition-colors">
+              <span class="material-symbols-outlined" style="font-size:14px;">restart_alt</span>
+              恢復網站預設配色
+            </button>
+          }
+          @if (mode() === 'local' && modelCached() && localState() === 'ready') {
+            <button (click)="clearCache()" [disabled]="clearing()" class="brut-tag cursor-pointer hover:bg-punch hover:text-white transition-colors disabled:opacity-50">
+              <span class="material-symbols-outlined" style="font-size:14px;">delete</span>
+              {{ clearing() ? '清除中…' : '清除裝置上的本地模型（約 280MB）' }}
+            </button>
+          }
+        </div>
 
         <div class="flex flex-wrap gap-3 mt-4">
           <span class="brut-tag"><span class="material-symbols-outlined" style="font-size:14px;">auto_awesome</span>對話中自動生圖</span>
