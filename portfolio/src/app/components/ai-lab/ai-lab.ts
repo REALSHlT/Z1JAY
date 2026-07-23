@@ -8,20 +8,16 @@ type Msg = { role: 'user' | 'assistant'; content: string; imageLoading?: boolean
 type Mode = 'cloud' | 'local';
 type LocalState = 'idle' | 'loading' | 'ready' | 'error';
 
-const LOCAL_MODEL_ID = 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC';
+const LOCAL_MODEL_ID = 'gemma3-1b-it-q4f16_1-MLC';
 
 /** 本地模型用的精簡個資 + 生圖指令（雲端的系統提示在 Worker 端） */
-const LOCAL_SYSTEM_PROMPT = `你是在訪客瀏覽器內運行的本地 AI 助手，代表這個作品集網站的主人 Z1JAY（林子傑）。訪客問到「站主／他／你的主人」都是指 Z1JAY。
+const LOCAL_SYSTEM_PROMPT = `你是作品集網站的助手，代表主人 Z1JAY（林子傑）。用繁體中文、第三人稱、簡潔回答關於他的問題。
 
-Z1JAY 檔案：
-- 台灣台中人，嶺東科技大學數位媒體設計系碩士（2024）。3D 藝術家／動畫師，也做前端與 AI。
-- 技能：3D 建模、Rigging 骨架、著色器、3D 動畫、動態捕捉、3D 模擬、3D 燈光、AI 工程。
-- 代表作：《The Gentle Trigger》(碩士3D動畫)、《骨牌物語》(NPR,台中市府)、《Order》(UE5遊戲,聲控)、《Where is Noddy?》(VR動捕,高雄電影節)。
-- 個人產品 Snapbrify(snapbrify.com)：照片轉 PBR 材質。聯絡：Email w6619willy@gmail.com、IG @z_jay_0723。
+Z1JAY：台灣台中人，嶺東科技大學數位媒體設計碩士（2024）；3D 藝術家／動畫師，也做前端與 AI。技能有 3D 建模、Rigging、著色器、動畫、動態捕捉、模擬、燈光、AI 工程。代表作《The Gentle Trigger》《骨牌物語》《Order》《Where is Noddy?》，個人產品 Snapbrify（照片轉 PBR 材質）。
 
-規則：
-- 用訪客的語言回答；中文一律用繁體中文，簡潔（2-3 句）。不知道就說不知道，別編造。你是助手不是本人，用第三人稱介紹他。
-- 當訪客想看圖、或一張圖能幫助說明時，在整段回答最後附上一行 [IMAGE: 英文的圖像描述]。標記會被自動換成圖片，訪客看不到它，所以標記前後不要再寫「另起一行」「以下是圖片」等字。不需要圖時就不要輸出標記。`;
+當訪客要你畫圖／看圖時，「不要用文字描述圖片」，而是在回答最後單獨輸出一行標記，格式例如：
+[IMAGE: a shiba inu under cherry blossoms, soft light]
+系統會把這行標記自動換成真的圖片。不需要圖時就完全不要輸出這行。`;
 
 @Component({
   selector: 'app-ai-lab',
@@ -73,6 +69,11 @@ export class AiLab implements AfterViewInit, OnDestroy {
   /** 目前模式是否可以聊天 */
   readonly ready = () => (this.mode() === 'cloud' ? this.cloudStarted() : this.localState() === 'ready');
   readonly themed = this.theme.themed;
+
+  /** 使用者訊息是否明顯在要求生圖（模型漏發 [IMAGE:] 標記時的保險） */
+  private wantsImage(text: string): boolean {
+    return /畫(一|個|張|出|下|給|成|幅|隻|條|朵|棵|我)|幫.{0,3}畫|生成.{0,5}圖|來(一|張).{0,5}圖|draw|generate.{0,12}(image|picture)|(image|picture) of/i.test(text);
+  }
 
   display(content: string): string {
     return content
@@ -148,12 +149,17 @@ export class AiLab implements AfterViewInit, OnDestroy {
     this.localProgressText.set('正在快取中…');
     try {
       const webllm = await import('@mlc-ai/web-llm');
-      this.engine = await webllm.CreateMLCEngine(LOCAL_MODEL_ID, {
-        initProgressCallback: (r: import('@mlc-ai/web-llm').InitProgressReport) => {
-          this.localProgress.set(Math.round((r.progress ?? 0) * 100));
-          this.localProgressText.set(r.text?.includes('Loading') ? '編譯模型中…' : '正在快取中…');
+      this.engine = await webllm.CreateMLCEngine(
+        LOCAL_MODEL_ID,
+        {
+          initProgressCallback: (r: import('@mlc-ai/web-llm').InitProgressReport) => {
+            this.localProgress.set(Math.round((r.progress ?? 0) * 100));
+            this.localProgressText.set(r.text?.includes('Loading') ? '編譯模型中…' : '正在快取中…');
+          },
         },
-      });
+        // Gemma 3 原生用滑動視窗：context_window_size 設 -1 保留滑動視窗，並補上 attention_sink_size:0（WebLLM 要求）
+        { context_window_size: -1, attention_sink_size: 0 },
+      );
       this.localState.set('ready');
       this.modelCached.set(true);
       this.checkCache();
@@ -183,8 +189,10 @@ export class AiLab implements AfterViewInit, OnDestroy {
       const clean = this.display(acc);
       this.updateLastAssistant(clean || '(無回應)');
 
+      // 優先用模型發出的 [IMAGE:] 標記；小模型沒發標記時，退而用「使用者訊息的生圖意圖」判斷
       const match = acc.match(/\[IMAGE:\s*([^\]]+)\]/i);
       if (match) await this.generateImage(match[1].trim());
+      else if (this.wantsImage(prompt)) await this.generateImage(prompt);
     } catch (err) {
       const code = (err as Error).message;
       this.chatError.set(code === '429' ? '請求太頻繁囉，休息一下再試' : '發生錯誤，請稍後再試');
@@ -219,10 +227,17 @@ export class AiLab implements AfterViewInit, OnDestroy {
   private async runLocal(): Promise<string> {
     if (!this.engine) throw new Error('engine');
     const history = this.messages().slice(0, -1).slice(-6).map((m) => ({ role: m.role, content: m.content }));
+    // Gemma 沒有獨立 system role — 把指令併進第一則 user 訊息（對所有模型都通用）
+    if (history.length && history[0].role === 'user') {
+      history[0] = { role: 'user', content: `${LOCAL_SYSTEM_PROMPT}\n\n————\n\n${history[0].content}` };
+    } else {
+      history.unshift({ role: 'user', content: LOCAL_SYSTEM_PROMPT });
+    }
     const stream = await this.engine.chat.completions.create({
-      messages: [{ role: 'system', content: LOCAL_SYSTEM_PROMPT }, ...history],
+      messages: history,
       stream: true,
-      temperature: 0.6,
+      temperature: 0.7,
+      frequency_penalty: 0.4, // 抑制小模型的跳針/重複
       max_tokens: 400,
     });
     let acc = '';

@@ -14,13 +14,13 @@
     </div>
     <p class="text-[15px] leading-[1.8] text-on-surface-variant max-w-2xl mb-8" appScrollReveal>
       直接和 AI 聊天 — 想看圖的時候它會<strong>自己畫給你</strong>（像 ChatGPT / Gemini 那樣）。
-      可切換<strong>雲端</strong>（Llama 3.1 8B，強）或<strong>本地</strong>（Qwen 0.5B，完全在你瀏覽器裡跑）。
+      可切換<strong>雲端</strong>（Llama 3.1 8B，強）或<strong>本地</strong>（Gemma 3 1B，完全在你瀏覽器裡跑）。
     </p>
 
     <div class="win max-w-3xl mx-auto md:-rotate-[0.3deg]" appScrollReveal revealClass="reveal-scale">
       <div class="win-titlebar">
         <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-        <span class="ml-2">chat.exe — {{ mode() === 'cloud' ? 'cloudflare llama 3.1' : 'webllm qwen 0.5b' }}</span>
+        <span class="ml-2">chat.exe — {{ mode() === 'cloud' ? 'cloudflare llama 3.1' : 'webllm gemma 3 1b' }}</span>
         <span class="ml-auto bg-acid text-ink px-2 py-0.5 text-[10px] border border-paper">
           {{ mode() === 'cloud' ? '雲端' : '本地 · WebGPU' }}
         </span>
@@ -37,7 +37,7 @@
           <button (click)="setMode('local')"
                   [class]="mode() === 'local' ? 'brut-tag !bg-ink !text-acid !border-ink cursor-pointer' : 'brut-tag cursor-pointer hover:bg-acid'">
             <span class="material-symbols-outlined" style="font-size:14px;">memory</span>
-            本地 Qwen 0.5B
+            本地 Gemma 1B
           </button>
         </div>
 
@@ -78,12 +78,12 @@
                     </button>
                     <button (click)="clearCache()" [disabled]="clearing()" class="brut-btn-ghost disabled:opacity-50">
                       <span class="material-symbols-outlined" style="font-size:16px;">delete</span>
-                      {{ clearing() ? '清除中…' : '清除模型（約 280MB）' }}
+                      {{ clearing() ? '清除中…' : '清除模型（約 550MB）' }}
                     </button>
                   </div>
                 } @else {
                   <p class="text-[13px] leading-[1.8] text-on-surface-variant max-w-sm">
-                    在你的裝置上跑一顆 LLM。首次會下載並<strong>快取</strong>模型（約 <strong>280MB</strong>，只下載一次），
+                    在你的裝置上跑一顆 LLM。首次會下載並<strong>快取</strong>模型（約 <strong>550MB</strong>，只下載一次），
                     之後秒開、<strong>可隨時清除</strong>。運算完全在本機、<strong>會用到你裝置的 GPU / 記憶體</strong>。
                   </p>
                   <span class="brut-tag !normal-case {{ isMobile ? '!bg-punch !text-white !border-ink' : '' }}">
@@ -92,7 +92,7 @@
                   </span>
                   <button (click)="loadLocal()" class="brut-btn">
                     <span class="material-symbols-outlined" style="font-size:16px;">download</span>
-                    載入本地 AI（約 280MB）
+                    載入本地 AI（約 550MB）
                   </button>
                 }
                 @if (cacheInfo()) {
@@ -110,7 +110,7 @@
                 <div class="w-full max-w-xs h-3 border-2 border-ink bg-white overflow-hidden">
                   <div class="h-full bg-acid transition-[width] duration-200" [style.width.%]="localProgress()"></div>
                 </div>
-                <p class="text-[12px] text-on-surface-variant">第一次約 280MB，之後從快取秒開</p>
+                <p class="text-[12px] text-on-surface-variant">第一次約 550MB，之後從快取秒開</p>
               </div>
             }
           }
@@ -182,7 +182,7 @@
           @if (mode() === 'local' && modelCached() && localState() === 'ready') {
             <button (click)="clearCache()" [disabled]="clearing()" class="brut-tag cursor-pointer hover:bg-punch hover:text-white transition-colors disabled:opacity-50">
               <span class="material-symbols-outlined" style="font-size:14px;">delete</span>
-              {{ clearing() ? '清除中…' : '清除裝置上的本地模型（約 280MB）' }}
+              {{ clearing() ? '清除中…' : '清除裝置上的本地模型（約 550MB）' }}
             </button>
           }
         </div>
