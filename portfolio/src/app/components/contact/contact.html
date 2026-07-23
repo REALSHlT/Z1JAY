@@ -1,15 +1,19 @@
-<section id="contact" class="pt-[100px] md:pt-[140px] overflow-hidden">
+<section id="contact" class="pt-[100px] md:pt-[140px] sec-acid overflow-hidden relative">
+  <!-- Comic decorations -->
+  <div class="hidden md:block absolute top-16 left-8 w-64 h-48 halftone opacity-20 -rotate-3 pointer-events-none"></div>
+  <div class="hidden md:block absolute top-24 right-10 w-32 h-32 bg-white border-[3px] border-ink rounded-full pointer-events-none"></div>
 
-  <div class="max-w-[1440px] mx-auto px-5 md:px-12 flex flex-col items-center text-center">
+  <div class="max-w-[1440px] mx-auto px-5 md:px-12 flex flex-col items-center text-center relative">
 
-    <span class="sticker bg-acid -rotate-2 mb-8" appScrollReveal>
+    <span class="sticker bg-white -rotate-2 mb-8" appScrollReveal>
       <span class="w-2.5 h-2.5 rounded-full bg-punch inline-block animate-pulse"></span>
       Available for projects
     </span>
 
-    <h2 class="font-display uppercase leading-[0.95] tracking-tight mb-6" appScrollReveal>
+    <h2 class="font-display uppercase leading-[0.95] tracking-tight mb-6 relative" appScrollReveal>
+      <span class="burst absolute -top-10 -right-8 md:-right-24 w-28 h-28 rotate-12 !text-[13px] z-10">GO!</span>
       <span class="block text-[clamp(48px,10vw,140px)]">Let's Talk</span>
-      <span class="block text-[clamp(20px,3.6vw,44px)] mt-4">準備好打造下一個<mark class="bg-acid px-2">非凡的專案</mark>了嗎？</span>
+      <span class="block text-[clamp(20px,3.6vw,44px)] mt-4">準備好打造下一個<mark class="bg-white px-2 border-2 border-ink">非凡的專案</mark>了嗎？</span>
     </h2>
 
     <p class="text-[16px] leading-[1.8] text-on-surface-variant max-w-lg" appScrollReveal [revealDelay]="100">
@@ -17,7 +21,7 @@
     </p>
 
     <div class="flex flex-col sm:flex-row flex-wrap justify-center gap-5 mt-12" appScrollReveal [revealDelay]="200">
-      <a [href]="links.social.email" class="brut-btn">
+      <a [href]="links.social.email" class="brut-btn-punch">
         <span class="material-symbols-outlined" style="font-size:16px;">mail</span> Email
       </a>
       <a [href]="links.social.phone" class="brut-btn-ghost">

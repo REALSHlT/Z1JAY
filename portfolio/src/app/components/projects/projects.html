@@ -7,50 +7,65 @@
     <span class="brut-label text-on-surface-variant hidden md:block mb-2 ml-auto">Selected works 2022 — 2024</span>
   </div>
 
-  <div class="flex flex-col gap-12 md:gap-16">
+  <div class="flex flex-col gap-14 md:gap-20">
     @for (project of projects; track project.title; let i = $index) {
       <a [href]="project.link" target="_blank" rel="noopener"
-         class="group grid md:grid-cols-12 gap-6 md:gap-10 items-center cursor-pointer"
+         class="group relative block border-[3px] border-ink shadow-brut brut-hover cursor-pointer p-6 md:p-10 {{ tints[i % 4] }}"
+         [class.md:-rotate-[0.5deg]]="i % 2 === 0"
+         [class.md:rotate-[0.5deg]]="i % 2 === 1"
+         [class.md:ml-16]="i % 2 === 1"
+         [class.md:mr-16]="i % 2 === 0"
          appScrollReveal
          [revealClass]="i % 2 === 0 ? 'reveal-left' : 'reveal-right'">
 
-        <!-- Index number -->
-        <div class="hidden md:flex md:col-span-2 items-start justify-center">
-          <span class="font-display text-[80px] leading-none text-stroke group-hover:text-punch group-hover:[-webkit-text-stroke:0px] transition-all">
-            {{ '0' + (i + 1) }}
-          </span>
-        </div>
+        <!-- Panel halftone corner -->
+        <div class="absolute bottom-0 w-40 h-28 halftone pointer-events-none opacity-20"
+             [class.right-0]="i % 2 === 0" [class.left-0]="i % 2 === 1"></div>
 
-        <!-- Image frame -->
-        <div class="md:col-span-6 glitch-hover"
-             [class.md:order-last]="i % 2 === 1">
-          <div class="bg-white border-[3px] border-ink shadow-brut p-3 transition-transform duration-300
-                      group-hover:-translate-x-1 group-hover:-translate-y-1 group-hover:shadow-brut-lg"
-               [class.rotate-1]="i % 2 === 0"
-               [class.-rotate-1]="i % 2 === 1">
-            <div class="aspect-[16/9] overflow-hidden border-2 border-ink relative">
-              <img [src]="project.image" [alt]="project.title"
-                   class="w-full h-full object-cover" />
-              <span class="absolute top-3 right-3 sticker bg-acid !py-1.5 !px-3 opacity-0 group-hover:opacity-100 transition-opacity rotate-2">
-                Watch
-                <span class="material-symbols-outlined" style="font-size:14px;">north_east</span>
-              </span>
+        <!-- Overlapping giant index (half outside the panel) -->
+        <span class="absolute -top-10 font-display text-[72px] md:text-[100px] leading-none text-stroke
+                     group-hover:text-punch group-hover:[-webkit-text-stroke:0px] transition-all select-none"
+              [class.-left-4]="i % 2 === 0" [class.-right-4]="i % 2 === 1">
+          {{ '0' + (i + 1) }}
+        </span>
+
+        <!-- Onomatopoeia burst -->
+        <span class="burst absolute -top-8 w-24 h-24 z-10 !text-[13px] {{ i % 2 === 0 ? 'right-6 rotate-12' : 'left-6 -rotate-12' }} {{ i % 3 === 1 ? 'burst-volt' : i % 3 === 2 ? 'burst-acid' : '' }}">
+          {{ bursts[i % 4] }}
+        </span>
+
+        <div class="grid md:grid-cols-12 gap-6 md:gap-10 items-center">
+
+          <!-- Image frame -->
+          <div class="md:col-span-7 glitch-hover" [class.md:order-last]="i % 2 === 1">
+            <div class="bg-white border-[3px] border-ink shadow-brut-sm p-2.5 transition-transform duration-300
+                        group-hover:-translate-x-1 group-hover:-translate-y-1"
+                 [class.rotate-1]="i % 2 === 0"
+                 [class.-rotate-1]="i % 2 === 1">
+              <div class="aspect-[16/9] overflow-hidden border-2 border-ink relative">
+                <img [src]="project.image" [alt]="project.title"
+                     class="w-full h-full object-cover" />
+                <span class="absolute top-3 right-3 sticker bg-acid !py-1.5 !px-3 opacity-0 group-hover:opacity-100 transition-opacity rotate-2">
+                  Watch
+                  <span class="material-symbols-outlined" style="font-size:14px;">north_east</span>
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Info -->
-        <div class="md:col-span-4">
-          <span class="md:hidden font-mono font-bold text-[12px] text-punch">0{{ i + 1 }} /</span>
-          <h3 class="font-display text-[28px] md:text-[36px] leading-[1.15] mt-1 mb-3
-                     underline decoration-transparent decoration-[3px] underline-offset-8
-                     group-hover:decoration-acid transition-colors">
-            {{ project.title }}
-          </h3>
-          <div class="flex flex-wrap gap-2">
-            @for (tag of project.subtitle.split(' · '); track tag) {
-              <span class="brut-tag">{{ tag }}</span>
-            }
+          <!-- Info -->
+          <div class="md:col-span-5 relative">
+            <span class="md:hidden font-mono font-bold text-[12px] text-punch">0{{ i + 1 }} /</span>
+            <h3 class="font-display text-[28px] md:text-[36px] leading-[1.15] mt-1 mb-4
+                       underline decoration-transparent decoration-[3px] underline-offset-8
+                       group-hover:decoration-punch transition-colors">
+              {{ project.title }}
+            </h3>
+            <div class="flex flex-wrap gap-2">
+              @for (tag of project.subtitle.split(' · '); track tag) {
+                <span class="brut-tag">{{ tag }}</span>
+              }
+            </div>
           </div>
         </div>
       </a>

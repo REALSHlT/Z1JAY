@@ -12,10 +12,11 @@
       <span class="brut-label text-punch">05 /</span>
       <h2 class="section-heading !mb-0">AI 測試</h2>
       <span class="sticker bg-acid rotate-2 hidden md:inline-flex mb-2 ml-4">Live · Workers AI</span>
+      <span class="burst burst-volt w-24 h-24 -rotate-6 hidden lg:inline-flex ml-auto -mb-4 !text-[10px]">Beep<br/>Boop!</span>
     </div>
     <p class="text-[15px] leading-[1.8] text-on-surface-variant max-w-2xl mb-10 md:mb-14" appScrollReveal>
       這個區塊直接串接我部署在 Cloudflare Workers AI 上的模型 —
-      左邊可以和 AI 聊天，右邊輸入描述即可生成圖片，生成的圖片會化為這個區塊的背景。
+      左邊的 AI 認識我，歡迎問它任何關於我的問題；右邊輸入描述即可生成圖片，生成的圖片會化為這個區塊的背景。
     </p>
   </div>
 
@@ -64,7 +65,7 @@
           @if (messages().length === 0) {
             <div class="h-full min-h-[260px] flex flex-col items-center justify-center gap-3 text-center">
               <span class="material-symbols-outlined text-ink/30" style="font-size:40px;">forum</span>
-              <p class="brut-label text-on-surface-variant">輸入任何問題開始對話</p>
+              <p class="brut-label text-on-surface-variant !normal-case">這個 AI 認識站主，<br/>問它「Z1JAY 是誰？」試試看</p>
             </div>
           }
           @for (msg of messages(); track $index) {
@@ -90,7 +91,7 @@
 
         <div class="flex gap-3 mt-4">
           <input type="text" [(ngModel)]="chatInput" (keyup.enter)="sendChat()"
-                 placeholder="想聊點什麼？"
+                 placeholder="問我關於 Z1JAY 的事…"
                  class="flex-1 min-w-0 px-4 py-3 border-[3px] border-ink bg-white text-[14px]
                         placeholder:text-on-surface-variant/50 outline-none focus:bg-acid/20 transition-colors" />
           <button (click)="sendChat()" [disabled]="chatLoading()"
