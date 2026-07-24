@@ -43,6 +43,8 @@ const BIO_SECTIONS: { keys: RegExp; text: string }[] = [
     text: '個人產品 Snapbrify（snapbrify.com）：拍張照片就能自動生成 3D 用的 PBR 材質貼圖。' },
   { keys: /聯絡|聯繫|email|信箱|ig|instagram|找他|合作|contact/i,
     text: '聯絡方式：Email w6619willy@gmail.com、Instagram @z_jay_0723。' },
+  { keys: /框架|前端|後端|技術|技術棧|怎麼(做|寫|建|架|刻)|用(什麼|啥)(做|寫|技術|語言|框架)|這個(網站|網頁|站)|架站|react|angular|vue|svelte|next|framework|tech ?stack|built ?with|made ?with/i,
+    text: '這個作品集網站本身的技術：前端用 Angular（搭配 Tailwind CSS），不是 React 也不是 Vue；雲端 AI 聊天走 Cloudflare Workers AI 的 Llama 3.1 8B，本地 AI 用 WebLLM 在瀏覽器裡跑 Qwen 0.5B，圖片生成用 DreamShaper。整個網站由 Z1JAY 自己開發。' },
 ];
 
 /** 沒命中任何關鍵字時的預設概覽（身分 + 技能 + 作品） */
@@ -75,6 +77,7 @@ export class AiLab implements AfterViewInit, OnDestroy {
   readonly localProgressText = signal('');
   readonly localError = signal('');
   private engine?: import('@mlc-ai/web-llm').MLCEngine;
+  private s2t?: (text: string) => string; // 簡→繁轉換器（lazy load，本地模式才需要）
 
   // ── 本地模型快取狀態（讓使用者能清掉裝置上的 ~280MB）──
   readonly modelCached = signal(false);
@@ -110,6 +113,22 @@ export class AiLab implements AfterViewInit, OnDestroy {
 
   private clip(s: string, n: number): string {
     return s.length > n ? s.slice(0, n) + '…' : s;
+  }
+
+  /**
+   * 取得簡→繁轉換器（OpenCC，lazy import，只在本地模式用到時才載入）。
+   * Qwen 0.5B 訓練以簡體為主、prompt 壓不住簡體漂移 → 直接在輸出端強制轉繁，不靠模型自律。
+   * 載入失敗就退化成原樣（不轉），不阻斷聊天。
+   */
+  private async loadS2T(): Promise<(text: string) => string> {
+    if (this.s2t) return this.s2t;
+    try {
+      const OpenCC = await import('opencc-js/cn2t');
+      this.s2t = OpenCC.Converter({ from: 'cn', to: 'tw' });
+    } catch {
+      this.s2t = (t) => t;
+    }
+    return this.s2t;
   }
 
   /**
@@ -329,6 +348,7 @@ export class AiLab implements AfterViewInit, OnDestroy {
       summary,
     ].filter(Boolean).join('\n\n');
 
+    const toTW = await this.loadS2T(); // 先備好簡→繁轉換器
     const timeout = setTimeout(() => { try { this.engine?.interruptGenerate(); } catch { /* ignore */ } }, 30_000);
     try {
       const stream = await this.engine.chat.completions.create({
@@ -347,10 +367,11 @@ export class AiLab implements AfterViewInit, OnDestroy {
         const delta = chunk.choices[0]?.delta?.content ?? '';
         if (!delta) continue;
         acc += delta;
-        this.updateLastAssistant(this.display(acc));
+        // 每次都轉整段 acc → 串流中途的詞界問題會隨後續文字自動修正，最終結果必為繁體
+        this.updateLastAssistant(this.display(toTW(acc)));
         this.scrollToBottom();
       }
-      return acc;
+      return toTW(acc); // 回傳繁體版 → 圖片標記解析、存檔、摘要都用繁體
     } finally {
       clearTimeout(timeout);
     }
