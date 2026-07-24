@@ -22,7 +22,18 @@ const CHAT_MODELS = {
   gemma: '@cf/google/gemma-2b-it-lora',
 };
 
-const IMAGE_MODEL = '@cf/lykon/dreamshaper-8-lcm';
+/** 文生圖模型白名單（client 傳 model key 選用；不傳＝預設） */
+const IMAGE_MODELS = {
+  dreamshaper:      '@cf/lykon/dreamshaper-8-lcm',
+  'sdxl-lightning': '@cf/bytedance/stable-diffusion-xl-lightning',
+  'sdxl-base':      '@cf/stabilityai/stable-diffusion-xl-base-1.0',
+  'sd15-img2img':   '@cf/runwayml/stable-diffusion-v1-5-img2img',
+};
+/** 各模型建議步數（LCM / Lightning 少步數即可，SDXL base 吃滿 20） */
+const IMAGE_STEPS = {
+  dreamshaper: 8, 'sdxl-lightning': 8, 'sdxl-base': 20, 'sd15-img2img': 20,
+};
+const DEFAULT_IMAGE_MODEL = 'sdxl-base';
 
 const MAX_PROMPT_CHARS = 4000;
 const MAX_MESSAGES = 20;
@@ -212,6 +223,12 @@ async function handleImage(request, env, cors) {
     return json({ error: `prompt too long (max ${MAX_PROMPT_CHARS} chars)` }, 400, cors);
   }
 
+  const modelKey = body.model ?? DEFAULT_IMAGE_MODEL;
+  const model = IMAGE_MODELS[modelKey];
+  if (!model) {
+    return json({ error: `unknown image model "${modelKey}" — use one of: ${Object.keys(IMAGE_MODELS).join(', ')}` }, 400, cors);
+  }
+
   const clamp = (v, lo, hi, dflt) =>
     Number.isFinite(v) ? Math.min(Math.max(Math.round(v), lo), hi) : dflt;
 
@@ -219,16 +236,17 @@ async function handleImage(request, env, cors) {
     prompt: body.prompt,
     width: clamp(body.width, 256, 1024, 768),
     height: clamp(body.height, 256, 1024, 768),
-    num_steps: 20,
+    num_steps: clamp(body.num_steps, 1, 20, IMAGE_STEPS[modelKey] ?? 20),
   };
   if (typeof body.negative_prompt === 'string' && body.negative_prompt.length <= MAX_PROMPT_CHARS) {
     input.negative_prompt = body.negative_prompt;
   }
-  if (Number.isFinite(body.seed)) {
+  // sdxl-base 實測：帶固定 seed 會回傳全空白圖 → 這顆一律忽略 seed
+  if (Number.isFinite(body.seed) && modelKey !== 'sdxl-base') {
     input.seed = Math.round(body.seed);
   }
 
-  const stream = await env.AI.run(IMAGE_MODEL, input);
+  const stream = await env.AI.run(model, input);
 
   return new Response(stream, {
     headers: { 'Content-Type': 'image/png', ...cors },
@@ -251,7 +269,7 @@ export default {
           service: 'z1jay-ai',
           endpoints: {
             'POST /chat': { body: '{ prompt } or { messages }', optional: '{ model: "llama" | "gemma" }' },
-            'POST /image': { body: '{ prompt, negative_prompt?, width?, height?, seed? }', returns: 'image/png' },
+            'POST /image': { body: '{ prompt, negative_prompt?, width?, height?, num_steps?, seed? }', optional: `{ model: ${Object.keys(IMAGE_MODELS).map((k) => `"${k}"`).join(' | ')} }`, returns: 'image/png' },
           },
         }, 200, cors);
       }

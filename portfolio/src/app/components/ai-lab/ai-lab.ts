@@ -433,7 +433,8 @@ export class AiLab implements AfterViewInit, OnDestroy {
       const res = await fetch(`${LINKS.ai.worker}/image`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: imgPrompt, width: 768, height: 768 }),
+        // SDXL Base 需要 1024 才有好畫質（768 會嚴重過曝糊掉）
+        body: JSON.stringify({ prompt: imgPrompt, width: 1024, height: 1024 }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const blob = await res.blob();
