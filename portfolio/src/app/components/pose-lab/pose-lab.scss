@@ -2,3 +2,11 @@
 :host {
   display: block;
 }
+
+/* 全螢幕時讓顯示區填滿整個螢幕（覆蓋 aspect-[4/3] 的比例限制） */
+.stage:fullscreen,
+.stage:-webkit-full-screen {
+  width: 100vw;
+  height: 100vh;
+  aspect-ratio: auto;
+}

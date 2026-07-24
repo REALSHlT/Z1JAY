@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, ViewChild, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, ViewChild, signal } from '@angular/core';
 import { ScrollRevealDirective } from '../../directives/scroll-reveal.directive';
 import type {
   FilesetResolver as FilesetResolverT,
@@ -25,6 +25,9 @@ const FACE_MODEL = 'assets/models/face_landmarker.task';
 export class PoseLab implements OnDestroy {
   @ViewChild('video') videoRef?: ElementRef<HTMLVideoElement>;
   @ViewChild('display') displayRef?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('stage') stageRef?: ElementRef<HTMLDivElement>;
+
+  readonly isFullscreen = signal(false);
 
   readonly state = signal<EngineState>('idle');
   readonly statusText = signal('');
@@ -32,11 +35,14 @@ export class PoseLab implements OnDestroy {
   readonly errorText = signal('');
   readonly mode = signal<Mode>('pose');
 
+  readonly faceMissing = signal(false);
+
   private pose?: PoseLandmarkerT;
   private face?: FaceLandmarkerT;
   private poseConnections: Conn[] = [];
   private faceMesh: Conn[] = [];
   private faceOval: Conn[] = [];
+  private faceContours: Conn[] = [];
 
   private stream?: MediaStream;
   private facingMode: 'user' | 'environment' = 'user';
@@ -91,6 +97,8 @@ export class PoseLab implements OnDestroy {
       this.poseConnections = (PoseLandmarker as typeof PoseLandmarkerT).POSE_CONNECTIONS as Conn[];
       this.faceMesh = (FaceLandmarker as typeof FaceLandmarkerT).FACE_LANDMARKS_TESSELATION as Conn[];
       this.faceOval = (FaceLandmarker as typeof FaceLandmarkerT).FACE_LANDMARKS_FACE_OVAL as Conn[];
+      // 五官輪廓（眼/眉/唇/臉型/虹膜）— 用來加粗畫，讓網格清楚可見
+      this.faceContours = ((FaceLandmarker as typeof FaceLandmarkerT).FACE_LANDMARKS_CONTOURS as Conn[]) ?? this.faceOval;
       this.backend.set(delegate === 'GPU' ? 'GPU · WebGL 加速' : 'CPU · WASM');
 
       this.state.set('ready');
@@ -149,6 +157,32 @@ export class PoseLab implements OnDestroy {
 
   setMode(m: Mode): void {
     this.mode.set(m);
+    this.faceMissing.set(false);
+  }
+
+  /** 全螢幕切換（把顯示區送進全螢幕，看追蹤更大）。含 Safari webkit 前綴後備。 */
+  async toggleFullscreen(): Promise<void> {
+    const el = this.stageRef?.nativeElement as
+      (HTMLElement & { webkitRequestFullscreen?: () => Promise<void> }) | undefined;
+    const doc = document as Document & {
+      webkitFullscreenElement?: Element;
+      webkitExitFullscreen?: () => Promise<void>;
+    };
+    try {
+      if (!document.fullscreenElement && !doc.webkitFullscreenElement) {
+        await (el?.requestFullscreen?.() ?? el?.webkitRequestFullscreen?.());
+      } else {
+        await (document.exitFullscreen?.() ?? doc.webkitExitFullscreen?.());
+      }
+    } catch { /* 使用者取消或不支援就忽略 */ }
+  }
+
+  /** 全螢幕狀態改變（含按 Esc 離開）時同步按鈕圖示 */
+  @HostListener('document:fullscreenchange')
+  @HostListener('document:webkitfullscreenchange')
+  onFullscreenChange(): void {
+    const doc = document as Document & { webkitFullscreenElement?: Element };
+    this.isFullscreen.set(!!(document.fullscreenElement ?? doc.webkitFullscreenElement));
   }
 
   stopCamera(): void {
@@ -156,6 +190,7 @@ export class PoseLab implements OnDestroy {
     cancelAnimationFrame(this.rafId);
     this.stream?.getTracks().forEach((t) => t.stop());
     this.stream = undefined;
+    this.faceMissing.set(false);
     if (this.state() === 'running') {
       this.state.set('ready');
       this.statusText.set('已停止 — 可再次開啟鏡頭');
@@ -196,6 +231,7 @@ export class PoseLab implements OnDestroy {
     const acid = this.themeColor('--acid-rgb');
     const punch = this.themeColor('--punch-rgb');
     const ink = this.themeColor('--ink-rgb');
+    const volt = this.themeColor('--volt-rgb');
 
     try {
       if (this.mode() === 'pose' && this.pose) {
@@ -203,10 +239,13 @@ export class PoseLab implements OnDestroy {
         for (const lms of res.landmarks ?? []) this.drawPose(ctx, lms, w, h, mirror, acid, punch, ink);
       } else if (this.mode() === 'face' && this.face) {
         const res = this.face.detectForVideo(video, ts);
-        for (const lms of res.faceLandmarks ?? []) this.drawFace(ctx, lms, w, h, mirror, acid, punch);
+        const faces = res.faceLandmarks ?? [];
+        this.faceMissing.set(faces.length === 0);
+        for (const lms of faces) this.drawFace(ctx, lms, w, h, mirror, acid, punch, volt);
       }
-    } catch {
-      // 單一影格偵測失敗就跳過，不中斷串流
+    } catch (e) {
+      // 單一影格偵測失敗就跳過，不中斷串流；但把錯誤印出來方便診斷
+      console.warn('mocap detectForVideo failed:', e);
     }
   }
 
@@ -242,34 +281,40 @@ export class PoseLab implements OnDestroy {
 
   private drawFace(
     ctx: CanvasRenderingContext2D, lms: NormalizedLandmark[], w: number, h: number,
-    mirror: boolean, acid: string, punch: string,
+    mirror: boolean, acid: string, punch: string, volt: string,
   ): void {
     const X = (lm: NormalizedLandmark) => (mirror ? 1 - lm.x : lm.x) * w;
     const Y = (lm: NormalizedLandmark) => lm.y * h;
+    const s = Math.max(w / 640, 0.75); // 線寬隨畫布尺寸縮放，全螢幕放大也清楚
 
-    // 細網格（tesselation）
-    ctx.strokeStyle = this.rgba('--acid-rgb', 0.55);
-    ctx.lineWidth = 0.8;
-    ctx.beginPath();
-    for (const c of this.faceMesh) {
-      const a = lms[c.start], b = lms[c.end];
-      if (!a || !b) continue;
-      ctx.moveTo(X(a), Y(a));
-      ctx.lineTo(X(b), Y(b));
-    }
-    ctx.stroke();
+    const strokeConns = (conns: Conn[], style: string, width: number) => {
+      ctx.strokeStyle = style;
+      ctx.lineWidth = width;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      for (const c of conns) {
+        const a = lms[c.start], b = lms[c.end];
+        if (!a || !b) continue;
+        ctx.moveTo(X(a), Y(a));
+        ctx.lineTo(X(b), Y(b));
+      }
+      ctx.stroke();
+    };
 
-    // 臉部輪廓加粗
-    ctx.strokeStyle = punch;
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    for (const c of this.faceOval) {
-      const a = lms[c.start], b = lms[c.end];
-      if (!a || !b) continue;
-      ctx.moveTo(X(a), Y(a));
-      ctx.lineTo(X(b), Y(b));
+    // 1) 細網格（tesselation）— 提高不透明度與線寬，避免糊到看不見
+    strokeConns(this.faceMesh, this.rgba('--acid-rgb', 0.65), 1.1 * s);
+    // 2) 五官輪廓（眼/眉/唇/臉型）加粗，讓結構清楚
+    strokeConns(this.faceContours, punch, 2.8 * s);
+
+    // 3) 虹膜點（478 點含雙眼虹膜 468–477）
+    ctx.fillStyle = volt;
+    for (let i = 468; i < lms.length; i++) {
+      const lm = lms[i];
+      if (!lm) continue;
+      ctx.beginPath();
+      ctx.arc(X(lm), Y(lm), 2.4 * s, 0, Math.PI * 2);
+      ctx.fill();
     }
-    ctx.stroke();
   }
 
   private themeColor(varName: string): string {

@@ -45,7 +45,7 @@
         }
 
         <!-- 顯示區 -->
-        <div class="relative border-2 border-ink bg-ink aspect-[4/3] overflow-hidden flex items-center justify-center">
+        <div #stage class="stage relative border-2 border-ink bg-ink aspect-[4/3] overflow-hidden flex items-center justify-center">
 
           <video #video playsinline muted class="hidden"></video>
           <canvas #display class="w-full h-full object-contain" [class.hidden]="state() !== 'running'"></canvas>
@@ -88,7 +88,21 @@
                 LIVE
               </span>
             </div>
+
+            @if (mode() === 'face' && faceMissing()) {
+              <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                <span class="brut-tag !bg-punch !text-white !border-white !normal-case">
+                  <span class="material-symbols-outlined" style="font-size:14px;">face</span>
+                  把臉對準鏡頭
+                </span>
+              </div>
+            }
             <div class="absolute bottom-3 right-3 flex items-center gap-2">
+              <button (click)="toggleFullscreen()"
+                      class="brut-tag !bg-ink !text-paper !border-paper cursor-pointer hover:!bg-acid hover:!text-ink transition-colors">
+                <span class="material-symbols-outlined" style="font-size:14px;">{{ isFullscreen() ? 'fullscreen_exit' : 'fullscreen' }}</span>
+                {{ isFullscreen() ? '離開' : '全螢幕' }}
+              </button>
               <button (click)="flipCamera()"
                       class="brut-tag !bg-ink !text-paper !border-paper cursor-pointer hover:!bg-volt transition-colors">
                 <span class="material-symbols-outlined" style="font-size:14px;">flip_camera_ios</span>
