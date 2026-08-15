@@ -46,5 +46,18 @@ export class Img {
   readonly avif = computed(() => srcsetFor(this.name(), 'avif'));
   readonly webp = computed(() => srcsetFor(this.name(), 'webp'));
   readonly fallback = computed(() => fallbackFor(this.name()));
-  readonly dim = computed(() => IMAGES[this.name()]);
+
+  /**
+   * data/images.ts 是手動維護的清單，跑完 `npm run images` 很容易忘了同步。
+   * 漏掉時不要讓整個變更偵測炸掉（先前就發生過：未註冊的名稱讓 dim().w 拋錯，
+   * 連帶把後面所有區塊都渲染不出來），改成印出明確警告並輸出無尺寸的圖。
+   */
+  readonly dim = computed(() => {
+    const entry = IMAGES[this.name()];
+    if (!entry) {
+      console.warn(`[app-img] "${this.name()}" 不在 data/images.ts 的 IMAGES 清單中 — 跑 npm run images 後記得補上`);
+      return { w: null, h: null };
+    }
+    return entry;
+  });
 }

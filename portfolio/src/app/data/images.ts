@@ -16,6 +16,15 @@ export type ImageEntry = {
 };
 
 export const IMAGES: Record<string, ImageEntry> = {
+  // 《The Gentle Trigger》成品影格（自 03.3D/04.render 取出，2560×1080 CinemaScope）
+  // tgt-npr-before 來自較早的版本《Where do we stand》，與 tgt-npr 是同一顆鏡頭
+  'tgt-water':               { w: 2560, h: 1080, widths: [400, 800, 1200, 1600], fb: 1600 },
+  'tgt-npr':                 { w: 2560, h: 1080, widths: [400, 800, 1200, 1600], fb: 1600 },
+  'tgt-npr-before':          { w: 2560, h: 1080, widths: [400, 800, 1200, 1600], fb: 1600 },
+  'tgt-rooftop':             { w: 2560, h: 1080, widths: [400, 800, 1200, 1600], fb: 1600 },
+  'tgt-hand':                { w: 2560, h: 1080, widths: [400, 800, 1200, 1600], fb: 1600 },
+  'tgt-bottle':              { w: 2560, h: 1080, widths: [400, 800, 1200, 1600], fb: 1600 },
+  'tgt-court':               { w: 2560, h: 1080, widths: [400, 800, 1200, 1600], fb: 1600 },
   'TheGentleTrigger':        { w: 2560, h: 1080, widths: [400, 800, 1200, 1600], fb: 1600 },
   'Order':                   { w: 1918, h: 1078, widths: [400, 800, 1200, 1600], fb: 1600 },
   'maxresdefault':           { w: 1280, h:  720, widths: [400, 800, 1200],       fb: 1200 },

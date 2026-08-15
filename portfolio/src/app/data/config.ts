@@ -43,18 +43,25 @@ export type NavSection = {
  * 順序＝頁面順序＝區塊編號順序。動這裡就等於動全站導覽，
  * 記得同步各區塊模板裡的「01 /」編號。
  */
+/**
+ * 順序＝頁面順序＝區塊編號。敘事動線：
+ *   先看到作品 → 相信背後的能力 → 看見我做的工具 → 看見完整產品
+ *   → 認識這個人 → 查核經歷 → 動手玩玩看 → 談合作
+ * 招募者最想先看到的是「作品」，所以它排在能力之前。
+ */
 export const NAV_SECTIONS: NavSection[] = [
-  { id: 'hero',           label: '首頁',     icon: 'home',                bottom: true },
-  { id: 'skills',         label: '核心專業', icon: 'psychology',          bottom: true },
-  { id: 'work',           label: '作品集',   icon: 'view_in_ar',          bottom: true },
-  { id: 'about',          label: '關於我',   icon: 'person' },
-  { id: 'collaborate',    label: '合作方式', icon: 'handshake' },
-  { id: 'platforms',      label: '線上展示', icon: 'public' },
-  { id: 'experience',     label: '過去經歷', icon: 'timeline' },
-  { id: 'ai-lab',         label: 'AI 測試',  icon: 'smart_toy',           bottom: true },
-  { id: 'pose-lab',       label: '動態捕捉', icon: 'accessibility_new' },
-  { id: 'certifications', label: '專業證照', icon: 'workspace_premium' },
-  { id: 'contact',        label: '聯繫',     icon: 'mail',                bottom: true },
+  { id: 'hero',        label: '首頁',     icon: 'home',       bottom: true },
+  { id: 'work',        label: '作品',     icon: 'view_in_ar', bottom: true },
+  { id: 'skills',      label: '核心專業', icon: 'psychology', bottom: true },
+  { id: 'tools',       label: '工具開發', icon: 'build' },
+  { id: 'products',    label: '產品',     icon: 'rocket_launch' },
+  { id: 'about',       label: '關於我',   icon: 'person' },
+  { id: 'experience',  label: '經歷',     icon: 'timeline' },
+  { id: 'ai-lab',      label: 'AI 助手',  icon: 'smart_toy',  bottom: true },
+  { id: 'pose-lab',    label: '即時動捕', icon: 'accessibility_new' },
+  { id: 'credentials', label: '資歷',     icon: 'workspace_premium' },
+  { id: 'collaborate', label: '合作',     icon: 'handshake' },
+  { id: 'contact',     label: '聯繫',     icon: 'mail',       bottom: true },
 ];
 
 // ── 核心強項 ─────────────────────────────────────────────────────────────────
@@ -219,6 +226,140 @@ export const OTHER_ABILITIES: string[] = [
   '數位模型轉實體製造 — 3D 列印、刀模與紙材加工',
 ];
 
+// ── 工具與整合 ───────────────────────────────────────────────────────────────
+export type ToolProject = {
+  name: string;
+  zh: string;
+  version?: string;
+  /** 一句話講它解決什麼問題 */
+  tagline: string;
+  icon: string;
+  points: string[];
+  /** 若建立在他人研究之上，一定要標註來源 */
+  basedOn?: string;
+  link?: string;
+};
+
+/**
+ * 我自己寫的工具。
+ * 這一區的重點是「把研究成果變成美術實際可用的東西」— Technical Artist 的核心價值。
+ */
+export const TOOL_PROJECTS: ToolProject[] = [
+  {
+    name: 'Blender AI Controller',
+    zh: 'Blender 自然語言代理',
+    version: 'v4.5.0',
+    tagline: '用本地 LLM 在 Blender 裡下自然語言指令，直接建立與修改場景。',
+    icon: 'smart_toy',
+    points: [
+      '完全在本地跑 Ollama 模型 — 不需雲端、不需 API key，場景資料不外流',
+      'Ask / Plan / Agent 三種模式；Agent 另有唯讀、逐步確認、全自動三級權限',
+      '兩階段規劃：計畫只存步驟名稱，bpy 程式碼在執行前才對當下場景生成 — 提示長度不隨任務複雜度爆增，後續步驟也能依前面的實際結果調整',
+      '失敗自動診斷：把錯誤、先前失敗的嘗試與已知陷阱一起回餵，模型先說出根因再給修正版',
+      '逐步視覺驗證：AI 自選視角，隱藏攝影機自動取景截圖，交給視覺模型檢查再決定是否繼續',
+      'AST 安全掃描：模組白名單、移除危險內建（open / eval / exec）、阻擋 dunder 存取與破壞性操作',
+    ],
+  },
+  {
+    name: 'GVHMR Motion Capture',
+    zh: '影片轉動捕 Blender 外掛',
+    version: 'v1.2.0',
+    tagline: '把單目影片轉成 Blender 可用的骨架動畫，一個面板走完全程。',
+    icon: 'videocam',
+    basedOn: '基於 zju3dv（浙江大學）的 GVHMR 研究專案 — 我做的是 Blender 整合與工作流程',
+    points: [
+      '五步驟面板：選影片 → 決定存檔位置 → 拍攝設定 → 執行推論 → 匯入骨架',
+      '可選 FFmpeg 前處理轉換 FPS，避免影格率不符導致動作抖動',
+      '推論跑在背景執行緒，Blender UI 全程不凍結，並即時回報進度',
+      'Rodrigues 旋轉向量轉四元數，逐幀套用到 SMPL 的 24 根骨頭',
+      '自動搜尋輸出結果；找不到時可手動指定 PKL，不會卡死',
+    ],
+  },
+  {
+    name: 'SNAPBRIFY PBR Importer',
+    zh: 'Snapbrify 材質匯入外掛',
+    tagline: '在 Blender 裡直接登入帳號，把雲端材質接成 Principled BSDF。',
+    icon: 'texture',
+    points: [
+      '於 Blender 內登入 snapbrify.com，瀏覽自己產生的材質庫',
+      '一鍵匯入並自動接線成 Principled BSDF，含 ORM 封裝的拆解',
+      '同時相容舊版的分離通道格式',
+    ],
+  },
+];
+
+export type Integration = {
+  name: string;
+  source: string;
+  use: string;
+};
+
+/**
+ * 明確標示「這些不是我的研究」。
+ * 誠實標註來源比含糊帶過更有說服力 — 而且這領域的人一眼就認得出這些專案。
+ */
+export const INTEGRATIONS: Integration[] = [
+  { name: 'GVHMR',        source: 'zju3dv · 浙江大學',        use: '單目影片轉 3D 人體動作 — 自製 Blender 外掛接成可用流程' },
+  { name: 'Kimodo',       source: 'NVIDIA Toronto AI Lab',    use: '動作生成 — 輸出後透過 Rokoko 重定向套用到角色骨架' },
+  { name: 'Hunyuan3D 2.1', source: '騰訊',                    use: '影像轉 3D 模型 — 建置可運行環境並接入資產流程' },
+  { name: 'HY-Motion 1.0', source: '騰訊',                    use: '文字轉動作 — 建置可運行環境並接入動畫流程' },
+];
+
+export const INTEGRATION_NOTE =
+  '這些是別人的研究專案，不是我的作品。它們多半只有命令列介面與難搞的環境需求 — ' +
+  '我做的是把它們在 Windows 上建起來、串進 Blender 或 Rokoko 的實際製作流程，讓美術真的用得到。';
+
+// ── 產品 ─────────────────────────────────────────────────────────────────────
+export type ProductEntry = {
+  name: string;
+  zh: string;
+  tagline: string;
+  detail: string;
+  icon: string;
+  stack: string[];
+  status: string;
+  link?: string;
+  linkLabel?: string;
+};
+
+export const PRODUCTS: ProductEntry[] = [
+  {
+    name: 'Snapbrify',
+    zh: '照片轉 PBR 材質',
+    tagline: '拍一張照片，產生 3D 軟體可直接使用的六通道 PBR 貼圖組。',
+    detail:
+      '深度估計模型直接在瀏覽器內以 WebGPU 執行，照片全程不離開使用者裝置。' +
+      '場景深度模型本來不適用於平面材質 — 以去傾斜、超低頻抑制與頻率融合三道修正校正輸出，' +
+      '實測高頻細節提升約 3.9 倍、削波減少約 20 倍，且不增加任何下載量與推論時間。',
+    icon: 'texture',
+    stack: ['Node.js', 'MongoDB', 'Cloudflare R2', 'transformers.js', 'WebGPU', 'Three.js'],
+    status: '已上線營運',
+    link: LINKS.platforms.snapbrify,
+    linkLabel: '立即使用',
+  },
+  {
+    name: 'Second Guess',
+    zh: '《再猜看看》',
+    tagline: '以猜拳為外殼、以「宣告 × 拆穿」為核心的雙人心理對戰遊戲。',
+    detail:
+      '你以為在玩猜拳，其實在判斷「這個人現在有沒有在騙我」。' +
+      '包含完整的核心系統設計文件（規則、數值、猜疑鍊引擎），以及一支程序化美術生成器 — ' +
+      '用程式產生斜切錯版風格的視覺資產。',
+    icon: 'sports_esports',
+    stack: ['Godot 4.6', 'GDScript', 'Python'],
+    status: 'MVP 開發中',
+  },
+  {
+    name: 'ChessSaga',
+    zh: '3D 西洋棋',
+    tagline: '以 Unity 製作的 3D 棋類遊戲，自建關卡與棋組資產。',
+    detail: '從 3D 模型、關卡場景到 UI 與遊戲邏輯皆自行製作，已有可執行版本。',
+    icon: 'view_in_ar',
+    stack: ['Unity', 'C#', 'Blender'],
+    status: 'v0.1.0 Alpha',
+  },
+];
+
 // ── 關於我 ───────────────────────────────────────────────────────────────────
 export type StoryBlock = {
   heading: string;
@@ -356,6 +497,33 @@ export type ProjectEntry = {
   role: string;
   offsetClass: string;
   revealClass: 'reveal' | 'reveal-left' | 'reveal-right';
+};
+
+// ── 主打作品：《The Gentle Trigger》案例 ──────────────────────────────────────
+export type Still = { image: string; caption: string; note: string };
+
+/**
+ * 成品影格取自 03.3D/04.render。
+ * 本作有一個較早的版本《Where do we stand》，兩版共用部分鏡頭 —
+ * 其中「水桶與水管」那顆在兩版之間從寫實渲染改成 NPR，剛好成為現成的前後對照。
+ */
+export const TGT_STILLS: Still[] = [
+  { image: 'tgt-npr',     caption: 'NPR 風格渲染', note: '以 Blender 節點做描邊與半調網點，讓實拍質感的場景轉成印刷風格' },
+  { image: 'tgt-water',   caption: '水體與構圖',   note: '空拍視角的水面著色與泡沫細節，大量留白帶出孤立感' },
+  { image: 'tgt-hand',    caption: '光影與材質',   note: '水面下的手部打光，處理透光、折射與濕潤感' },
+  { image: 'tgt-rooftop', caption: '大氣與體積光', note: '黃昏頂樓的體積雲與城市剪影，磚牆帶半調處理' },
+  { image: 'tgt-bottle',  caption: '液體與玻璃',   note: '傾倒的瓶身與流動液體，玻璃折射與地面磁磚的反射' },
+  { image: 'tgt-court',   caption: '角色與室內光', note: '法庭場景的角色配置與多光源室內佈光' },
+];
+
+export const TGT_COMPARISON = {
+  before: 'tgt-npr-before',
+  after:  'tgt-npr',
+  beforeLabel: '寫實渲染',
+  afterLabel:  'NPR 風格化',
+  note:
+    '同一顆鏡頭在前後兩版之間的變化 — 從物理寫實的 PBR 渲染，' +
+    '改為以 Blender 節點加上描邊與半調網點的印刷風格。場景與燈光不變，只換掉著色策略。',
 };
 
 export const PROJECTS: ProjectEntry[] = [

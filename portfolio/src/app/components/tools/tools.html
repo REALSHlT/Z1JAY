@@ -1,0 +1,84 @@
+<section id="tools" class="section-py sec-white relative overflow-hidden">
+  <div class="hidden md:block absolute top-12 right-0 w-64 h-48 halftone opacity-25 rotate-2 pointer-events-none"></div>
+
+  <div class="max-w-[1440px] mx-auto px-5 md:px-12 relative">
+
+    <div class="flex items-end gap-4 mb-4" appScrollReveal>
+      <span class="brut-label text-punch">03 /</span>
+      <h2 class="section-heading !mb-0">工具開發</h2>
+      <span class="burst w-24 h-24 rotate-12 hidden lg:inline-flex ml-auto -mb-4 !text-[11px]">Build!</span>
+    </div>
+    <p class="text-[15px] leading-[1.8] text-on-surface-variant max-w-2xl mb-10 md:mb-14" appScrollReveal>
+      研究成果跟能上工的工具之間，隔著一段沒人想做的距離。我做的就是這段。
+    </p>
+
+    <!-- ══ 自製工具 ══ -->
+    <div class="flex flex-col gap-8">
+      @for (tool of toolProjects; track tool.name; let i = $index) {
+        <article class="win" appScrollReveal [revealClass]="i % 2 === 0 ? 'reveal-left' : 'reveal-right'">
+
+          <div class="win-titlebar">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            <span class="ml-2 truncate">{{ tool.name }}</span>
+            @if (tool.version) {
+              <span class="ml-auto bg-acid text-ink px-2 py-0.5 text-[10px] border border-paper flex-shrink-0">{{ tool.version }}</span>
+            }
+          </div>
+
+          <div class="p-6 md:p-8 grid lg:grid-cols-12 gap-6 lg:gap-10">
+
+            <div class="lg:col-span-4">
+              <div class="w-12 h-12 bg-volt border-[3px] border-ink shadow-brut-sm flex items-center justify-center -rotate-3 mb-4">
+                <span class="material-symbols-outlined text-white" style="font-size:24px;" aria-hidden="true">{{ tool.icon }}</span>
+              </div>
+              <h3 class="font-display text-[21px] md:text-[24px] leading-[1.2]">{{ tool.name }}</h3>
+              <p class="brut-label text-punch mt-1.5">{{ tool.zh }}</p>
+              <p class="text-[14px] leading-[1.75] mt-3 font-bold">{{ tool.tagline }}</p>
+
+              @if (tool.basedOn) {
+                <div class="mt-4 bg-paper border-2 border-ink p-3 flex gap-2.5 items-start">
+                  <span class="material-symbols-outlined text-punch flex-shrink-0" style="font-size:16px;" aria-hidden="true">info</span>
+                  <p class="text-[12px] leading-[1.65]">{{ tool.basedOn }}</p>
+                </div>
+              }
+            </div>
+
+            <ul class="lg:col-span-8 space-y-2.5 content-start">
+              @for (point of tool.points; track point) {
+                <li class="text-[14px] leading-[1.75] text-on-surface-variant flex gap-2.5">
+                  <span class="text-punch font-bold flex-shrink-0" aria-hidden="true">▪</span>
+                  <span>{{ point }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        </article>
+      }
+    </div>
+
+    <!-- ══ 研究專案整合（明確標示非自有）══ -->
+    <div class="mt-16 md:mt-24" appScrollReveal>
+      <div class="flex items-end gap-4 mb-5">
+        <h3 class="font-display text-[24px] md:text-[32px] leading-none">研究專案整合</h3>
+        <span class="h-[3px] flex-1 bg-ink mb-2"></span>
+      </div>
+
+      <p class="text-[14px] leading-[1.8] text-on-surface-variant max-w-3xl mb-8 border-l-[3px] border-punch pl-4">
+        {{ integrationNote }}
+      </p>
+
+      <div class="grid sm:grid-cols-2 gap-5">
+        @for (item of integrations; track item.name) {
+          <div class="brut-card p-5">
+            <div class="flex items-baseline gap-3 mb-2 flex-wrap">
+              <h4 class="font-display text-[18px]">{{ item.name }}</h4>
+              <span class="brut-label !text-[10px] text-on-surface-variant normal-case">{{ item.source }}</span>
+            </div>
+            <p class="text-[13px] leading-[1.7] text-on-surface-variant">{{ item.use }}</p>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+</section>

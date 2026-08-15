@@ -3,9 +3,10 @@ import { Nav } from './components/nav/nav';
 import { Hero } from './components/hero/hero';
 import { Skills } from './components/skills/skills';
 import { Projects } from './components/projects/projects';
+import { Tools } from './components/tools/tools';
+import { Products } from './components/products/products';
 import { About } from './components/about/about';
 import { Collaborate } from './components/collaborate/collaborate';
-import { Platforms } from './components/platforms/platforms';
 import { Experience } from './components/experience/experience';
 import { AiLab } from './components/ai-lab/ai-lab';
 import { PoseLab } from './components/pose-lab/pose-lab';
@@ -22,9 +23,10 @@ import { CertModal } from './components/cert-modal/cert-modal';
     Hero,
     Skills,
     Projects,
+    Tools,
+    Products,
     About,
     Collaborate,
-    Platforms,
     Experience,
     AiLab,
     PoseLab,

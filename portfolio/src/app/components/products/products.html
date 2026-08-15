@@ -1,0 +1,61 @@
+<section id="products" class="section-py sec-punch-tint relative overflow-hidden">
+  <div class="hidden md:block absolute bottom-16 -right-10 w-40 h-40 bg-acid border-[3px] border-ink rounded-full pointer-events-none"></div>
+
+  <div class="max-w-[1440px] mx-auto px-5 md:px-12 relative">
+
+    <div class="flex items-end gap-4 mb-4" appScrollReveal>
+      <span class="brut-label text-punch">04 /</span>
+      <h2 class="section-heading !mb-0">產品</h2>
+    </div>
+    <p class="text-[15px] leading-[1.8] text-on-surface-variant max-w-2xl mb-10 md:mb-14" appScrollReveal>
+      不是練習作，是真的做完並且推出去的東西。
+    </p>
+
+    <div class="flex flex-col gap-8 md:gap-10">
+      @for (p of products; track p.name; let i = $index) {
+        <article class="brut-card p-6 md:p-9 relative"
+                 [class.md:-rotate-[0.3deg]]="i % 2 === 0"
+                 [class.md:rotate-[0.3deg]]="i % 2 === 1"
+                 appScrollReveal [revealClass]="i % 2 === 0 ? 'reveal-left' : 'reveal-right'">
+
+          <div class="grid lg:grid-cols-12 gap-6 lg:gap-10">
+
+            <div class="lg:col-span-4">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 flex-shrink-0 bg-acid border-[3px] border-ink shadow-brut-sm flex items-center justify-center -rotate-3">
+                  <span class="material-symbols-outlined" style="font-size:24px;" aria-hidden="true">{{ p.icon }}</span>
+                </div>
+                <div class="min-w-0">
+                  <h3 class="font-display text-[22px] md:text-[26px] leading-[1.15]">{{ p.name }}</h3>
+                  <p class="brut-label text-punch mt-1">{{ p.zh }}</p>
+                </div>
+              </div>
+
+              <span class="sticker inline-flex bg-white mt-5 !text-[10px] rotate-1">{{ p.status }}</span>
+
+              @if (p.link) {
+                <div class="mt-5">
+                  <a [href]="p.link" target="_blank" rel="noopener noreferrer" class="brut-btn">
+                    <span class="material-symbols-outlined" style="font-size:16px;" aria-hidden="true">open_in_new</span>
+                    {{ p.linkLabel }}
+                  </a>
+                </div>
+              }
+            </div>
+
+            <div class="lg:col-span-8">
+              <p class="text-[16px] md:text-[18px] leading-[1.6] font-bold mb-3">{{ p.tagline }}</p>
+              <p class="text-[14px] leading-[1.8] text-on-surface-variant mb-5">{{ p.detail }}</p>
+              <div class="flex flex-wrap gap-2">
+                @for (t of p.stack; track t) {
+                  <span class="brut-tag !normal-case">{{ t }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+
+  </div>
+</section>
