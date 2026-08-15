@@ -159,9 +159,15 @@ export const CORE_SKILLS: CoreSkill[] = [
     evidence: '獨力開發並營運 Snapbrify（snapbrify.com）— 從模型整合、後端、前端到 Blender 外掛',
     areas: [
       {
-        title: '模型訓練與整合',
+        title: '模型訓練',
         points: [
-          'FLUX.2 klein 的 LoRA 微調訓練，依實際產出需求調校',
+          'LoRA 微調訓練：資料集整理、訓練、成效評估與反覆調校',
+          '在本地端環境運行與訓練模型，而非僅呼叫現成 API',
+        ],
+      },
+      {
+        title: '流程整合',
+        points: [
           '串接多個生成式模型成可重複執行的流程，讓非技術人員也能直接使用',
         ],
       },
@@ -174,9 +180,10 @@ export const CORE_SKILLS: CoreSkill[] = [
         ],
       },
       {
-        title: '產品化',
+        title: '產品化 — Snapbrify',
         points: [
-          'Snapbrify 全端獨力開發：Node.js + MongoDB Atlas + Cloudflare R2，含帳號、配額與專案管理',
+          '拿一個真的要上線的題目來練前後端，最後做成完整的個人產品',
+          '全端獨力開發：Node.js + MongoDB Atlas + Cloudflare R2，含帳號、配額與專案管理',
           '產出六通道 PBR（Basecolor / Roughness / AO / Height / Metallic / Normal），ORM 封裝為無損 PNG',
           '另發布 Blender 外掛，可直接把雲端材質建成 Principled BSDF',
         ],
@@ -246,6 +253,15 @@ export const STORY: StoryBlock[] = [
       '我的養分來自遊戲和動畫，但看的方式不太一樣 — 我會去分析背後的製作邏輯與流程，' +
       '想這個效果是怎麼做出來的、從業人員在這裡會遇到什麼問題、他們怎麼解決。' +
       '很多技術上的想法都是這樣長出來的。',
+  },
+  {
+    icon: 'rocket_launch',
+    heading: '需要什麼就去學什麼',
+    body:
+      '前端與後端是我開始工作之後才學的。與其把教學看完再說，我直接挑一個' +
+      '真的要上線的題目來練 — 那就是 Snapbrify。從帳號系統、配額管理、雲端儲存' +
+      '到讓 AI 直接在瀏覽器裡跑，一路踩坑一路補，最後把它做成一個對外開放、' +
+      '任何人都能實際使用的產品。',
   },
   {
     icon: 'precision_manufacturing',
@@ -445,13 +461,20 @@ export const EXPERIENCE: ExperienceEntry[] = [
     highlight: true,
   },
   {
+    year: '2026',
+    period: '2026/04 — 現在',
+    title: 'Snapbrify — 個人產品開發',
+    org: '個人專案',
+    description:
+      '以「必須真的能上線」為前提自學前後端，獨力完成並營運 snapbrify.com：' +
+      '照片轉 PBR 材質的線上服務，含帳號與配額系統、端上 AI 推論，以及 Blender 外掛。',
+  },
+  {
     year: '2025',
     period: '2025/10 — 12',
     title: '作品集製作',
     org: '個人專案',
-    description:
-      '整理並重製個人作品集，同時投入 Snapbrify 的開發 — ' +
-      '一個把照片轉成 3D 可用 PBR 材質貼圖組的線上服務。',
+    description: '整理並重製個人作品集，重新梳理過去幾年的作品與技術脈絡。',
   },
   {
     year: '2025',
