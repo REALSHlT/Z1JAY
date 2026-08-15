@@ -40,6 +40,90 @@ section[id] { scroll-margin-top: 88px; }
   html { scroll-behavior: auto; }
 }
 
+/* ══ 動態層 ═══════════════════════════════════
+   全部以 prefers-reduced-motion 為前提；使用者要求減少動態時，
+   下面每一項都會退化成靜態且完全可用。 */
+
+/* 預載期間鎖住捲動，幕簾收完才放開 */
+html.is-loading, html.is-loading body { overflow: hidden; }
+
+/* Lenis 平滑捲動接管時，關掉瀏覽器原生的 smooth（兩者會打架） */
+html.lenis, html.lenis body { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+
+/* ── 捲動進度條 ─────────────────────────────── */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  z-index: 60;
+  background: transparent;
+  pointer-events: none;
+
+  i {
+    display: block;
+    height: 100%;
+    background: rgb(var(--punch-rgb));
+    transform-origin: left center;
+    /* --scroll-progress 由 MotionService 每幀寫入，不經過變更偵測 */
+    transform: scaleX(var(--scroll-progress, 0));
+  }
+}
+
+/* ── 動態文字進場 ───────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .split-mask {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    /* 留一點行高空間，否則有下伸部的字（g/y/p）會被遮罩切到 */
+    padding-bottom: .12em;
+    margin-bottom: -.12em;
+  }
+
+  .split-unit {
+    display: inline-block;
+    transform: translateY(110%) rotate(4deg);
+    opacity: 0;
+    transition: transform .72s cubic-bezier(.22, 1, .36, 1),
+                opacity .5s ease;
+    will-change: transform;
+  }
+
+  .split-in .split-unit {
+    transform: translateY(0) rotate(0);
+    opacity: 1;
+  }
+}
+
+/* ── 磁吸按鈕 ───────────────────────────────── */
+.magnetic {
+  /* transform 由 JS 每幀寫入；這裡只負責「放手後彈回」的緩動 */
+  transition: transform .35s cubic-bezier(.22, 1, .36, 1);
+  will-change: transform;
+}
+/* 磁吸元素自己會用 transform，所以 hover 位移改用陰影表現，避免互相覆蓋 */
+.magnetic:hover { box-shadow: 9px 9px 0 rgb(var(--ink-rgb)); }
+
+/* ── IntersectionObserver 失效時的逃生門 ─────
+   由 MotionService.installRevealFallback() 掛上，避免整站文字停在 opacity:0 */
+.motion-fallback {
+  .split-unit { opacity: 1 !important; transform: none !important; }
+  .reveal, .reveal-left, .reveal-right, .reveal-scale { opacity: 1 !important; transform: none !important; }
+  .reveal-clip { clip-path: none !important; }
+}
+
+/* ── 圖片遮罩式進場 ─────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-clip {
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 1s cubic-bezier(.76, 0, .24, 1);
+  }
+  .reveal-clip.visible { clip-path: inset(0 0 0 0); }
+}
+
 /* ── 鍵盤可及性 ─────────────────────────────── */
 
 /* 跳過導覽列 — 只有鍵盤聚焦時才出現 */

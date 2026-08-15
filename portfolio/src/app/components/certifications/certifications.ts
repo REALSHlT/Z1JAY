@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ScrollRevealDirective } from '../../directives/scroll-reveal.directive';
+import { SplitTextDirective } from '../../directives/split-text.directive';
 import { Img } from '../shared/img';
 import { CERTS, CertEntry, LINKS } from '../../data/config';
 import { fallbackFor } from '../../data/images';
@@ -14,7 +15,7 @@ import { CertModalService } from '../cert-modal/cert-modal.service';
 @Component({
   selector: 'app-certifications',
   standalone: true,
-  imports: [ScrollRevealDirective, Img],
+  imports: [ScrollRevealDirective, Img, SplitTextDirective],
   templateUrl: './certifications.html',
   styleUrl: './certifications.scss',
 })

@@ -14,6 +14,8 @@ import { Certifications } from './components/certifications/certifications';
 import { Contact } from './components/contact/contact';
 import { Footer } from './components/footer/footer';
 import { CertModal } from './components/cert-modal/cert-modal';
+import { Preloader } from './components/preloader/preloader';
+import { MotionService } from './services/motion.service';
 
 @Component({
   selector: 'app-root',
@@ -34,12 +36,14 @@ import { CertModal } from './components/cert-modal/cert-modal';
     Contact,
     Footer,
     CertModal,
+    Preloader,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App implements AfterViewInit, OnDestroy {
   private readonly zone = inject(NgZone);
+  private readonly motion = inject(MotionService);
 
   private readonly dot = viewChild<ElementRef<HTMLElement>>('cursorDot');
   private readonly ring = viewChild<ElementRef<HTMLElement>>('cursorRing');
@@ -61,6 +65,11 @@ export class App implements AfterViewInit, OnDestroy {
    *       (3) 用 requestAnimationFrame 合併，每個影格最多畫一次，直接改 DOM style。
    */
   ngAfterViewInit(): void {
+    // 平滑捲動（減少動態模式下不會載入 Lenis）
+    this.motion.initSmoothScroll();
+    // IO 若沒動靜就強制顯示所有進場元素，避免整站停在空白狀態
+    this.motion.installRevealFallback();
+
     if (!matchMedia('(pointer: fine)').matches) return;
 
     this.zone.runOutsideAngular(() => {
@@ -90,6 +99,7 @@ export class App implements AfterViewInit, OnDestroy {
   };
 
   ngOnDestroy(): void {
+    this.motion.destroy();
     this.teardown?.();
     if (this.frame) cancelAnimationFrame(this.frame);
   }

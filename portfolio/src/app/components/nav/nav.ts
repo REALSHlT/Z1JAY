@@ -1,11 +1,12 @@
 import { AfterViewInit, Component, NgZone, OnDestroy, inject, signal } from '@angular/core';
 import { NAV_SECTIONS, NavSection } from '../../data/config';
 import { Img } from '../shared/img';
+import { MagneticDirective } from '../../directives/magnetic.directive';
 
 @Component({
   selector: 'app-nav',
   standalone: true,
-  imports: [Img],
+  imports: [Img, MagneticDirective],
   templateUrl: './nav.html',
   styleUrl: './nav.scss',
 })

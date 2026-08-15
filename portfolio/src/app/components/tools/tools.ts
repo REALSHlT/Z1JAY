@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { ScrollRevealDirective } from '../../directives/scroll-reveal.directive';
+import { SplitTextDirective } from '../../directives/split-text.directive';
 import { INTEGRATIONS, INTEGRATION_NOTE, Integration, TOOL_PROJECTS, ToolProject } from '../../data/config';
 
 @Component({
   selector: 'app-tools',
   standalone: true,
-  imports: [ScrollRevealDirective],
+  imports: [ScrollRevealDirective, SplitTextDirective],
   templateUrl: './tools.html',
   styleUrl: './tools.scss',
 })

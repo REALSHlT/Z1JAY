@@ -1,6 +1,11 @@
 <!-- 鍵盤使用者可直接跳過導覽列到主要內容 -->
 <a href="#hero" class="skip-link">跳到主要內容</a>
 
+<app-preloader></app-preloader>
+
+<!-- 捲動進度條 — 由 --scroll-progress 這個 CSS 變數驅動（MotionService 每幀寫入，不經變更偵測） -->
+<div class="scroll-progress" aria-hidden="true"><i></i></div>
+
 <div class="bg-ambient"></div>
 
 <!-- Custom cursor (desktop only; transform written directly in app.ts, styled in styles.scss) -->

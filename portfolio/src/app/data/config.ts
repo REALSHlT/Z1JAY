@@ -39,11 +39,8 @@ export type NavSection = {
 /**
  * 單一事實來源 — 頂部導覽、手機底部列、頁尾網站地圖共用同一份，
  * 才不會像先前那樣三個地方各漏掉不同的區塊。
+ * 動這裡就等於動全站導覽，記得同步各區塊模板裡的「01 /」編號。
  *
- * 順序＝頁面順序＝區塊編號順序。動這裡就等於動全站導覽，
- * 記得同步各區塊模板裡的「01 /」編號。
- */
-/**
  * 順序＝頁面順序＝區塊編號。敘事動線：
  *   先看到作品 → 相信背後的能力 → 看見我做的工具 → 看見完整產品
  *   → 認識這個人 → 查核經歷 → 動手玩玩看 → 談合作
@@ -308,6 +305,38 @@ export const INTEGRATIONS: Integration[] = [
 export const INTEGRATION_NOTE =
   '這些是別人的研究專案，不是我的作品。它們多半只有命令列介面與難搞的環境需求 — ' +
   '我做的是把它們在 Windows 上建起來、串進 Blender 或 Rokoko 的實際製作流程，讓美術真的用得到。';
+
+// ── 早期作品 ─────────────────────────────────────────────────────────────────
+export type EarlyWork = {
+  /** data/images.ts 的鍵 */
+  image: string;
+  title: string;
+  note: string;
+  /** 直式圖在瀑布流裡跨兩列 */
+  tall?: boolean;
+};
+
+/**
+ * 2021–2022 的練習與習作。
+ * ⚠️ 這些專案的原始檔已經沒有了，畫面只剩下當年發在 Instagram 上的版本 —
+ * 因此最大只有 640px，不要拿去做大圖或首屏，只適合縮圖牆。
+ */
+export const EARLY_WORKS: EarlyWork[] = [
+  { image: 'ig-toothless',     title: '無牙仔',       note: '角色綁定與動畫測試', tall: true },
+  { image: 'ig-toothless-rig', title: '無牙仔 · 骨架', note: '同一角色的骨架與控制器配置', tall: true },
+  { image: 'ig-vending',       title: '飲料販賣機',   note: '硬表面建模與貼圖，含自製招牌圖樣' },
+  { image: 'ig-boot',          title: '皮靴',         note: '皮革材質、縫線細節與棚燈打光' },
+  { image: 'ig-face',          title: '造型與機械',   note: '風格化造型搭配機械角色' },
+  { image: 'ig-train',         title: '車廂',         note: '手繪風格的場景與光線' },
+  { image: 'ig-doll',          title: '布偶',         note: '布料垂墜與戶外光' },
+  { image: 'ig-snowman',       title: '雪人',         note: '雪地材質與環境光' },
+  { image: 'ig-scroll',        title: '卷軸',         note: '早期的材質與形變練習' },
+  { image: 'ig-workshop',      title: '紙紮工坊',     note: '實體製作現場 — 數位模型落地成紙材結構' },
+];
+
+export const EARLY_WORKS_NOTE =
+  '2021–2022 的練習與習作。這些專案的原始檔已經佚失，畫面只剩下當年發布在 Instagram 上的版本，' +
+  '所以解析度偏低 — 放在這裡是為了把學習軌跡補完整。';
 
 // ── 產品 ─────────────────────────────────────────────────────────────────────
 export type ProductEntry = {
@@ -614,35 +643,43 @@ export type ExperienceEntry = {
 };
 
 /**
- * 時間軸完整覆蓋 2022 → 現在，中間不留無法解釋的空白。
- * 招募者掃履歷時第一個找的就是斷點。
+ * 時間軸由舊到新（2022 → 2026），由上往下讀就是一條完整的職涯線，
+ * 中間不留無法解釋的空白 — 招募者掃履歷時第一個找的就是斷點。
  */
 export const EXPERIENCE: ExperienceEntry[] = [
   {
-    year: '2026',
-    period: '2026/01 — 現在',
-    title: '3D 動畫 & AI 工作流程開發',
-    org: '寶成國際集團',
+    year: '2022',
+    title: '大學畢業 & 教師',
+    org: '嶺東科技大學',
     description:
-      '負責 3D 動畫製作，涵蓋動態、PBR 渲染與燈光、後製。' +
-      '同時獨立建置生成式 AI 工作流程與模型訓練架構，並參與相關前端開發。',
-    highlight: true,
+      '於嶺東科技大學數位媒體設計系畢業，同年起擔任嶺東高中、台中高工與明台高中教師' +
+      '直至 2024 年，並同步攻讀碩士學位。',
   },
   {
-    year: '2026',
-    period: '2026/04 — 現在',
-    title: 'Snapbrify — 個人產品開發',
-    org: '個人專案',
+    year: '2023',
+    title: '3D 互動講師',
+    org: '勞動部發展署',
     description:
-      '以「必須真的能上線」為前提自學前後端，獨力完成並營運 snapbrify.com：' +
-      '照片轉 PBR 材質的線上服務，含帳號與配額系統、端上 AI 推論，以及 Blender 外掛。',
+      '受勞動部發展署委託擔任講師，以 MAYA 與 Unreal Engine 5 設計元宇宙場景基本互動。' +
+      '同年完成「AI 動態捕捉技術對 3D 動畫流程影響之技術報告書」與' +
+      '「語音辨識對遊玩意願之影響——以遊戲 ORDER 為例」兩篇論文。',
   },
   {
     year: '2025',
-    period: '2025/10 — 12',
-    title: '作品集製作',
-    org: '個人專案',
-    description: '整理並重製個人作品集，重新梳理過去幾年的作品與技術脈絡。',
+    period: '2025/01',
+    title: '取得碩士學位',
+    org: '嶺東科技大學',
+    description:
+      '數位媒體設計系碩士。畢業製作《The Gentle Trigger》與論文' +
+      '「《以柔膛問心》之 3D 動畫創作論述」於 2024 年完成。',
+    highlight: true,
+  },
+  {
+    year: '2025',
+    period: '2025 上半年',
+    title: '服義務役',
+    org: '中華民國國軍',
+    description: '役期四個月。',
   },
   {
     year: '2025',
@@ -656,36 +693,28 @@ export const EXPERIENCE: ExperienceEntry[] = [
   },
   {
     year: '2025',
-    period: '2025 上半年',
-    title: '服義務役',
-    org: '中華民國國軍',
-    description: '役期四個月。',
+    period: '2025/10 — 12',
+    title: '作品集製作',
+    org: '個人專案',
+    description: '整理並重製個人作品集，重新梳理過去幾年的作品與技術脈絡。',
   },
   {
-    year: '2025',
-    period: '2025/01',
-    title: '取得碩士學位',
-    org: '嶺東科技大學',
+    year: '2026',
+    period: '2026/04 — 現在',
+    title: 'Snapbrify — 個人產品開發',
+    org: '個人專案',
     description:
-      '數位媒體設計系碩士。畢業製作《The Gentle Trigger》與論文' +
-      '「《以柔膛問心》之 3D 動畫創作論述」於 2024 年完成。',
+      '以「必須真的能上線」為前提自學前後端，獨力完成並營運 snapbrify.com：' +
+      '照片轉 PBR 材質的線上服務，含帳號與配額系統、端上 AI 推論，以及 Blender 外掛。',
+  },
+  {
+    year: '2026',
+    period: '2026/01 — 現在',
+    title: '3D 動畫 & AI 工作流程開發',
+    org: '寶成國際集團',
+    description:
+      '負責 3D 動畫製作，涵蓋動態、PBR 渲染與燈光、後製。' +
+      '同時獨立建置生成式 AI 工作流程與模型訓練架構，並參與相關前端開發。',
     highlight: true,
-  },
-  {
-    year: '2023',
-    title: '3D 互動講師',
-    org: '勞動部發展署',
-    description:
-      '受勞動部發展署委託擔任講師，以 MAYA 與 Unreal Engine 5 設計元宇宙場景基本互動。' +
-      '同年完成「AI 動態捕捉技術對 3D 動畫流程影響之技術報告書」與' +
-      '「語音辨識對遊玩意願之影響——以遊戲 ORDER 為例」兩篇論文。',
-  },
-  {
-    year: '2022',
-    title: '大學畢業 & 教師',
-    org: '嶺東科技大學',
-    description:
-      '於嶺東科技大學數位媒體設計系畢業，同年起擔任嶺東高中、台中高工與明台高中教師' +
-      '直至 2024 年，並同步攻讀碩士學位。',
   },
 ];

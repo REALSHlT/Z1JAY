@@ -1,11 +1,12 @@
 import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, inject, viewChild } from '@angular/core';
 import { ScrollRevealDirective } from '../../directives/scroll-reveal.directive';
 import { Img } from '../shared/img';
+import { MagneticDirective } from '../../directives/magnetic.directive';
 
 @Component({
   selector: 'app-hero',
   standalone: true,
-  imports: [ScrollRevealDirective, Img],
+  imports: [ScrollRevealDirective, Img, MagneticDirective],
   templateUrl: './hero.html',
   styleUrl: './hero.scss',
 })

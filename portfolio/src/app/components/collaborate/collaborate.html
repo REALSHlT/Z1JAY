@@ -6,7 +6,7 @@
 
     <div class="flex items-end gap-4 mb-4" appScrollReveal>
       <span class="brut-label text-punch">10 /</span>
-      <h2 class="section-heading !mb-0">合作方式</h2>
+      <h2 class="section-heading !mb-0" appSplitText>合作方式</h2>
     </div>
     <p class="text-[15px] leading-[1.8] text-on-surface-variant max-w-2xl mb-10 md:mb-14" appScrollReveal>
       以下是我平常負責的範圍，以及一個專案實際會怎麼跑。
@@ -77,7 +77,7 @@
       </div>
       <div class="p-6 md:p-8 flex flex-col sm:flex-row sm:items-center gap-5">
         <p class="text-[14px] leading-[1.8] text-on-surface-variant flex-1">{{ note }}</p>
-        <a [href]="links.social.email" class="brut-btn flex-shrink-0 justify-center">
+        <a [href]="links.social.email" class="brut-btn flex-shrink-0 justify-center" appMagnetic>
           <span class="material-symbols-outlined" style="font-size:16px;" aria-hidden="true">mail</span>
           聊聊
         </a>

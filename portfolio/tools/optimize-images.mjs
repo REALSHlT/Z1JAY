@@ -38,7 +38,11 @@ for (const file of files) {
 
   const meta = await sharp(abs).metadata();
   const widths = WIDTHS.filter((w) => w <= meta.width);
-  if (widths.length === 0) widths.push(meta.width);
+  // 來源比最小級距還窄，或最大級距仍小於原圖 → 補上原生寬度，
+  // 否則像 640px 的來源只會產出 400px，白白丟掉解析度。
+  if (widths.length === 0 || widths[widths.length - 1] < meta.width) {
+    widths.push(meta.width);
+  }
 
   for (const w of widths) {
     for (const [fmt, opts] of [
