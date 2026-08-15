@@ -1,0 +1,88 @@
+<section id="collaborate" class="section-py sec-volt-tint relative overflow-hidden">
+  <!-- Comic decorations -->
+  <div class="hidden md:block absolute top-14 left-4 w-56 h-40 halftone opacity-25 -rotate-2 pointer-events-none"></div>
+
+  <div class="max-w-[1440px] mx-auto px-5 md:px-12 relative">
+
+    <div class="flex items-end gap-4 mb-4" appScrollReveal>
+      <span class="brut-label text-punch">04 /</span>
+      <h2 class="section-heading !mb-0">合作方式</h2>
+    </div>
+    <p class="text-[15px] leading-[1.8] text-on-surface-variant max-w-2xl mb-10 md:mb-14" appScrollReveal>
+      以下是我平常負責的範圍，以及一個專案實際會怎麼跑。
+    </p>
+
+    <!-- ══ 服務類型 ══ -->
+    <div class="grid md:grid-cols-3 gap-6 mb-16 md:mb-24">
+      @for (service of services; track service.title; let i = $index) {
+        <div class="brut-card brut-hover p-6 md:p-7"
+             [class.md:-rotate-[0.5deg]]="i === 0"
+             [class.md:rotate-[0.5deg]]="i === 2"
+             appScrollReveal [revealDelay]="i * 100" revealClass="reveal-scale">
+          <div class="w-12 h-12 bg-acid border-[3px] border-ink shadow-brut-sm flex items-center justify-center -rotate-3 mb-4">
+            <span class="material-symbols-outlined" style="font-size:24px;" aria-hidden="true">{{ service.icon }}</span>
+          </div>
+          <h3 class="font-display text-[19px] leading-[1.3] mb-2.5">{{ service.title }}</h3>
+          <p class="text-[14px] leading-[1.75] text-on-surface-variant">{{ service.detail }}</p>
+        </div>
+      }
+    </div>
+
+    <!-- ══ 製作流程 ══ -->
+    <div class="flex items-end gap-4 mb-8 md:mb-10" appScrollReveal>
+      <h3 class="font-display text-[24px] md:text-[36px] leading-none">製作流程</h3>
+      <span class="brut-label text-on-surface-variant mb-1">Blocking → Final</span>
+    </div>
+
+    <ol class="relative">
+      <!-- 垂直軸線（桌機） -->
+      <span class="hidden md:block absolute left-[27px] top-4 bottom-4 w-[3px] bg-ink" aria-hidden="true"></span>
+
+      @for (step of process; track step.phase; let i = $index) {
+        <li class="relative md:pl-20 mb-6 last:mb-0"
+            appScrollReveal [revealDelay]="i * 80" revealClass="reveal-left">
+
+          <!-- 階段編號圓標 -->
+          <span class="hidden md:flex absolute left-0 top-5 w-14 h-14 bg-acid border-[3px] border-ink
+                       items-center justify-center font-display text-[17px] z-10">
+            {{ step.phase }}
+          </span>
+
+          <div class="brut-card p-5 md:p-7">
+            <div class="flex items-baseline gap-3 mb-2">
+              <span class="md:hidden font-mono font-bold text-[12px] text-punch">{{ step.phase }} /</span>
+              <h4 class="font-display text-[18px] md:text-[21px]">{{ step.title }}</h4>
+            </div>
+            <p class="text-[14px] leading-[1.75] text-on-surface-variant">{{ step.detail }}</p>
+
+            @if (step.checkpoint) {
+              <div class="mt-4 flex gap-2.5 items-start bg-paper border-2 border-ink p-3">
+                <span class="material-symbols-outlined text-punch flex-shrink-0" style="font-size:17px;" aria-hidden="true">check_circle</span>
+                <p class="text-[13px] leading-[1.65]">
+                  <span class="brut-label text-punch">確認節點 —</span>
+                  {{ step.checkpoint }}
+                </p>
+              </div>
+            }
+          </div>
+        </li>
+      }
+    </ol>
+
+    <!-- ══ 說明 + CTA ══ -->
+    <div class="win mt-14 md:mt-20 max-w-3xl" appScrollReveal revealClass="reveal-scale">
+      <div class="win-titlebar">
+        <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+        <span class="ml-2">let's talk</span>
+      </div>
+      <div class="p-6 md:p-8 flex flex-col sm:flex-row sm:items-center gap-5">
+        <p class="text-[14px] leading-[1.8] text-on-surface-variant flex-1">{{ note }}</p>
+        <a [href]="links.social.email" class="brut-btn flex-shrink-0 justify-center">
+          <span class="material-symbols-outlined" style="font-size:16px;" aria-hidden="true">mail</span>
+          聊聊
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>

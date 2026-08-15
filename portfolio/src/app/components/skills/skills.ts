@@ -1,7 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { ScrollRevealDirective } from '../../directives/scroll-reveal.directive';
 import { Img } from '../shared/img';
-import { SKILLS, SkillEntry } from '../../data/config';
+import { CORE_SKILLS, CoreSkill, OTHER_ABILITIES, TOOLS, ToolEntry } from '../../data/config';
 
 @Component({
   selector: 'app-skills',
@@ -11,10 +11,7 @@ import { SKILLS, SkillEntry } from '../../data/config';
   styleUrl: './skills.scss',
 })
 export class Skills {
-  readonly skills: SkillEntry[] = SKILLS;
-  activeIndex = signal(0);
-
-  selectSkill(index: number): void {
-    this.activeIndex.set(index);
-  }
+  readonly coreSkills: CoreSkill[] = CORE_SKILLS;
+  readonly otherAbilities: string[] = OTHER_ABILITIES;
+  readonly tools: ToolEntry[] = TOOLS;
 }

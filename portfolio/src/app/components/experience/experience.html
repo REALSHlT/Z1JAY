@@ -6,12 +6,13 @@
   <div class="max-w-[1440px] mx-auto px-5 md:px-12 relative">
 
   <div class="flex items-end gap-4 mb-10 md:mb-14" appScrollReveal>
-    <span class="brut-label text-punch">04 /</span>
+    <span class="brut-label text-punch">06 /</span>
     <h2 class="section-heading !mb-0">過去經歷</h2>
   </div>
 
   <div class="flex flex-col gap-8 max-w-4xl">
-    @for (entry of experiences; track entry.year; let i = $index) {
+    <!-- track 用 title 不用 year：2025 有三筆（畢業／兵役／義聖香），year 會撞鍵 -->
+    @for (entry of experiences; track entry.title; let i = $index) {
       <div class="brut-card brut-hover grid md:grid-cols-12 gap-4 md:gap-8 p-6 md:p-8 relative"
            [class.md:-rotate-[0.4deg]]="i % 2 === 0"
            [class.md:rotate-[0.4deg]]="i % 2 === 1"
@@ -21,11 +22,14 @@
           <span class="sticker inline-flex bg-punch text-white absolute -top-4 right-6 rotate-2 !text-[10px]">Highlight</span>
         }
 
-        <!-- Giant year -->
-        <div class="md:col-span-3 flex md:justify-center items-start">
+        <!-- Giant year + 細部期間 -->
+        <div class="md:col-span-3 flex md:flex-col md:items-center items-baseline gap-3 md:gap-1.5">
           <span class="font-display text-[40px] md:text-[56px] leading-none"
                 [class.text-punch]="entry.highlight"
                 [class.text-stroke]="!entry.highlight">{{ entry.year }}</span>
+          @if (entry.period) {
+            <span class="brut-label !text-[10px] text-on-surface-variant whitespace-nowrap">{{ entry.period }}</span>
+          }
         </div>
 
         <div class="md:col-span-9">

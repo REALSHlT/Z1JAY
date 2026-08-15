@@ -5,103 +5,126 @@
 
   <div class="max-w-[1440px] mx-auto px-5 md:px-12 relative">
 
-  <div class="flex items-end gap-4 mb-10 md:mb-14" appScrollReveal>
+  <div class="flex items-end gap-4 mb-4" appScrollReveal>
     <span class="brut-label text-punch">01 /</span>
     <h2 class="section-heading !mb-0">核心專業</h2>
-    <span class="burst burst-volt w-24 h-24 rotate-12 hidden lg:inline-flex ml-auto -mb-4">8+<br/>Skills</span>
+    <span class="burst burst-volt w-24 h-24 rotate-12 hidden lg:inline-flex ml-auto -mb-4">3<br/>Core</span>
   </div>
+  <p class="text-[15px] leading-[1.8] text-on-surface-variant max-w-2xl mb-10 md:mb-14" appScrollReveal>
+    三個主要投入的方向。每一項都列出實際做得到的事，而不是「精通」兩個字。
+  </p>
 
-  <!-- ── Desktop: numbered list + viewer window ── -->
-  <div class="hidden md:flex gap-10 items-stretch">
+  <!-- ══ 三個核心強項 ══ -->
+  <div class="flex flex-col gap-8 md:gap-12">
+    @for (skill of coreSkills; track skill.en; let i = $index) {
+      <article class="brut-card p-6 md:p-10 relative"
+               [class.md:-rotate-[0.3deg]]="i % 2 === 0"
+               [class.md:rotate-[0.3deg]]="i % 2 === 1"
+               appScrollReveal [revealClass]="i % 2 === 0 ? 'reveal-left' : 'reveal-right'">
 
-    <!-- Skill list -->
-    <div class="w-1/3 flex flex-col border-[3px] border-ink bg-white shadow-brut" appScrollReveal revealClass="reveal-left">
-      @for (skill of skills; track skill.en; let i = $index) {
-        <button
-          (click)="selectSkill(i)"
-          class="group text-left px-6 py-4 flex items-center gap-4 border-b-2 border-ink/15 last:border-b-0 transition-colors"
-          [class.bg-acid]="activeIndex() === i"
-          [class.hover:bg-paper]="activeIndex() !== i">
-          <span class="font-mono font-bold text-[12px] w-8 flex-shrink-0"
-                [class.text-punch]="activeIndex() === i">{{ (i + 1) < 10 ? '0' + (i + 1) : i + 1 }}</span>
-          <span class="min-w-0">
-            <span class="block font-display text-[19px] leading-[1.2] truncate">{{ skill.en }}</span>
-            <span class="brut-label block mt-0.5 text-on-surface-variant">{{ skill.zh }}</span>
-          </span>
-          <span class="material-symbols-outlined ml-auto flex-shrink-0 transition-transform"
-                [class.translate-x-0]="activeIndex() === i"
-                [class.-translate-x-2]="activeIndex() !== i"
-                [class.opacity-0]="activeIndex() !== i"
-                style="font-size:20px;">arrow_forward</span>
-        </button>
-      }
-    </div>
+        <!-- 大編號 -->
+        <span class="absolute -top-8 -left-3 md:-left-5 font-display text-[64px] md:text-[88px] leading-none
+                     text-stroke select-none pointer-events-none">
+          {{ '0' + (i + 1) }}
+        </span>
 
-    <!-- Viewer window -->
-    <div class="w-2/3 win flex flex-col" appScrollReveal revealClass="reveal-right">
-      <div class="win-titlebar">
-        <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
-        <span class="ml-2">skill_viewer.exe — {{ skills[activeIndex()].en }}</span>
-      </div>
-      <div class="flex-1 min-h-[460px] relative overflow-hidden">
-        <div class="skill-slider-container">
-          @for (skill of skills; track skill.en; let i = $index) {
-            <div class="skill-slide h-full" [class.active]="activeIndex() === i">
-              @if (skill.image) {
-                <app-img [name]="skill.image" [alt]="skill.zh"
-                         sizes="(min-width: 768px) 62vw, 92vw"
-                         imgClass="w-full h-full object-cover" />
-                <div class="absolute bottom-0 left-0 right-0 bg-white border-t-[3px] border-ink p-5">
-                  <h3 class="font-display text-[24px] mb-1">{{ skill.zh }}</h3>
-                  <p class="text-[14px] leading-[1.7] text-on-surface-variant">{{ skill.description }}</p>
-                </div>
-              } @else {
-                <div class="h-full flex flex-col items-center justify-center gap-6 p-10 bg-paper relative">
-                  <div class="absolute inset-0 opacity-40"
-                       style="background-image: radial-gradient(#111 1.5px, transparent 1.5px); background-size: 22px 22px;"></div>
-                  <div class="relative z-10 w-24 h-24 bg-acid border-[3px] border-ink shadow-brut flex items-center justify-center rotate-3">
-                    <span class="material-symbols-outlined" style="font-size:44px;">{{ skill.icon ?? 'stars' }}</span>
-                  </div>
-                  <div class="relative z-10 text-center max-w-md">
-                    <h3 class="font-display text-[32px] mb-3">{{ skill.zh }}</h3>
-                    <p class="text-[15px] leading-[1.8] text-on-surface-variant">{{ skill.description }}</p>
-                  </div>
-                </div>
+        <div class="grid lg:grid-cols-12 gap-8 lg:gap-12">
+
+          <!-- 左：標題 + 定位 + 工具 -->
+          <div class="lg:col-span-4">
+            <div class="w-14 h-14 bg-acid border-[3px] border-ink shadow-brut-sm flex items-center justify-center -rotate-3 mb-5">
+              <span class="material-symbols-outlined" style="font-size:28px;" aria-hidden="true">{{ skill.icon }}</span>
+            </div>
+            <h3 class="font-display text-[26px] md:text-[32px] leading-[1.1]">{{ skill.en }}</h3>
+            <p class="brut-label text-punch mt-1.5">{{ skill.zh }}</p>
+            <p class="text-[15px] leading-[1.75] mt-4 font-bold">{{ skill.tagline }}</p>
+
+            <div class="flex flex-wrap gap-2 mt-5">
+              @for (tool of skill.tools; track tool) {
+                <span class="brut-tag !normal-case">{{ tool }}</span>
               }
             </div>
-          }
+
+            @if (skill.image) {
+              <div class="mt-6 border-[3px] border-ink shadow-brut-sm overflow-hidden aspect-[16/10] hidden lg:block">
+                <app-img [name]="skill.image" [alt]="skill.zh + ' 相關作品'"
+                         sizes="(min-width: 1024px) 30vw, 92vw"
+                         imgClass="w-full h-full object-cover" />
+              </div>
+            }
+          </div>
+
+          <!-- 右：細項 -->
+          <div class="lg:col-span-8 grid sm:grid-cols-2 gap-6 md:gap-8 content-start">
+            @for (area of skill.areas; track area.title) {
+              <div class="border-l-[3px] border-ink pl-4">
+                <h4 class="font-display text-[17px] mb-2.5">{{ area.title }}</h4>
+                <ul class="space-y-2">
+                  @for (point of area.points; track point) {
+                    <li class="text-[14px] leading-[1.7] text-on-surface-variant flex gap-2">
+                      <span class="text-punch font-bold flex-shrink-0" aria-hidden="true">▪</span>
+                      <span>{{ point }}</span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+
+            @if (skill.evidence) {
+              <div class="sm:col-span-2 bg-paper border-2 border-ink p-4 flex gap-3 items-start">
+                <span class="material-symbols-outlined text-punch flex-shrink-0" style="font-size:18px;" aria-hidden="true">verified</span>
+                <p class="text-[13px] leading-[1.7]">
+                  <span class="brut-label text-punch">佐證 —</span>
+                  {{ skill.evidence }}
+                </p>
+              </div>
+            }
+          </div>
         </div>
-      </div>
-    </div>
+      </article>
+    }
   </div>
 
-  <!-- ── Mobile: accordion ── -->
-  <div class="md:hidden flex flex-col gap-4">
-    @for (skill of skills; track skill.en; let i = $index) {
-      <details class="group bg-white border-[3px] border-ink shadow-brut-sm overflow-hidden">
-        <summary class="flex justify-between items-center p-4 cursor-pointer list-none">
-          <div class="flex items-center gap-3 min-w-0">
-            <span class="font-mono font-bold text-[11px] text-punch flex-shrink-0">{{ (i + 1) < 10 ? '0' + (i + 1) : i + 1 }}</span>
-            <div class="min-w-0">
-              <span class="block font-display text-[16px] leading-tight truncate">{{ skill.en }}</span>
-              <span class="brut-label block mt-0.5 text-on-surface-variant">{{ skill.zh }}</span>
-            </div>
-          </div>
-          <span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180 flex-shrink-0 ml-3"
-                style="font-size:22px;">expand_more</span>
-        </summary>
-        <div class="px-4 pb-4 border-t-2 border-ink/15 pt-3">
-          @if (skill.image) {
-            <app-img [name]="skill.image" [alt]="skill.zh"
-                     sizes="92vw"
-                     imgClass="w-full h-40 object-cover border-2 border-ink mb-3" />
-          }
-          @if (skill.description) {
-            <p class="text-[14px] leading-[1.7] text-on-surface-variant">{{ skill.description }}</p>
-          }
-        </div>
-      </details>
-    }
+  <!-- ══ 其他能力 + 工具 ══ -->
+  <div class="grid md:grid-cols-2 gap-8 md:gap-12 mt-16 md:mt-24" appScrollReveal>
+
+    <div>
+      <h3 class="font-display text-[22px] md:text-[26px] mb-5 flex items-center gap-3">
+        其他能力
+        <span class="h-[3px] flex-1 bg-ink"></span>
+      </h3>
+      <ul class="space-y-3">
+        @for (ability of otherAbilities; track ability) {
+          <li class="text-[14px] leading-[1.7] text-on-surface-variant flex gap-2.5">
+            <span class="text-punch font-bold flex-shrink-0" aria-hidden="true">▪</span>
+            <span>{{ ability }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+
+    <div>
+      <h3 class="font-display text-[22px] md:text-[26px] mb-5 flex items-center gap-3">
+        工具
+        <span class="h-[3px] flex-1 bg-ink"></span>
+      </h3>
+      <ul class="grid gap-2.5">
+        @for (tool of tools; track tool.name) {
+          <li class="flex items-center gap-3 border-b-2 border-ink/12 pb-2.5">
+            <span class="font-mono font-bold text-[13px] min-w-0 flex-1 truncate">{{ tool.name }}</span>
+            @if (tool.note) {
+              <span class="text-[12px] text-on-surface-variant hidden sm:inline">{{ tool.note }}</span>
+            }
+            <span class="brut-label !text-[9px] px-2 py-1 border-2 border-ink flex-shrink-0"
+                  [class.bg-acid]="tool.level === 'primary'"
+                  [class.bg-white]="tool.level !== 'primary'">
+              {{ tool.level === 'primary' ? '主力' : '可上工' }}
+            </span>
+          </li>
+        }
+      </ul>
+    </div>
+
   </div>
 
   </div>
