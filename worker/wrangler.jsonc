@@ -9,7 +9,20 @@
   "observability": {
     "enabled": true
   },
-  // Per-IP rate limiting with exact counters (per-minute + per-day)
+  "vars": {
+    // "production" | "development"
+    // development 才會把 http://localhost:* 加進 Origin 白名單。
+    // 正式環境留著 localhost 等於送給攻擊者一個永遠有效的偽造目標。
+    "ENVIRONMENT": "production",
+
+    // 全站每日 / 每分鐘用量天花板，以「單位」計（聊天 1 單位、生圖 10 單位）。
+    // 每 IP 限速對換 IP 的攻擊者無效，這兩個值才是保護 Workers AI 額度的硬牆。
+    // 預設 1200 單位/日 ≈ 1200 次聊天，或 120 張圖，或兩者混合。
+    "GLOBAL_DAILY_UNITS": "1200",
+    "GLOBAL_MINUTE_UNITS": "40"
+  },
+  // Per-IP rate limiting with exact counters (per-minute + per-day),
+  // 同一個 class 也用來維護全站預算計數器（instance name = "global"）。
   "durable_objects": {
     "bindings": [
       { "name": "IP_LIMITER", "class_name": "IpLimiter" }
@@ -18,4 +31,7 @@
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["IpLimiter"] }
   ]
+  // TURNSTILE_SECRET 是「密文」，不要寫在這裡。要啟用真人驗證時用：
+  //   npx wrangler secret put TURNSTILE_SECRET
+  // 未設定時 Worker 會安靜跳過 Turnstile 檢查，不影響現有前端。
 }

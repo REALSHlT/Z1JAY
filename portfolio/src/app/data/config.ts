@@ -14,20 +14,48 @@ export const LINKS = {
     artstation: 'https://www.artstation.com/z_jay',
   },
   platforms: {
-    sketchfabModel: 'https://sketchfab.com/models/193ce9edac9c4576a6131ff7d588ec2b/embed',
+    sketchfabProfile: 'https://sketchfab.com/z1jay.FollwMyInstagram',
+    sketchfabModel:   'https://sketchfab.com/models/193ce9edac9c4576a6131ff7d588ec2b/embed',
+    artstation:       'https://www.artstation.com/z_jay',
+    snapbrify:        'https://snapbrify.com/',
   },
   ai: {
     worker: 'https://z1jay-ai.z1jay.workers.dev',
   },
-  font: {
-    lxgwWenKai: 'https://github.com/lxgw/LxgwWenKai',
-    cdn:        'https://fontsapi.zeoseven.com/292/main/result.css',
-  },
+  /** 正式網址 — og:url / canonical 用 */
+  site: 'https://realshlt.github.io/Z1JAY/',
 } as const;
+
+// ── 導覽 ─────────────────────────────────────────────────────────────────────
+export type NavSection = {
+  id: string;
+  label: string;
+  /** Material Symbol，手機底部列與頁尾用 */
+  icon: string;
+  /** 是否放進手機底部列（只有 5 格，放太多會擠到點不到） */
+  bottom?: boolean;
+};
+
+/**
+ * 單一事實來源 — 頂部導覽、手機底部列、頁尾網站地圖共用同一份，
+ * 才不會像先前那樣三個地方各漏掉不同的區塊。
+ */
+export const NAV_SECTIONS: NavSection[] = [
+  { id: 'hero',           label: '首頁',     icon: 'home',                bottom: true },
+  { id: 'skills',         label: '核心專業', icon: 'psychology',          bottom: true },
+  { id: 'work',           label: '作品集',   icon: 'view_in_ar',          bottom: true },
+  { id: 'platforms',      label: '線上展示', icon: 'public' },
+  { id: 'experience',     label: '過去經歷', icon: 'timeline' },
+  { id: 'ai-lab',         label: 'AI 測試',  icon: 'smart_toy',           bottom: true },
+  { id: 'pose-lab',       label: '動態捕捉', icon: 'accessibility_new' },
+  { id: 'certifications', label: '專業證照', icon: 'workspace_premium' },
+  { id: 'contact',        label: '聯繫',     icon: 'mail',                bottom: true },
+];
 
 export type SkillEntry = {
   en: string;
   zh: string;
+  /** data/images.ts 清單中的鍵，不是路徑 */
   image?: string;
   description?: string;
   /** Material Symbol name shown in the text-only display panel */
@@ -35,15 +63,15 @@ export type SkillEntry = {
 };
 
 export const SKILLS: SkillEntry[] = [
-  { en: '3D Modeling',      zh: '3D 建模與材質', image: 'assets/images/TheGentleTrigger.png',
+  { en: '3D Modeling',      zh: '3D 建模與材質', image: 'TheGentleTrigger',
     description: '精細的多邊形建模與 PBR 材質系統，應用於角色、道具與場景的高品質視覺化。' },
   { en: 'Rigging',          zh: '骨架設計',       icon: 'accessibility_new',
-    description: '精確的骨架綁定與蒙皮权重調整，打造自然流暢的角色關節與臉部控制系統。' },
-  { en: 'Shader',           zh: '著色器設計',     image: 'assets/images/Order.png',
+    description: '精確的骨架綁定與蒙皮權重調整，打造自然流暢的角色關節與臉部控制系統。' },
+  { en: 'Shader',           zh: '著色器設計',     image: 'Order',
     description: '客製化 HLSL / GLSL 著色器與 NPR 風格渲染，實現高度個性化的視覺風格。' },
-  { en: '3D Animation',     zh: '3D 動態',        image: 'assets/images/maxresdefault.jpg',
+  { en: '3D Animation',     zh: '3D 動態',        image: 'maxresdefault',
     description: '關鍵幀動畫與動作曲線調整，結合物理模擬打造充滿生命力的動畫敘事。' },
-  { en: 'Motion Capture',   zh: '動態捕捉',       image: 'assets/images/noddy.jpg',
+  { en: 'Motion Capture',   zh: '動態捕捉',       image: 'noddy',
     description: 'AI 動態捕捉技術整合與資料清理，大幅縮短角色動畫的製作週期。' },
   { en: '3D Simulation',    zh: '3D 模擬',    icon: 'scatter_plot',
     description: '流體、布料、粒子等動態模擬技術，搭配 Houdini 與 Maya nCloth / nParticles，打造高擬真的視覺特效與場景氛圍。' },
@@ -66,7 +94,7 @@ export const PROJECTS: ProjectEntry[] = [
   {
     title: '《The Gentle Trigger》',
     subtitle: '3D動畫 · 立場論 · 電車難題',
-    image: 'assets/images/TheGentleTrigger.png',
+    image: 'TheGentleTrigger',
     link: LINKS.projects.gentleTrigger,
     offsetClass: '',
     revealClass: 'reveal-left',
@@ -74,7 +102,7 @@ export const PROJECTS: ProjectEntry[] = [
   {
     title: '《骨牌物語》',
     subtitle: '3D動畫 · NPR Shading · 台中市政府',
-    image: 'assets/images/maxresdefault.jpg',
+    image: 'maxresdefault',
     link: LINKS.projects.dominoStory,
     offsetClass: 'md:mt-24',
     revealClass: 'reveal-right',
@@ -82,7 +110,7 @@ export const PROJECTS: ProjectEntry[] = [
   {
     title: '《Order》',
     subtitle: '3D遊戲 · 聲音辨識 · Unreal Engine 5',
-    image: 'assets/images/Order.png',
+    image: 'Order',
     link: LINKS.projects.order,
     offsetClass: '',
     revealClass: 'reveal-left',
@@ -90,7 +118,7 @@ export const PROJECTS: ProjectEntry[] = [
   {
     title: '《Where is Noddy?》',
     subtitle: 'VR動畫 · 動態捕捉 · 高雄電影節',
-    image: 'assets/images/noddy.jpg',
+    image: 'noddy',
     link: LINKS.projects.whereIsNoddy,
     offsetClass: 'md:mt-24',
     revealClass: 'reveal-right',
@@ -108,7 +136,7 @@ export type CertEntry = {
 
 export const CERTS: CertEntry[] = [
   {
-    image: 'assets/images/autodesk-3dsmax-cert.jpg',
+    image: 'autodesk-3dsmax-cert',
     alt: 'Autodesk Certified Professional: 3ds Max',
     title: 'Autodesk Certified Professional',
     subtitle: '3ds Max®',
@@ -116,7 +144,7 @@ export const CERTS: CertEntry[] = [
     number: 'No. wMFJD-FavC',
   },
   {
-    image: 'assets/images/autodesk-maya-cert.jpg',
+    image: 'autodesk-maya-cert',
     alt: 'Autodesk Certified Professional: Maya',
     title: 'Autodesk Certified Professional',
     subtitle: 'Maya®',
@@ -124,7 +152,7 @@ export const CERTS: CertEntry[] = [
     number: 'No. CxUA-XVzo',
   },
   {
-    image: 'assets/images/ling-tung-teaching-cert.jpg',
+    image: 'ling-tung-teaching-cert',
     alt: '嶺東科技大學推廣教育部服務證明',
     title: '嶺東科技大學推廣教育部',
     subtitle: '服務證明 — 講師',

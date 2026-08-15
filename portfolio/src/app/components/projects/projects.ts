@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { ScrollRevealDirective } from '../../directives/scroll-reveal.directive';
+import { Img } from '../shared/img';
 import { PROJECTS, ProjectEntry } from '../../data/config';
 
 @Component({
   selector: 'app-projects',
   standalone: true,
-  imports: [ScrollRevealDirective],
+  imports: [ScrollRevealDirective, Img],
   templateUrl: './projects.html',
   styleUrl: './projects.scss',
 })

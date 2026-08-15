@@ -1,12 +1,14 @@
+<!-- 鍵盤使用者可直接跳過導覽列到主要內容 -->
+<a href="#hero" class="skip-link">跳到主要內容</a>
+
 <div class="bg-ambient"></div>
 
-<!-- Custom cursor (desktop only, styled in styles.scss) -->
-<div class="cursor-dot"  [style.transform]="'translate(' + cursorX() + 'px,' + cursorY() + 'px) translate(-50%,-50%)'"></div>
-<div class="cursor-ring" [class.is-hover]="cursorHover()"
-     [style.transform]="'translate(' + cursorX() + 'px,' + cursorY() + 'px) translate(-50%,-50%)'"></div>
+<!-- Custom cursor (desktop only; transform written directly in app.ts, styled in styles.scss) -->
+<div #cursorDot  class="cursor-dot"  aria-hidden="true"></div>
+<div #cursorRing class="cursor-ring" aria-hidden="true"></div>
 
 <app-nav></app-nav>
-<main class="w-full pb-20 md:pb-0">
+<main id="main" class="w-full pb-20 md:pb-0">
   <app-hero></app-hero>
   <app-skills></app-skills>
   <app-projects></app-projects>

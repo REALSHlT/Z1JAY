@@ -37,21 +37,25 @@
     <div class="mt-24 md:mt-16 mb-16 md:mb-24 flex flex-col md:flex-row gap-10 md:gap-16 items-start">
 
       <!-- Photo polaroid -->
-      <div class="relative mx-auto md:mx-0 flex-shrink-0" appScrollReveal revealClass="reveal-left"
-           [style.transform]="'translateY(' + parallaxY() + 'px)'">
+      <!-- 外層負責 scroll-reveal（transform 由 CSS class 控制），
+           內層 #photo 負責視差（transform 由 JS 寫）— 兩者分開才不會互相覆蓋 -->
+      <div class="relative mx-auto md:mx-0 flex-shrink-0" appScrollReveal revealClass="reveal-left">
+      <div #photo class="relative will-change-transform">
         <!-- Speech bubble -->
         <div class="speech-bubble absolute -top-12 right-0 md:-top-14 md:-right-20 rotate-2 z-10 text-[14px] whitespace-nowrap">
           HI！我是子傑 👋
         </div>
         <div class="w-56 md:w-72 bg-white border-[3px] border-ink shadow-brut-lg -rotate-2 p-3 pb-10 relative">
-          <img src="assets/images/myPic.jpg" alt="Z1JAY Portrait"
-               class="w-full aspect-[4/5] object-cover object-top border-2 border-ink" />
+          <app-img name="myPic" alt="Z1JAY 林子傑本人照片" [priority]="true"
+                   sizes="(min-width: 768px) 288px, 224px"
+                   imgClass="w-full aspect-[4/5] object-cover object-top border-2 border-ink" />
           <span class="brut-label absolute bottom-3 left-3">Z. Jay — 林子傑</span>
           <!-- Tape -->
           <span class="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-6 bg-acid/90 border-2 border-ink rotate-1"></span>
         </div>
         <span class="sticker inline-flex bg-volt text-white absolute -bottom-6 right-0 md:-bottom-4 md:-right-2 rotate-3">Taichung · TW</span>
         <span class="burst absolute -left-10 top-16 w-24 h-24 -rotate-12 !text-[11px] hidden md:inline-flex">3D!</span>
+      </div>
       </div>
 
       <!-- Statement -->

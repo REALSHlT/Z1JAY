@@ -14,7 +14,7 @@
   <!-- ── Profile platform links ──────────────── -->
   <div class="flex flex-col sm:flex-row gap-6 mb-14" appScrollReveal revealClass="reveal-left">
 
-    <a href="https://sketchfab.com/z1jay.FollwMyInstagram" target="_blank" rel="noopener noreferrer"
+    <a [href]="links.platforms.sketchfabProfile" target="_blank" rel="noopener noreferrer"
        class="group brut-card brut-hover flex items-center gap-4 px-6 py-5 w-full sm:w-auto -rotate-1">
       <div class="w-12 h-12 bg-volt border-[3px] border-ink flex items-center justify-center flex-shrink-0">
         <span class="material-symbols-outlined text-white" style="font-size:24px;">view_in_ar</span>
@@ -26,7 +26,7 @@
       <span class="material-symbols-outlined ml-auto flex-shrink-0 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform">north_east</span>
     </a>
 
-    <a href="https://www.artstation.com/z_jay" target="_blank" rel="noopener noreferrer"
+    <a [href]="links.platforms.artstation" target="_blank" rel="noopener noreferrer"
        class="group brut-card brut-hover flex items-center gap-4 px-6 py-5 w-full sm:w-auto rotate-1">
       <div class="w-12 h-12 bg-punch border-[3px] border-ink flex items-center justify-center flex-shrink-0">
         <span class="material-symbols-outlined text-white" style="font-size:24px;">palette</span>
@@ -63,7 +63,7 @@
           <p class="brut-label text-on-surface-variant mt-1 normal-case">Photo → PBR Texture Generator</p>
         </div>
       </div>
-      <a href="https://snapbrify.com/" target="_blank" rel="noopener noreferrer"
+      <a [href]="links.platforms.snapbrify" target="_blank" rel="noopener noreferrer"
          class="brut-btn sm:ml-auto flex-shrink-0 justify-center">
         <span class="material-symbols-outlined" style="font-size:16px;">open_in_new</span>
         立即使用
@@ -86,21 +86,37 @@
       </div>
     </div>
 
-    <!-- Iframe embed -->
-    <div class="relative w-full" style="height: 560px;">
-      <iframe [src]="webPhotoUrl"
-              title="Snapbrify — PBR Texture Generator"
-              class="w-full h-full border-0"
-              allow="autoplay; fullscreen"
-              loading="lazy">
-      </iframe>
-      <a href="https://snapbrify.com/" target="_blank" rel="noopener noreferrer"
-         class="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5
-                bg-ink text-acid border-2 border-acid font-mono font-bold text-[11px] tracking-wide uppercase
-                hover:bg-punch hover:text-white hover:border-white transition-colors">
-        <span class="material-symbols-outlined" style="font-size:14px;">open_in_new</span>
-        全螢幕開啟
-      </a>
+    <!--
+      這裡原本是 <iframe src="https://snapbrify.com/">，但 Snapbrify 自己設了
+      Content-Security-Policy: frame-ancestors 'none'，瀏覽器一律拒絕嵌入 —
+      線上看到的是一塊 560px 的空白。改成自製的流程說明卡片，不依賴對方允許嵌入。
+    -->
+    <div class="px-6 md:px-10 py-8 bg-paper">
+      <h4 class="brut-label text-punch mb-5">How it works</h4>
+
+      <ol class="grid gap-5 md:grid-cols-3 mb-8">
+        @for (step of snapbrifySteps; track step.title; let i = $index) {
+          <li class="bg-white border-[3px] border-ink shadow-brut-sm p-5 relative">
+            <span class="absolute -top-3 -left-3 w-9 h-9 bg-acid border-[3px] border-ink
+                         font-display text-[15px] flex items-center justify-center">{{ i + 1 }}</span>
+            <span class="material-symbols-outlined block mb-3 text-punch" style="font-size:30px;" aria-hidden="true">{{ step.icon }}</span>
+            <h5 class="font-display text-[17px] mb-1.5">{{ step.title }}</h5>
+            <p class="text-[13px] leading-[1.7] text-on-surface-variant">{{ step.detail }}</p>
+          </li>
+        }
+      </ol>
+
+      <!-- 輸出的 PBR 通道 -->
+      <h4 class="brut-label text-punch mb-4">Output channels</h4>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        @for (ch of pbrChannels; track ch.name) {
+          <div class="border-[3px] border-ink bg-white p-3">
+            <div class="h-12 mb-2.5 border-2 border-ink" [style.background]="ch.swatch"></div>
+            <div class="font-mono font-bold text-[12px]">{{ ch.name }}</div>
+            <div class="text-[11px] text-on-surface-variant mt-0.5">{{ ch.zh }}</div>
+          </div>
+        }
+      </div>
     </div>
 
   </div>

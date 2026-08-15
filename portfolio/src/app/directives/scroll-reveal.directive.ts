@@ -1,49 +1,46 @@
-import { Directive, ElementRef, OnInit, OnDestroy, Input } from '@angular/core';
+import { Directive, ElementRef, OnInit, OnDestroy, inject, input } from '@angular/core';
 
 @Directive({
   selector: '[appScrollReveal]',
   standalone: true,
 })
 export class ScrollRevealDirective implements OnInit, OnDestroy {
-  @Input() revealClass: 'reveal' | 'reveal-left' | 'reveal-right' | 'reveal-scale' = 'reveal';
-  @Input() revealDelay = 0;
+  readonly revealClass = input<'reveal' | 'reveal-left' | 'reveal-right' | 'reveal-scale'>('reveal');
+  readonly revealDelay = input(0);
 
-  private observer!: IntersectionObserver;
-  private prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  constructor(private el: ElementRef<HTMLElement>) {}
+  private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
+  private observer?: IntersectionObserver;
 
   ngOnInit(): void {
     const el = this.el.nativeElement;
-    el.classList.add(this.revealClass);
-    if (this.revealDelay) {
-      el.style.transitionDelay = `${this.revealDelay}ms`;
-    }
 
-    if (this.prefersReducedMotion) {
-      el.classList.add('visible');
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // 不加任何 reveal class — 內容直接就位，不需要靠 .visible 覆寫
       return;
     }
 
+    el.classList.add(this.revealClass());
+    const delay = this.revealDelay();
+    if (delay) el.style.transitionDelay = `${delay}ms`;
+
+    /**
+     * 只播一次。
+     *
+     * 舊版在元素離開畫面時會移除 .visible，導致往回捲時內容整片淡出再淡入 —
+     * 來回捲動就一直閃，資訊型內容不該這樣。進場動畫的意義是「第一次出現」，
+     * 播完就 unobserve，順便省掉後續所有的 observer 回呼。
+     */
     this.observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            // Element entered viewport — reveal it
-            el.removeAttribute('data-exit');
-            el.classList.add('visible');
-          } else if (el.classList.contains('visible')) {
-            // Element WAS visible and is now leaving — animate the exit direction
-            const rect = el.getBoundingClientRect();
-            el.setAttribute('data-exit', rect.top < window.innerHeight * 0.5 ? 'top' : 'bottom');
-            el.classList.remove('visible');
-          }
-          // else: element hasn't been seen yet — leave it at opacity 0, wait for real entry
-        });
+      (entries, observer) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          el.classList.add('visible');
+          // 動畫結束後把 transition-delay 清掉，否則之後的 hover 效果也會被延遲
+          if (delay) setTimeout(() => (el.style.transitionDelay = ''), delay + 700);
+          observer.unobserve(el);
+        }
       },
-      // threshold 0.15: reveal fires when 15% is visible (entering);
-      // exit fires when <15% remains — element is still partially on screen so animation is perceptible
-      { threshold: 0.15 }
+      { threshold: 0.15 },
     );
 
     this.observer.observe(el);

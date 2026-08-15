@@ -1,6 +1,5 @@
-/* ── Fonts: Archivo Black (display) · Space Mono (labels) · Noto Sans TC (CJK) ── */
-@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
-@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap");
+/* 字體由 index.html 的 <link> 載入（平行下載，且 Material Symbols 有做子集化）。
+   這裡刻意「不」用 @import — 那會等 CSS 下載完才開始抓字體。 */
 
 @tailwind base;
 @tailwind components;
@@ -33,9 +32,46 @@ body {
 
 ::selection { background: rgb(var(--acid-rgb)); color: rgb(var(--ink-rgb)); }
 
+/* 固定頂欄高 64px — 錨點跳轉時預留空間，標題才不會被頂欄蓋住。
+   有了這個就能用純 <a href="#id">，不需要 JS 攔截捲動。 */
+section[id] { scroll-margin-top: 88px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* ── 鍵盤可及性 ─────────────────────────────── */
+
+/* 跳過導覽列 — 只有鍵盤聚焦時才出現 */
+.skip-link {
+  position: fixed;
+  top: -100px;
+  left: 16px;
+  z-index: 10000;
+  padding: 12px 20px;
+  background: rgb(var(--ink-rgb));
+  color: rgb(var(--acid-rgb));
+  border: 3px solid rgb(var(--acid-rgb));
+  font-family: "Space Mono", monospace;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: .08em;
+  transition: top .15s ease;
+
+  &:focus { top: 16px; }
+}
+
+/* 全站聚焦樣式 — 原本完全沒有，鍵盤使用者看不到自己在哪 */
+:focus-visible {
+  outline: 3px solid rgb(var(--punch-rgb));
+  outline-offset: 3px;
+}
+/* 滑鼠點擊不顯示外框，只有鍵盤操作才顯示 */
+:focus:not(:focus-visible) { outline: none; }
+
 /* Smooth re-theming */
 body, section, footer, header,
-.marquee-band, .win-titlebar, .brut-card, .glass-panel, .win,
+.marquee-band, .win-titlebar, .brut-card, .win,
 .sec-white, .sec-volt-tint, .sec-punch-tint, .sec-acid {
   transition: background-color .8s ease, border-color .8s ease, color .8s ease;
 }
@@ -52,7 +88,9 @@ body, section, footer, header,
   background-size: 48px 48px;
 }
 
-/* ── Scroll-reveal — brutalist entrances ────── */
+/* ── Scroll-reveal — brutalist entrances ──────
+   只播一次（見 scroll-reveal.directive.ts）：元素離開畫面不再回復隱藏，
+   因此不需要 data-exit 的退場規則。 */
 @media (prefers-reduced-motion: no-preference) {
 
   .reveal       { opacity: 0; transform: translateY(40px); }
@@ -69,11 +107,6 @@ body, section, footer, header,
   .reveal-left.visible,
   .reveal-right.visible,
   .reveal-scale.visible { opacity: 1; transform: none; }
-
-  .reveal[data-exit="top"],
-  .reveal-left[data-exit="top"],
-  .reveal-right[data-exit="top"] { opacity: 0; transform: translateY(-24px); }
-  .reveal-scale[data-exit="top"] { opacity: 0; transform: scale(.96) translateY(-16px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -82,7 +115,7 @@ body, section, footer, header,
   }
 }
 
-/* ── Skill slider (kept) ────────────────────── */
+/* ── Skill slider ───────────────────────────── */
 .skill-slider-container { position: relative; height: 100%; }
 .skill-slide {
   position: absolute;
@@ -95,7 +128,6 @@ body, section, footer, header,
 /* ══ Brutalist design system ═════════════════ */
 
 /* Card: hard border + offset shadow. */
-.glass-panel,
 .brut-card {
   background: #ffffff;
   border: 3px solid rgb(var(--ink-rgb));
@@ -109,10 +141,8 @@ body, section, footer, header,
     box-shadow: 10px 10px 0 rgb(var(--ink-rgb));
   }
 }
-.premium-hover { @extend .brut-hover; }
 
 /* Pressed-in interaction (buttons) */
-.btn-primary,
 .brut-btn {
   display: inline-flex;
   align-items: center;
@@ -133,7 +163,6 @@ body, section, footer, header,
   &:active { transform: translate(3px,3px);  box-shadow: 0 0 0 rgb(var(--ink-rgb)); }
 }
 
-.btn-outline,
 .brut-btn-ghost {
   display: inline-flex;
   align-items: center;
@@ -154,8 +183,6 @@ body, section, footer, header,
   &:active { transform: translate(3px,3px);  box-shadow: 0 0 0 rgb(var(--ink-rgb)); }
 }
 
-.gradient-btn { @extend .brut-btn; border-radius: 0 !important; }
-
 /* Mono micro label */
 .brut-label {
   font-family: "Space Mono", monospace;
@@ -166,7 +193,6 @@ body, section, footer, header,
 }
 
 /* Tag chip */
-.feature-pill,
 .brut-tag {
   display: inline-flex;
   align-items: center;
@@ -241,7 +267,8 @@ body, section, footer, header,
   will-change: transform;
   font-family: "Archivo Black", "Noto Sans TC", sans-serif;
   span { display: inline-block; padding: 12px 0; }
-  .sep { color: rgb(var(--acid-rgb)); padding: 0 20px; }
+  /* <i> 只是拿來當分隔符，不需要斜體字重（省下一組字體檔） */
+  .sep { color: rgb(var(--acid-rgb)); padding: 0 20px; font-style: normal; }
 }
 .marquee-band:hover .marquee-track { animation-play-state: paused; }
 @keyframes marquee {
@@ -356,6 +383,9 @@ body, section, footer, header,
   75%  { transform: translate(-2px,-2px); filter: hue-rotate(-40deg) saturate(1.4); }
   100% { transform: translate(0,0); filter: none; }
 }
+@media (prefers-reduced-motion: reduce) {
+  .glitch-hover:hover img { animation: none; }
+}
 
 /* Outlined display text */
 .text-stroke {
@@ -363,7 +393,7 @@ body, section, footer, header,
   -webkit-text-stroke: 2px rgb(var(--ink-rgb));
 }
 
-/* ── Shared layout utilities (kept names) ───── */
+/* ── Shared layout utilities ────────────────── */
 .section-py {
   padding-top: 80px;
   padding-bottom: 80px;
@@ -401,7 +431,7 @@ body, section, footer, header,
   letter-spacing: .1em;
   text-transform: uppercase;
   color: rgb(var(--paper-rgb));
-  transition: all .15s;
+  transition: color .15s, transform .15s;
   &:hover { color: rgb(var(--acid-rgb)); transform: translate(-1px,-1px); }
 }
 
@@ -425,7 +455,9 @@ body, section, footer, header,
     opacity: 0;
     transition: opacity .2s;
   }
-  &:hover::after { opacity: 1; }
+  /* 鍵盤聚焦時也要顯示提示，不能只給滑鼠 */
+  &:hover::after,
+  &:focus-visible::after { opacity: 1; }
 }
 
 /* ── Custom cursor ─────────────────────────── */
@@ -435,18 +467,17 @@ body, section, footer, header,
     top: 0; left: 0;
     pointer-events: none;
     z-index: 9999;
+    transform: translate(-100px, -100px);
   }
   .cursor-dot {
     width: 8px; height: 8px;
     background: rgb(var(--ink-rgb));
     border-radius: 50%;
-    transform: translate(-50%, -50%);
   }
   .cursor-ring {
     width: 36px; height: 36px;
     border: 2px solid rgb(var(--ink-rgb));
     border-radius: 50%;
-    transform: translate(-50%, -50%);
     transition: width .18s ease, height .18s ease, background .18s ease, opacity .18s ease;
     mix-blend-mode: multiply;
     &.is-hover {

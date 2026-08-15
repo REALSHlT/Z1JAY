@@ -50,7 +50,7 @@ const BIO_SECTIONS: { keys: RegExp; text: string }[] = [
   { keys: /聯絡|聯繫|email|信箱|ig|instagram|找他|合作|contact/i,
     text: '聯絡方式：Email w6619willy@gmail.com、Instagram @z_jay_0723。' },
   { keys: /框架|前端|後端|技術|技術棧|怎麼(做|寫|建|架|刻)|用(什麼|啥)(做|寫|技術|語言|框架)|這個(網站|網頁|站)|架站|react|angular|vue|svelte|next|framework|tech ?stack|built ?with|made ?with/i,
-    text: '這個作品集網站本身的技術：前端用 Angular（搭配 Tailwind CSS），不是 React 也不是 Vue；雲端 AI 聊天走 Cloudflare Workers AI 的 Llama 3.1 8B，本地 AI 用 WebLLM 在瀏覽器裡跑 Qwen 0.5B，圖片生成用 DreamShaper。整個網站由 Z1JAY 自己開發。' },
+    text: '這個作品集網站本身的技術：前端用 Angular（搭配 Tailwind CSS），不是 React 也不是 Vue；雲端 AI 聊天走 Cloudflare Workers AI 的 Llama 3.1 8B，本地 AI 用 WebLLM 在瀏覽器裡跑 Qwen 0.5B，圖片生成用 Stable Diffusion XL Base 1.0。整個網站由 Z1JAY 自己開發。' },
 ];
 
 /** 沒命中任何關鍵字時的預設概覽（身分 + 技能 + 作品） */
@@ -119,6 +119,22 @@ export class AiLab implements AfterViewInit, OnDestroy {
 
   private clip(s: string, n: number): string {
     return s.length > n ? s.slice(0, n) + '…' : s;
+  }
+
+  /**
+   * 把 Worker 的錯誤回應轉成可以直接顯示的中文。
+   * Worker 對 429（個人限速）與 503（全站當日預算用完）會帶 message 欄位，
+   * 這些訊息比前端硬寫的通用字串精準得多。
+   */
+  private async errorMessage(res: Response): Promise<string> {
+    try {
+      const data = await res.json();
+      if (typeof data?.message === 'string' && data.message) return data.message;
+    } catch { /* 不是 JSON 就用下面的預設 */ }
+    if (res.status === 429) return '請求太頻繁囉，休息一下再試';
+    if (res.status === 503) return '本站今日的 AI 額度已用完，明天再來吧 🙏';
+    if (res.status === 403) return 'AI 服務目前拒絕了這個請求，請重新整理頁面再試';
+    return '發生錯誤，請稍後再試';
   }
 
   /**
@@ -352,8 +368,9 @@ export class AiLab implements AfterViewInit, OnDestroy {
       if (match) await this.generateImage(match[1].trim());
       else if (this.wantsImage(prompt)) await this.generateImage(prompt);
     } catch (err) {
-      const code = (err as Error).message;
-      this.chatError.set(code === '429' ? '請求太頻繁囉，休息一下再試' : '發生錯誤，請稍後再試');
+      // Worker 會在 429（單人太頻繁）與 503（全站當日預算用完）帶回可直接顯示的
+      // 中文訊息，優先用它；其餘情況才退回通用字串。
+      this.chatError.set((err as Error).message || '發生錯誤，請稍後再試');
       // 移除空的 assistant 佔位
       this.messages.update((m) => (m[m.length - 1]?.content === '' ? m.slice(0, -1) : m));
       this.chatInput = prompt;
@@ -374,7 +391,7 @@ export class AiLab implements AfterViewInit, OnDestroy {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages: [{ role: 'user', content: userMsg }] }),
     });
-    if (!res.ok) throw new Error(String(res.status));
+    if (!res.ok) throw new Error(await this.errorMessage(res));
     const data = await res.json();
     const text = this.stopRepetition(data.response ?? '');
     this.updateLastAssistant(this.display(text));
@@ -436,7 +453,7 @@ export class AiLab implements AfterViewInit, OnDestroy {
         // SDXL Base 需要 1024 才有好畫質（768 會嚴重過曝糊掉）
         body: JSON.stringify({ prompt: imgPrompt, width: 1024, height: 1024 }),
       });
-      if (!res.ok) throw new Error(String(res.status));
+      if (!res.ok) throw new Error(await this.errorMessage(res));
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       this.patchLastAssistant({ imageLoading: false, imageUrl: url });
@@ -445,8 +462,11 @@ export class AiLab implements AfterViewInit, OnDestroy {
       this.bgObjectUrl = url;
       this.bgUrl.set(url);
       this.theme.applyFromImage(blob).catch(() => { /* 取色失敗維持原主題 */ });
-    } catch {
+    } catch (err) {
+      // 生圖失敗要講清楚原因（可能是伺服器端審核擋下、限速、或當日額度用完），
+      // 舊版靜靜地什麼都不顯示，使用者只會看到轉圈消失後毫無下文。
       this.patchLastAssistant({ imageLoading: false });
+      this.chatError.set((err as Error).message || '圖片生成失敗，請稍後再試');
     }
   }
 

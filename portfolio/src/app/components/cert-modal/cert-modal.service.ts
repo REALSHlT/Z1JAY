@@ -8,15 +8,22 @@ export interface ModalState {
 
 @Injectable({ providedIn: 'root' })
 export class CertModalService {
-  state = signal<ModalState>({ open: false, src: '', alt: '' });
+  readonly state = signal<ModalState>({ open: false, src: '', alt: '' });
 
-  open(src: string, alt: string): void {
+  /** 開啟前的聚焦元素 — 關閉時要把焦點還回去，鍵盤使用者才不會迷失位置 */
+  private trigger: HTMLElement | null = null;
+
+  open(src: string, alt: string, trigger?: HTMLElement | null): void {
+    this.trigger = trigger ?? (document.activeElement as HTMLElement | null);
     this.state.set({ open: true, src, alt });
     document.body.style.overflow = 'hidden';
   }
 
   close(): void {
-    this.state.update(s => ({ ...s, open: false }));
+    if (!this.state().open) return;
+    this.state.update((s) => ({ ...s, open: false }));
     document.body.style.overflow = '';
+    this.trigger?.focus?.();
+    this.trigger = null;
   }
 }

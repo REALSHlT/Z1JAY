@@ -2,43 +2,51 @@
 <header class="fixed top-0 left-0 right-0 z-50 bg-paper border-b-[3px] border-ink"
   [class.shadow-brut-sm]="scrolled()">
 
-  <div class="flex justify-between items-center px-5 md:px-12 h-16 max-w-[1440px] mx-auto">
+  <div class="flex justify-between items-center gap-2 px-5 md:px-8 lg:px-12 h-16 max-w-[1440px] mx-auto">
 
     <!-- Mobile left: spacer (導覽走底部列，不需要漢堡選單) -->
     <div class="md:hidden w-9 h-9"></div>
 
     <!-- Mobile center: brand -->
-    <div class="md:hidden absolute left-1/2 -translate-x-1/2 select-none">
-      <img src="assets/logo.svg" alt="Z1JAY" class="h-8 w-auto" />
-    </div>
+    <a href="#hero" class="md:hidden absolute left-1/2 -translate-x-1/2 select-none" aria-label="Z1JAY 首頁">
+      <img src="assets/logo.svg" alt="" width="131" height="32" class="h-8 w-auto" />
+    </a>
 
     <!-- Desktop left: brand -->
-    <a class="hidden md:flex items-center gap-3 select-none cursor-pointer" (click)="smoothScroll('#hero')">
-      <img src="assets/logo.svg" alt="Z1JAY" class="h-9 w-auto" />
+    <a href="#hero" class="hidden md:flex items-center gap-3 select-none flex-shrink-0" aria-label="Z1JAY 首頁">
+      <img src="assets/logo.svg" alt="" width="131" height="36" class="h-9 w-auto" />
       <span class="font-display text-[18px] tracking-tight">Z1JAY<sup class="text-punch">™</sup></span>
     </a>
 
     <!-- Desktop center: nav links -->
-    <ul class="hidden md:flex items-center gap-1">
-      <li><a (click)="smoothScroll('#skills')"  class="brut-label px-4 py-2 cursor-pointer border-2 border-transparent hover:border-ink hover:bg-acid transition-colors">核心專業</a></li>
-      <li><a (click)="smoothScroll('#work')"    class="brut-label px-4 py-2 cursor-pointer border-2 border-transparent hover:border-ink hover:bg-acid transition-colors">作品集</a></li>
-      <li><a (click)="smoothScroll('#experience')" class="brut-label px-4 py-2 cursor-pointer border-2 border-transparent hover:border-ink hover:bg-acid transition-colors">過去經歷</a></li>
-      <li><a (click)="smoothScroll('#ai-lab')" class="brut-label px-4 py-2 cursor-pointer border-2 border-transparent hover:border-ink hover:bg-acid transition-colors">AI測試</a></li>
-      <li><a (click)="smoothScroll('#certifications')" class="brut-label px-4 py-2 cursor-pointer border-2 border-transparent hover:border-ink hover:bg-acid transition-colors">證書認證</a></li>
-    </ul>
+    <nav class="hidden md:flex items-center" aria-label="主要導覽">
+      <ul class="flex items-center">
+        @for (s of topSections; track s.id) {
+          <li>
+            <a [href]="'#' + s.id"
+               class="brut-label block px-2 lg:px-3.5 py-2 border-2 border-transparent hover:border-ink hover:bg-acid transition-colors whitespace-nowrap"
+               [class.!border-ink]="active() === s.id"
+               [class.bg-acid]="active() === s.id"
+               [attr.aria-current]="active() === s.id ? 'true' : null">{{ s.label }}</a>
+          </li>
+        }
+      </ul>
+    </nav>
 
     <!-- Desktop right: CTA -->
-    <a (click)="smoothScroll('#contact')"
-       class="hidden md:inline-flex items-center gap-2 px-5 py-2 bg-ink text-paper border-[3px] border-ink
-              font-mono font-bold text-[11px] tracking-[.12em] uppercase cursor-pointer
+    <a href="#contact"
+       class="hidden md:inline-flex items-center gap-2 px-4 lg:px-5 py-2 bg-ink text-paper border-[3px] border-ink
+              font-mono font-bold text-[11px] tracking-[.12em] uppercase whitespace-nowrap flex-shrink-0
               hover:bg-punch hover:text-white transition-colors">
       聯繫我
-      <span class="material-symbols-outlined" style="font-size:14px;">north_east</span>
+      <span class="material-symbols-outlined" style="font-size:14px;" aria-hidden="true">north_east</span>
     </a>
 
     <!-- Mobile right: avatar -->
+    <!-- 用 app-img 而非直接寫 <img>：才會挑到與 Hero 同一個檔案（瀏覽器只抓一次） -->
     <div class="md:hidden w-9 h-9 border-2 border-ink shadow-brut-sm overflow-hidden bg-white">
-      <img src="assets/images/myPic.jpg" alt="Z1JAY" class="w-full h-full object-cover object-top" />
+      <app-img name="myPic" alt="" sizes="36px"
+               imgClass="w-full h-full object-cover object-top" />
     </div>
 
   </div>
@@ -46,27 +54,15 @@
 
 <!-- ── Bottom Nav (mobile only) ─────────────────── -->
 <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center h-16
-            bg-paper border-t-[3px] border-ink">
-
-  <a (click)="smoothScroll('#hero')" class="flex flex-col items-center gap-0.5 cursor-pointer py-2 px-3">
-    <span class="material-symbols-outlined" style="font-size:22px;">home</span>
-    <span class="brut-label !text-[9px]">首頁</span>
-  </a>
-  <a (click)="smoothScroll('#skills')" class="flex flex-col items-center gap-0.5 text-on-surface-variant cursor-pointer py-2 px-3">
-    <span class="material-symbols-outlined" style="font-size:22px;">psychology</span>
-    <span class="brut-label !text-[9px]">技能</span>
-  </a>
-  <a (click)="smoothScroll('#work')" class="flex flex-col items-center gap-0.5 text-on-surface-variant cursor-pointer py-2 px-3">
-    <span class="material-symbols-outlined" style="font-size:22px;">view_in_ar</span>
-    <span class="brut-label !text-[9px]">作品</span>
-  </a>
-  <a (click)="smoothScroll('#ai-lab')" class="flex flex-col items-center gap-0.5 text-on-surface-variant cursor-pointer py-2 px-3">
-    <span class="material-symbols-outlined" style="font-size:22px;">smart_toy</span>
-    <span class="brut-label !text-[9px]">AI</span>
-  </a>
-  <a (click)="smoothScroll('#contact')" class="flex flex-col items-center gap-0.5 text-on-surface-variant cursor-pointer py-2 px-3">
-    <span class="material-symbols-outlined" style="font-size:22px;">mail</span>
-    <span class="brut-label !text-[9px]">聯繫</span>
-  </a>
-
+            bg-paper border-t-[3px] border-ink" aria-label="快速導覽">
+  @for (s of bottomSections; track s.id) {
+    <a [href]="'#' + s.id"
+       class="flex flex-col items-center gap-0.5 py-2 px-3 transition-colors"
+       [class.text-punch]="active() === s.id"
+       [class.text-on-surface-variant]="active() !== s.id"
+       [attr.aria-current]="active() === s.id ? 'true' : null">
+      <span class="material-symbols-outlined" style="font-size:22px;" aria-hidden="true">{{ s.icon }}</span>
+      <span class="brut-label !text-[9px]">{{ s.label }}</span>
+    </a>
+  }
 </nav>

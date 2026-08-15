@@ -1,13 +1,42 @@
 <footer class="w-full bg-ink text-paper relative z-10">
-  <div class="max-w-[1440px] mx-auto px-5 md:px-12 py-12 flex flex-col md:flex-row justify-between items-center gap-6">
-    <div class="font-display text-[26px] tracking-tight select-none">
-      Z1JAY<sup class="text-punch text-[0.5em]">™</sup>
+  <div class="max-w-[1440px] mx-auto px-5 md:px-12 py-12">
+
+    <div class="flex flex-col md:flex-row justify-between gap-10 md:gap-16">
+
+      <div class="flex-shrink-0">
+        <a href="#hero" class="font-display text-[26px] tracking-tight select-none inline-block">
+          Z1JAY<sup class="text-punch text-[0.5em]">™</sup>
+        </a>
+        <p class="font-mono text-[11px] tracking-widest uppercase text-paper/80 mt-3">
+          3D Artist × Animator · Taichung, TW
+        </p>
+      </div>
+
+      <!-- 完整網站地圖 — 手機底部列只放得下 5 格，其餘區塊在這裡補齊 -->
+      <nav aria-label="網站地圖">
+        <h2 class="brut-label text-acid mb-4">Sitemap</h2>
+        <ul class="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-2.5">
+          @for (s of sections; track s.id) {
+            <li><a [href]="'#' + s.id" class="link-sm">{{ s.label }}</a></li>
+          }
+        </ul>
+      </nav>
+
+      <nav aria-label="社群連結">
+        <h2 class="brut-label text-acid mb-4">Elsewhere</h2>
+        <ul class="grid gap-2.5">
+          <li><a [href]="links.social.instagram" target="_blank" rel="noopener" class="link-sm">Instagram</a></li>
+          <li><a [href]="links.platforms.artstation" target="_blank" rel="noopener" class="link-sm">ArtStation</a></li>
+          <li><a [href]="links.platforms.sketchfabProfile" target="_blank" rel="noopener" class="link-sm">Sketchfab</a></li>
+          <li><a [href]="links.social.email" class="link-sm">Email</a></li>
+          <li><a [href]="links.social.phone" class="link-sm">Phone</a></li>
+        </ul>
+      </nav>
+
     </div>
-    <div class="font-mono text-[11px] tracking-widest uppercase text-paper/60">&copy; 2026 Z1JAY — All rights reserved</div>
-    <ul class="flex gap-6">
-      <li><a [href]="links.social.instagram" target="_blank" rel="noopener" class="link-sm">Instagram</a></li>
-      <li><a [href]="links.social.email" class="link-sm">Email</a></li>
-      <li><a [href]="links.social.phone" class="link-sm">Phone</a></li>
-    </ul>
+
+    <div class="border-t-2 border-paper/20 mt-10 pt-6 font-mono text-[11px] tracking-widest uppercase text-paper/80">
+      &copy; {{ year }} Z1JAY — All rights reserved
+    </div>
   </div>
 </footer>
