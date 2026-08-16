@@ -22,7 +22,7 @@ const REPO = path.resolve(ROOT, '..');
 /** 倉庫根目錄裡「不是建置產物」的東西，絕對不能刪 */
 const KEEP = new Set([
   '.git', '.github', '.claude', '.gitignore', '.nojekyll',
-  'portfolio', 'worker', 'LOGO', 'README.md',
+  'portfolio', 'worker', 'LOGO', 'README.md', 'CLAUDE.md',
 ]);
 
 try {
