@@ -40,6 +40,197 @@ section[id] { scroll-margin-top: 88px; }
   html { scroll-behavior: auto; }
 }
 
+/* ══ 編輯式非對稱版面 ═════════════════════════
+   先前每個區塊都是「置中容器 + 等距內距 + 卡片網格」，工整到沒有記憶點。
+   這一套改成滿版、以髮絲線切分的不等寬面板，讓版面自己產生節奏。
+
+   與原本的粗框（3px + 位移陰影）並存：粗框留給「要被點擊的東西」，
+   髮絲線負責結構。兩者混用才有層次，全部粗框反而又變回工整。 */
+
+/* 滿版區塊：不再置中，改用左右不等的內距 */
+.edge {
+  width: 100%;
+  padding-left: clamp(20px, 4vw, 72px);
+  padding-right: clamp(20px, 4vw, 72px);
+}
+
+/* 貫穿整個區塊的垂直髮絲線 — Aspen 那種「把畫面切成不等寬欄位」的骨架。
+   線的位置刻意不等距（38% / 62% / 81%），避免又變成整齊的三等分。 */
+.rule-grid {
+  position: relative;
+
+  /* ⚠️ 千萬不要用 `> * { position: relative }` 把內容推到線之上 —
+     那會覆蓋掉子元素原本的 position:absolute，讓所有絕對定位的裝飾元素
+     掉回正常流、把版面整個撐開（曾經因此把 Hero 推掉大半個畫面）。
+     改成把線放到 z-index:-1；.rule-grid 沒有設 z-index，不會另開堆疊脈絡，
+     所以線會落在「區塊背景之上、內容之下」，剛好是要的位置。 */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background-image:
+      linear-gradient(to right, rgb(var(--ink-rgb) / .26) 1px, transparent 1px),
+      linear-gradient(to right, rgb(var(--ink-rgb) / .26) 1px, transparent 1px),
+      linear-gradient(to right, rgb(var(--ink-rgb) / .26) 1px, transparent 1px);
+    background-size: 100% 100%;
+    background-position: 38% 0, 62% 0, 81% 0;
+    background-repeat: no-repeat;
+  }
+}
+@media (max-width: 767px) {
+  /* 手機寬度放三條線會變成雜訊，只留一條 */
+  .rule-grid::before { background-position: 62% 0; background-image: linear-gradient(to right, rgb(var(--ink-rgb) / .26) 1px, transparent 1px); }
+}
+
+/* 水平髮絲線 — 區塊之間的分隔，比 3px 粗框安靜得多 */
+.hair-t { border-top: 1px solid rgb(var(--ink-rgb) / .3); }
+.hair-b { border-bottom: 1px solid rgb(var(--ink-rgb) / .3); }
+
+/* 超大標題，刻意向左溢出讓它被畫面邊緣裁掉 */
+.display-bleed {
+  font-family: "Archivo Black", "Noto Sans TC", sans-serif;
+  font-weight: 900;
+  line-height: .84;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  font-size: clamp(56px, 13vw, 190px);
+  margin-left: -0.06em;
+}
+
+/* 編號 + 標題的編輯式表頭：編號靠上、標題壓在下方，不再水平並排 */
+.sec-index {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .2em;
+  color: rgb(var(--punch-rgb));
+  display: block;
+}
+
+/* ── 排線（Hatching）材質 ─────────────────────
+   參考站用不同密度／角度的線紋當視覺重量。這裡做成一組可組合的 class，
+   剛好也呼應站主 NPR 渲染裡的 hatching 手法。
+
+   用法：<div class="hatch hatch-45 hatch-punch hatch-fade"></div>
+   角度、密度、顏色、淡出各自獨立，可以自由排列組合。 */
+.hatch {
+  --hatch-color: rgb(var(--ink-rgb) / .55);
+  --hatch-gap: 7px;
+  --hatch-w: 1.5px;
+  background-image: repeating-linear-gradient(
+    var(--hatch-angle, 45deg),
+    var(--hatch-color) 0,
+    var(--hatch-color) var(--hatch-w),
+    transparent var(--hatch-w),
+    transparent var(--hatch-gap)
+  );
+}
+
+/* 角度 */
+.hatch-45   { --hatch-angle: 45deg; }
+.hatch-135  { --hatch-angle: 135deg; }
+.hatch-90   { --hatch-angle: 90deg; }
+.hatch-0    { --hatch-angle: 0deg; }
+
+/* 密度 */
+.hatch-fine  { --hatch-gap: 4px;  --hatch-w: 1px; }
+.hatch-bold  { --hatch-gap: 11px; --hatch-w: 3px; }
+.hatch-wide  { --hatch-gap: 18px; --hatch-w: 2px; }
+
+/* 顏色 */
+.hatch-punch { --hatch-color: rgb(var(--punch-rgb) / .8); }
+.hatch-volt  { --hatch-color: rgb(var(--volt-rgb) / .7); }
+.hatch-acid  { --hatch-color: rgb(var(--acid-rgb)); }
+.hatch-paper { --hatch-color: rgb(var(--paper-rgb) / .5); }
+
+/* 交叉排線 —— 疊第二層反向線，密度更重 */
+.hatch-cross {
+  background-image:
+    repeating-linear-gradient(45deg, var(--hatch-color) 0, var(--hatch-color) var(--hatch-w),
+      transparent var(--hatch-w), transparent var(--hatch-gap)),
+    repeating-linear-gradient(135deg, var(--hatch-color) 0, var(--hatch-color) var(--hatch-w),
+      transparent var(--hatch-w), transparent var(--hatch-gap));
+}
+
+/* 由密到疏的淡出 —— 參考站那種「線紋逐漸消散」的關鍵 */
+.hatch-fade {
+  -webkit-mask-image: linear-gradient(115deg, #000 0%, rgb(0 0 0 / .35) 55%, transparent 95%);
+  mask-image: linear-gradient(115deg, #000 0%, rgb(0 0 0 / .35) 55%, transparent 95%);
+}
+.hatch-fade-down {
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
+}
+
+/* 排線填色塊：實心底色 + 疊上排線，讓色塊不再是單純的平色。
+   ⚠️ 這裡刻意「不」設 position —— 本檔載入順序在 Tailwind utilities 之後，
+   設了 position:relative 會蓋掉元素身上的 .absolute，把裝飾塊踢回正常流
+   （已經因此把 Hero 的色塊甩到畫面左邊一次）。
+   使用時請自行確保元素是 relative 或 absolute，::after 才定位得到。 */
+.block-hatched {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      var(--hatch-angle, 45deg),
+      rgb(var(--ink-rgb) / .38) 0,
+      rgb(var(--ink-rgb) / .38) 2px,
+      transparent 2px,
+      transparent 9px
+    );
+  }
+}
+
+/* 抖動的網點材質塊 —— 參考站用它當視覺重量，這裡沿用既有的 halftone 變數 */
+.dither {
+  background-image:
+    radial-gradient(rgb(var(--ink-rgb) / .85) 1px, transparent 1px),
+    radial-gradient(rgb(var(--ink-rgb) / .5) 1px, transparent 1px);
+  background-size: 6px 6px, 11px 11px;
+  background-position: 0 0, 3px 4px;
+  /* 由密到疏的漸層遮罩，做出參考站那種「消散」的質感 */
+  -webkit-mask-image: linear-gradient(115deg, #000 5%, rgb(0 0 0 / .25) 55%, transparent 92%);
+  mask-image: linear-gradient(115deg, #000 5%, rgb(0 0 0 / .25) 55%, transparent 92%);
+}
+
+/* 反白面板 — 深色區塊用來打斷連續的米白，製造節奏 */
+.panel-ink {
+  /* 深色底上要改用亮色髮絲線，否則黑底黑線等於沒有 */
+  .rule-grid::before {
+    background-image:
+      linear-gradient(to right, rgb(var(--paper-rgb) / .2) 1px, transparent 1px),
+      linear-gradient(to right, rgb(var(--paper-rgb) / .2) 1px, transparent 1px),
+      linear-gradient(to right, rgb(var(--paper-rgb) / .2) 1px, transparent 1px);
+    background-size: 100% 100%;
+    background-position: 38% 0, 62% 0, 81% 0;
+    background-repeat: no-repeat;
+  }
+  .dither {
+    background-image:
+      radial-gradient(rgb(var(--paper-rgb) / .8) 1px, transparent 1px),
+      radial-gradient(rgb(var(--paper-rgb) / .45) 1px, transparent 1px);
+  }
+  background: rgb(var(--ink-rgb));
+  color: rgb(var(--paper-rgb));
+
+  .brut-label, .sec-index { color: rgb(var(--acid-rgb)); }
+  .text-on-surface-variant { color: rgb(var(--paper-rgb) / .72); }
+
+  /* ⚠️ 反白面板裡面的白底卡片必須把文字色改回深色 —
+     否則淺色文字落在白卡上等於看不見（曾經整區的整合說明卡都是空白的）。 */
+  .brut-card, .win, .bg-white {
+    color: rgb(var(--ink-rgb));
+
+    .text-on-surface-variant { color: #3d3a33; }
+    .brut-label { color: rgb(var(--ink-rgb)); }
+    .brut-label.text-punch, .text-punch { color: rgb(var(--punch-rgb)); }
+  }
+}
+
 /* ══ 動態層 ═══════════════════════════════════
    全部以 prefers-reduced-motion 為前提；使用者要求減少動態時，
    下面每一項都會退化成靜態且完全可用。 */

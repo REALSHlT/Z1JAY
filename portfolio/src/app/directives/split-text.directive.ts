@@ -60,15 +60,21 @@ export class SplitTextDirective implements AfterViewInit, OnDestroy {
       index++;
     }
 
+    /**
+     * 可重複播放 —— 與 scroll-reveal 相同的遲滯策略：
+     * 露出兩成就播，完全離開畫面才復位。標題再次捲回來時會重新逐字翻出。
+     */
     this.observer = new IntersectionObserver(
-      (entries, obs) => {
+      (entries) => {
         for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          host.classList.add('split-in');
-          obs.unobserve(host);
+          if (entry.intersectionRatio >= 0.2) {
+            host.classList.add('split-in');
+          } else if (entry.intersectionRatio === 0) {
+            host.classList.remove('split-in');
+          }
         }
       },
-      { threshold: 0.2 },
+      { threshold: [0, 0.2] },
     );
     this.observer.observe(host);
   }

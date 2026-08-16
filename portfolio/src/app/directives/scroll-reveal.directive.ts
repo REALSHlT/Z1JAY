@@ -24,23 +24,23 @@ export class ScrollRevealDirective implements OnInit, OnDestroy {
     if (delay) el.style.transitionDelay = `${delay}ms`;
 
     /**
-     * 只播一次。
+     * 可重複播放：進入視窗就播，完全離開視窗就復位，再進來會再播一次。
      *
-     * 舊版在元素離開畫面時會移除 .visible，導致往回捲時內容整片淡出再淡入 —
-     * 來回捲動就一直閃，資訊型內容不該這樣。進場動畫的意義是「第一次出現」，
-     * 播完就 unobserve，順便省掉後續所有的 observer 回呼。
+     * 關鍵在兩個門檻不同 —— 進場用 0.15，復位用「完全看不到」(ratio === 0)。
+     * 如果進出用同一個門檻，元素停在邊界時會不斷跨越那條線而瘋狂閃爍；
+     * 拉開成遲滯區間（hysteresis）之後，只有真的整個滑出畫面才會重置。
      */
     this.observer = new IntersectionObserver(
-      (entries, observer) => {
+      (entries) => {
         for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          el.classList.add('visible');
-          // 動畫結束後把 transition-delay 清掉，否則之後的 hover 效果也會被延遲
-          if (delay) setTimeout(() => (el.style.transitionDelay = ''), delay + 700);
-          observer.unobserve(el);
+          if (entry.intersectionRatio >= 0.15) {
+            el.classList.add('visible');
+          } else if (entry.intersectionRatio === 0) {
+            el.classList.remove('visible');
+          }
         }
       },
-      { threshold: 0.15 },
+      { threshold: [0, 0.15] },
     );
 
     this.observer.observe(el);
