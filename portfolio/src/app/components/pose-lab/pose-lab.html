@@ -84,8 +84,12 @@
           @if (state() === 'running') {
             <div class="absolute top-3 left-3 flex items-center gap-2">
               <span class="brut-tag !bg-ink !text-acid !border-acid">
-                <span class="w-2 h-2 rounded-full bg-punch inline-block animate-pulse"></span>
-                LIVE
+                <span class="w-2 h-2 rounded-full inline-block"
+                      [class.bg-punch]="detectedPoints() > 0"
+                      [class.animate-pulse]="detectedPoints() > 0"
+                      [class.bg-white]="detectedPoints() === 0"></span>
+                <!-- 直接顯示這一幀算出幾個點：一眼分辨「沒在算」與「算了但看不到」 -->
+                {{ detectedPoints() > 0 ? detectedPoints() + ' PTS' : 'LIVE' }}
               </span>
             </div>
 

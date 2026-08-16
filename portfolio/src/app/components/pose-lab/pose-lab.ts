@@ -37,6 +37,9 @@ export class PoseLab implements OnDestroy {
   readonly mode = signal<Mode>('pose');
 
   readonly faceMissing = signal(false);
+  /** 目前這一幀實際偵測到幾個點 —— 讓使用者一眼看出「有沒有在算」，
+      而不是只能猜「是沒偵測到還是畫不出來」。值很少變動，signal 會自動去重。 */
+  readonly detectedPoints = signal(0);
 
   private pose?: PoseLandmarkerT;
   private face?: FaceLandmarkerT;
@@ -159,6 +162,7 @@ export class PoseLab implements OnDestroy {
   setMode(m: Mode): void {
     this.mode.set(m);
     this.faceMissing.set(false);
+    this.detectedPoints.set(0);
   }
 
   /** 全螢幕切換（把顯示區送進全螢幕，看追蹤更大）。含 Safari webkit 前綴後備。 */
@@ -237,11 +241,14 @@ export class PoseLab implements OnDestroy {
     try {
       if (this.mode() === 'pose' && this.pose) {
         const res = this.pose.detectForVideo(video, ts);
-        for (const lms of res.landmarks ?? []) this.drawPose(ctx, lms, w, h, mirror, acid, punch, ink);
+        const poses = res.landmarks ?? [];
+        this.detectedPoints.set(poses[0]?.length ?? 0);
+        for (const lms of poses) this.drawPose(ctx, lms, w, h, mirror, acid, punch, ink);
       } else if (this.mode() === 'face' && this.face) {
         const res = this.face.detectForVideo(video, ts);
         const faces = res.faceLandmarks ?? [];
         this.faceMissing.set(faces.length === 0);
+        this.detectedPoints.set(faces[0]?.length ?? 0);
         for (const lms of faces) this.drawFace(ctx, lms, w, h, mirror, acid, punch, volt);
       }
     } catch (e) {
@@ -288,10 +295,16 @@ export class PoseLab implements OnDestroy {
     const Y = (lm: NormalizedLandmark) => lm.y * h;
     const s = Math.max(w / 640, 0.75); // 線寬隨畫布尺寸縮放，全螢幕放大也清楚
 
+    /**
+     * 每條線畫兩次：先鋪一層較寬的深色底，再疊上細的彩色線。
+     *
+     * 只畫單層彩色線的話，在真實鏡頭下幾乎看不見 —— 網格是黃色的，
+     * 而臉的膚色也偏亮，兩者對比極低；再加上 1px 級的線在縮放後容易變成次像素。
+     * 深色描邊讓線在任何膚色與背景上都讀得出來（動捕疊圖的標準做法）。
+     */
     const strokeConns = (conns: Conn[], style: string, width: number) => {
-      ctx.strokeStyle = style;
-      ctx.lineWidth = width;
       ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
       ctx.beginPath();
       for (const c of conns) {
         const a = lms[c.start], b = lms[c.end];
@@ -299,22 +312,32 @@ export class PoseLab implements OnDestroy {
         ctx.moveTo(X(a), Y(a));
         ctx.lineTo(X(b), Y(b));
       }
+      // 深色底線
+      ctx.strokeStyle = 'rgba(0,0,0,.55)';
+      ctx.lineWidth = width + 1.6 * s;
+      ctx.stroke();
+      // 彩色主線（沿用同一條路徑，不用重建）
+      ctx.strokeStyle = style;
+      ctx.lineWidth = width;
       ctx.stroke();
     };
 
-    // 1) 細網格（tesselation）— 提高不透明度與線寬，避免糊到看不見
-    strokeConns(this.faceMesh, this.rgba('--acid-rgb', 0.65), 1.1 * s);
+    // 1) 細網格（tesselation）
+    strokeConns(this.faceMesh, this.rgba('--acid-rgb', 0.95), 1.5 * s);
     // 2) 五官輪廓（眼/眉/唇/臉型）加粗，讓結構清楚
-    strokeConns(this.faceContours, punch, 2.8 * s);
+    strokeConns(this.faceContours, punch, 3.4 * s);
 
     // 3) 虹膜點（478 點含雙眼虹膜 468–477）
-    ctx.fillStyle = volt;
     for (let i = 468; i < lms.length; i++) {
       const lm = lms[i];
       if (!lm) continue;
       ctx.beginPath();
-      ctx.arc(X(lm), Y(lm), 2.4 * s, 0, Math.PI * 2);
+      ctx.arc(X(lm), Y(lm), 3 * s, 0, Math.PI * 2);
+      ctx.fillStyle = volt;
       ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,.6)';
+      ctx.lineWidth = 1.2 * s;
+      ctx.stroke();
     }
   }
 
