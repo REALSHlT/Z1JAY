@@ -93,6 +93,12 @@
               </span>
             </div>
 
+            @if (overlayError()) {
+              <div class="absolute bottom-3 left-3 right-3 bg-punch text-white border-2 border-white px-3 py-2">
+                <span class="font-mono font-bold text-[11px] tracking-wide">{{ overlayError() }}</span>
+              </div>
+            }
+
             @if (mode() === 'face' && faceMissing()) {
               <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
                 <span class="brut-tag !bg-punch !text-white !border-white !normal-case">

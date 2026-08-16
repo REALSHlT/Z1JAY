@@ -40,6 +40,10 @@ export class PoseLab implements OnDestroy {
   /** 目前這一幀實際偵測到幾個點 —— 讓使用者一眼看出「有沒有在算」，
       而不是只能猜「是沒偵測到還是畫不出來」。值很少變動，signal 會自動去重。 */
   readonly detectedPoints = signal(0);
+  /** 疊圖階段的錯誤訊息 —— 直接顯示在畫面上。
+      先前偵測與繪製共用一個 try/catch 且只印 console.warn，
+      結果「偵測成功但繪製拋錯」看起來就跟「什麼都沒發生」一模一樣。 */
+  readonly overlayError = signal('');
 
   private pose?: PoseLandmarkerT;
   private face?: FaceLandmarkerT;
@@ -163,6 +167,7 @@ export class PoseLab implements OnDestroy {
     this.mode.set(m);
     this.faceMissing.set(false);
     this.detectedPoints.set(0);
+    this.overlayError.set('');
   }
 
   /** 全螢幕切換（把顯示區送進全螢幕，看追蹤更大）。含 Safari webkit 前綴後備。 */
@@ -238,22 +243,33 @@ export class PoseLab implements OnDestroy {
     const ink = this.themeColor('--ink-rgb');
     const volt = this.themeColor('--volt-rgb');
 
+    // ── 偵測與繪製分開包 ──
+    // 兩段共用一個 catch 的話，「算得出來但畫不出來」與「根本沒算」在畫面上
+    // 完全無法區分（點數已經先寫進 signal 了）。分開才能指出是哪一段壞掉。
+    let landmarkSets: NormalizedLandmark[][] = [];
     try {
       if (this.mode() === 'pose' && this.pose) {
-        const res = this.pose.detectForVideo(video, ts);
-        const poses = res.landmarks ?? [];
-        this.detectedPoints.set(poses[0]?.length ?? 0);
-        for (const lms of poses) this.drawPose(ctx, lms, w, h, mirror, acid, punch, ink);
+        landmarkSets = this.pose.detectForVideo(video, ts).landmarks ?? [];
       } else if (this.mode() === 'face' && this.face) {
-        const res = this.face.detectForVideo(video, ts);
-        const faces = res.faceLandmarks ?? [];
-        this.faceMissing.set(faces.length === 0);
-        this.detectedPoints.set(faces[0]?.length ?? 0);
-        for (const lms of faces) this.drawFace(ctx, lms, w, h, mirror, acid, punch, volt);
+        landmarkSets = this.face.detectForVideo(video, ts).faceLandmarks ?? [];
+        this.faceMissing.set(landmarkSets.length === 0);
       }
+      this.detectedPoints.set(landmarkSets[0]?.length ?? 0);
     } catch (e) {
-      // 單一影格偵測失敗就跳過，不中斷串流；但把錯誤印出來方便診斷
-      console.warn('mocap detectForVideo failed:', e);
+      this.detectedPoints.set(0);
+      this.overlayError.set(`偵測失敗：${(e as Error)?.message ?? e}`);
+      return;
+    }
+
+    try {
+      for (const lms of landmarkSets) {
+        if (this.mode() === 'pose') this.drawPose(ctx, lms, w, h, mirror, acid, punch, ink);
+        else this.drawFace(ctx, lms, w, h, mirror, acid, punch, volt);
+      }
+      if (this.overlayError()) this.overlayError.set('');
+    } catch (e) {
+      // 疊圖失敗 —— 這正是「478 PTS 但看不到網格」的情況
+      this.overlayError.set(`疊圖失敗：${(e as Error)?.message ?? e}`);
     }
   }
 
@@ -303,6 +319,9 @@ export class PoseLab implements OnDestroy {
      * 深色描邊讓線在任何膚色與背景上都讀得出來（動捕疊圖的標準做法）。
      */
     const strokeConns = (conns: Conn[], style: string, width: number) => {
+      // 任何一層的連線資料缺了就跳過那一層，不要讓整個疊圖掛掉 —
+      // 網格畫不出來時，至少五官輪廓還要能顯示
+      if (!conns?.length) return;
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
       ctx.beginPath();
