@@ -52,6 +52,12 @@ export class PoseLab implements OnDestroy {
   private faceOval: Conn[] = [];
   private faceContours: Conn[] = [];
 
+  /** 保留 fileset，臉部任務追蹤狀態壞掉時要用它重建 */
+  private fileset?: Awaited<ReturnType<typeof FilesetResolverT.forVisionTasks>>;
+  /** VIDEO 模式要求時間戳嚴格遞增；用整數並自行保證單調，不直接信 performance.now() */
+  private lastTs = 0;
+  private faceResetting = false;
+
   private stream?: MediaStream;
   private facingMode: 'user' | 'environment' = 'user';
   private rafId = 0;
@@ -70,6 +76,7 @@ export class PoseLab implements OnDestroy {
       const { FilesetResolver, PoseLandmarker, FaceLandmarker } = vision;
 
       const fileset = await (FilesetResolver as typeof FilesetResolverT).forVisionTasks(WASM_PATH);
+      this.fileset = fileset;
 
       this.statusText.set('初始化骨架 + 臉部模型…');
       let delegate: 'GPU' | 'CPU' = 'GPU';
@@ -226,7 +233,10 @@ export class PoseLab implements OnDestroy {
     if (video.currentTime === this.lastVideoTime) return; // 同一影格不重算
     this.lastVideoTime = video.currentTime;
 
-    const ts = performance.now();
+    // MediaPipe 的 VIDEO 模式要求時間戳「嚴格遞增的整數」。
+    // performance.now() 是浮點且在高更新率下可能兩次取到同一毫秒，
+    // 重複或倒退的時間戳會讓追蹤狀態算出 NaN 的 ROI。
+    const ts = this.lastTs = Math.max(Math.round(performance.now()), this.lastTs + 1);
     const mirror = this.facingMode === 'user';
     const ctx = display.getContext('2d')!;
     const w = display.width;
@@ -256,8 +266,22 @@ export class PoseLab implements OnDestroy {
       }
       this.detectedPoints.set(landmarkSets[0]?.length ?? 0);
     } catch (e) {
+      const msg = (e as Error)?.message ?? String(e);
       this.detectedPoints.set(0);
-      this.overlayError.set(`偵測失敗：${(e as Error)?.message ?? e}`);
+
+      /**
+       * 「ROI contains NaN values」是 FaceLandmarker 的已知狀況：
+       * 它是偵測 → ROI → 關鍵點的兩段式圖，VIDEO 模式會用上一幀的結果推算
+       * 下一幀的 ROI。追蹤狀態一旦算出 NaN 就會固定在壞掉的狀態，
+       * 之後每一幀都拋同樣的錯（骨架是單段式的圖，所以不受影響）。
+       * 唯一可靠的復原方式是重建這個任務，把追蹤狀態清乾淨。
+       */
+      if (/NaN|ROI/i.test(msg) && this.mode() === 'face') {
+        this.overlayError.set('臉部追蹤狀態異常，正在重建…');
+        this.resetFace();
+      } else {
+        this.overlayError.set(`偵測失敗：${msg}`);
+      }
       return;
     }
 
@@ -270,6 +294,28 @@ export class PoseLab implements OnDestroy {
     } catch (e) {
       // 疊圖失敗 —— 這正是「478 PTS 但看不到網格」的情況
       this.overlayError.set(`疊圖失敗：${(e as Error)?.message ?? e}`);
+    }
+  }
+
+  /** 重建臉部任務以清除壞掉的追蹤狀態（見 processFrame 的說明） */
+  private async resetFace(): Promise<void> {
+    if (this.faceResetting || !this.fileset) return;
+    this.faceResetting = true;
+    try {
+      const old = this.face;
+      this.face = undefined;
+      old?.close();
+      const { FaceLandmarker } = await import('@mediapipe/tasks-vision');
+      this.face = await (FaceLandmarker as typeof FaceLandmarkerT).createFromOptions(this.fileset, {
+        baseOptions: { modelAssetPath: FACE_MODEL, delegate: 'GPU' },
+        runningMode: 'VIDEO',
+        numFaces: 1,
+      });
+      this.overlayError.set('');
+    } catch (err) {
+      this.overlayError.set(`臉部模型重建失敗：${(err as Error)?.message ?? err}`);
+    } finally {
+      this.faceResetting = false;
     }
   }
 
