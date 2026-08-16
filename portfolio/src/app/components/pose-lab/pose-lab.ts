@@ -89,8 +89,11 @@ export class PoseLab implements OnDestroy {
           }),
           (FaceLandmarker as typeof FaceLandmarkerT).createFromOptions(fileset, {
             baseOptions: { modelAssetPath: FACE_MODEL, delegate: 'GPU' },
-            runningMode: 'VIDEO',
+            // 刻意用 IMAGE 而不是 VIDEO —— 見 processFrame 的說明
+            runningMode: 'IMAGE',
             numFaces: 1,
+            minFaceDetectionConfidence: 0.3,
+            minFacePresenceConfidence: 0.3,
           }),
         ]);
       } catch {
@@ -103,8 +106,10 @@ export class PoseLab implements OnDestroy {
           }),
           (FaceLandmarker as typeof FaceLandmarkerT).createFromOptions(fileset, {
             baseOptions: { modelAssetPath: FACE_MODEL, delegate: 'CPU' },
-            runningMode: 'VIDEO',
+            runningMode: 'IMAGE',
             numFaces: 1,
+            minFaceDetectionConfidence: 0.3,
+            minFacePresenceConfidence: 0.3,
           }),
         ]);
       }
@@ -261,7 +266,19 @@ export class PoseLab implements OnDestroy {
       if (this.mode() === 'pose' && this.pose) {
         landmarkSets = this.pose.detectForVideo(video, ts).landmarks ?? [];
       } else if (this.mode() === 'face' && this.face) {
-        landmarkSets = this.face.detectForVideo(video, ts).faceLandmarks ?? [];
+        /**
+         * 臉部刻意用 IMAGE 模式的 detect()，而不是 VIDEO 模式的 detectForVideo()。
+         *
+         * FaceLandmarker 的 VIDEO 模式是「偵測 → ROI → 關鍵點」兩段式圖，會拿上一幀
+         * 的結果推算下一幀的 ROI。這個追蹤狀態很脆弱：先前實測到兩種壞法 ——
+         * ROI 算出 NaN 而每幀拋錯，以及追蹤掉了之後再也偵測不回來
+         * （症狀是先閃幾下點數，然後永遠顯示沒偵測到）。
+         *
+         * IMAGE 模式每幀都做完整偵測，沒有跨幀狀態可以壞掉。代價是每幀多幾毫秒，
+         * 對這個展示來說完全可接受 —— 穩定遠比省那點運算重要。
+         * 骨架維持 VIDEO 模式，它是單段式圖，沒有這個問題。
+         */
+        landmarkSets = this.face.detect(video).faceLandmarks ?? [];
         this.faceMissing.set(landmarkSets.length === 0);
       }
       this.detectedPoints.set(landmarkSets[0]?.length ?? 0);
@@ -288,7 +305,7 @@ export class PoseLab implements OnDestroy {
     try {
       for (const lms of landmarkSets) {
         if (this.mode() === 'pose') this.drawPose(ctx, lms, w, h, mirror, acid, punch, ink);
-        else this.drawFace(ctx, lms, w, h, mirror, acid, punch, volt);
+        else this.drawFace(ctx, lms, w, h, mirror, acid, punch, ink);
       }
       if (this.overlayError()) this.overlayError.set('');
     } catch (e) {
@@ -308,8 +325,10 @@ export class PoseLab implements OnDestroy {
       const { FaceLandmarker } = await import('@mediapipe/tasks-vision');
       this.face = await (FaceLandmarker as typeof FaceLandmarkerT).createFromOptions(this.fileset, {
         baseOptions: { modelAssetPath: FACE_MODEL, delegate: 'GPU' },
-        runningMode: 'VIDEO',
+        runningMode: 'IMAGE',
         numFaces: 1,
+        minFaceDetectionConfidence: 0.3,
+        minFacePresenceConfidence: 0.3,
       });
       this.overlayError.set('');
     } catch (err) {
@@ -351,22 +370,18 @@ export class PoseLab implements OnDestroy {
 
   private drawFace(
     ctx: CanvasRenderingContext2D, lms: NormalizedLandmark[], w: number, h: number,
-    mirror: boolean, acid: string, punch: string, volt: string,
+    mirror: boolean, acid: string, punch: string, ink: string,
   ): void {
     const X = (lm: NormalizedLandmark) => (mirror ? 1 - lm.x : lm.x) * w;
     const Y = (lm: NormalizedLandmark) => lm.y * h;
     const s = Math.max(w / 640, 0.75); // 線寬隨畫布尺寸縮放，全螢幕放大也清楚
 
     /**
-     * 每條線畫兩次：先鋪一層較寬的深色底，再疊上細的彩色線。
-     *
-     * 只畫單層彩色線的話，在真實鏡頭下幾乎看不見 —— 網格是黃色的，
-     * 而臉的膚色也偏亮，兩者對比極低；再加上 1px 級的線在縮放後容易變成次像素。
-     * 深色描邊讓線在任何膚色與背景上都讀得出來（動捕疊圖的標準做法）。
+     * 與骨架同一套畫法：細的深色底線 + 彩色主線。
+     * 底線只比主線寬一點點，維持在任何膚色上都讀得出來，又不會糊成一塊。
      */
     const strokeConns = (conns: Conn[], style: string, width: number) => {
-      // 任何一層的連線資料缺了就跳過那一層，不要讓整個疊圖掛掉 —
-      // 網格畫不出來時，至少五官輪廓還要能顯示
+      // 任何一層的連線資料缺了就跳過那一層，不要讓整個疊圖掛掉
       if (!conns?.length) return;
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
@@ -377,31 +392,29 @@ export class PoseLab implements OnDestroy {
         ctx.moveTo(X(a), Y(a));
         ctx.lineTo(X(b), Y(b));
       }
-      // 深色底線
-      ctx.strokeStyle = 'rgba(0,0,0,.55)';
-      ctx.lineWidth = width + 1.6 * s;
+      ctx.strokeStyle = 'rgba(0,0,0,.45)';
+      ctx.lineWidth = width + 0.8 * s;
       ctx.stroke();
-      // 彩色主線（沿用同一條路徑，不用重建）
       ctx.strokeStyle = style;
       ctx.lineWidth = width;
       ctx.stroke();
     };
 
     // 1) 細網格（tesselation）
-    strokeConns(this.faceMesh, this.rgba('--acid-rgb', 0.95), 1.5 * s);
-    // 2) 五官輪廓（眼/眉/唇/臉型）加粗，讓結構清楚
-    strokeConns(this.faceContours, punch, 3.4 * s);
+    strokeConns(this.faceMesh, this.rgba('--acid-rgb', 0.9), 0.7 * s);
+    // 2) 五官輪廓（眼/眉/唇/臉型）
+    strokeConns(this.faceContours, punch, 1.8 * s);
 
-    // 3) 虹膜點（478 點含雙眼虹膜 468–477）
+    // 3) 虹膜點 —— 與骨架的關節點同一種畫法（punch 填色 + ink 描邊）
+    ctx.fillStyle = punch;
+    ctx.strokeStyle = ink;
+    ctx.lineWidth = 1.2 * s;
     for (let i = 468; i < lms.length; i++) {
       const lm = lms[i];
       if (!lm) continue;
       ctx.beginPath();
-      ctx.arc(X(lm), Y(lm), 3 * s, 0, Math.PI * 2);
-      ctx.fillStyle = volt;
+      ctx.arc(X(lm), Y(lm), 2.2 * s, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = 'rgba(0,0,0,.6)';
-      ctx.lineWidth = 1.2 * s;
       ctx.stroke();
     }
   }

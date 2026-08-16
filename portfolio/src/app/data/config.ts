@@ -212,7 +212,6 @@ export const TOOLS: ToolEntry[] = [
   { name: 'Unreal Engine',      level: 'working' },
   { name: 'Unity',              level: 'working' },
   { name: 'Marvelous Designer', level: 'working', note: '布料' },
-  { name: 'Angular',            level: 'working', note: '前端介面' },
 ];
 
 /** 招牌之外、仍具備的 3D 能力 */
@@ -303,8 +302,8 @@ export const INTEGRATIONS: Integration[] = [
 ];
 
 export const INTEGRATION_NOTE =
-  '這些是別人的研究專案，不是我的作品。它們多半只有命令列介面與難搞的環境需求 — ' +
-  '我做的是把它們在 Windows 上建起來、串進 Blender 或 Rokoko 的實際製作流程，讓美術真的用得到。';
+  '以下為第三方研究專案。這類成果通常只有命令列介面與相依性繁瑣的執行環境，' +
+  '我負責的是環境建置與流程整合 — 讓它們實際接進 Blender 與 Rokoko 的製作流程。';
 
 // ── 早期作品 ─────────────────────────────────────────────────────────────────
 export type EarlyWork = {
@@ -334,9 +333,7 @@ export const EARLY_WORKS: EarlyWork[] = [
   { image: 'ig-workshop',      title: '紙紮工坊',     note: '實體製作現場 — 數位模型落地成紙材結構' },
 ];
 
-export const EARLY_WORKS_NOTE =
-  '2021–2022 的練習與習作。這些專案的原始檔已經佚失，畫面只剩下當年發布在 Instagram 上的版本，' +
-  '所以解析度偏低 — 放在這裡是為了把學習軌跡補完整。';
+export const EARLY_WORKS_NOTE = '';
 
 // ── 產品 ─────────────────────────────────────────────────────────────────────
 export type ProductEntry = {
