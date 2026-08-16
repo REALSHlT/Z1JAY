@@ -4,7 +4,7 @@ import { SplitTextDirective } from '../../directives/split-text.directive';
 import { Img } from '../shared/img';
 import {
   EARLY_WORKS, EARLY_WORKS_NOTE, EarlyWork,
-  PROJECTS, ProjectEntry, TGT_COMPARISON, TGT_STILLS, Still,
+  PROJECTS, ProjectEntry, TGT_STILLS, Still,
 } from '../../data/config';
 
 @Component({
@@ -20,7 +20,6 @@ export class Projects {
   readonly projects: ProjectEntry[] = PROJECTS.slice(1);
 
   readonly stills: Still[] = TGT_STILLS;
-  readonly comparison = TGT_COMPARISON;
 
   readonly earlyWorks: EarlyWork[] = EARLY_WORKS;
   readonly earlyNote = EARLY_WORKS_NOTE;

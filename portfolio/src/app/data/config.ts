@@ -533,8 +533,8 @@ export type Still = { image: string; caption: string; note: string };
 
 /**
  * 成品影格取自 03.3D/04.render。
- * 本作有一個較早的版本《Where do we stand》，兩版共用部分鏡頭 —
- * 其中「水桶與水管」那顆在兩版之間從寫實渲染改成 NPR，剛好成為現成的前後對照。
+ * 本作有一個較早的版本《Where do we stand》，兩版共用部分鏡頭，
+ * 因此下列影格同時取自兩個專案 —— 依站主指示一律視為同一件作品。
  */
 export const TGT_STILLS: Still[] = [
   { image: 'tgt-npr',     caption: 'NPR 風格渲染', note: '以 Blender 節點做描邊與半調網點，讓實拍質感的場景轉成印刷風格' },
@@ -545,15 +545,7 @@ export const TGT_STILLS: Still[] = [
   { image: 'tgt-court',   caption: '角色與室內光', note: '法庭場景的角色配置與多光源室內佈光' },
 ];
 
-export const TGT_COMPARISON = {
-  before: 'tgt-npr-before',
-  after:  'tgt-npr',
-  beforeLabel: '寫實渲染',
-  afterLabel:  'NPR 風格化',
-  note:
-    '同一顆鏡頭在前後兩版之間的變化 — 從物理寫實的 PBR 渲染，' +
-    '改為以 Blender 節點加上描邊與半調網點的印刷風格。場景與燈光不變，只換掉著色策略。',
-};
+
 
 export const PROJECTS: ProjectEntry[] = [
   {
@@ -700,15 +692,6 @@ export const EXPERIENCE: ExperienceEntry[] = [
   },
   {
     year: '2026',
-    period: '2026/04 — 現在',
-    title: 'Snapbrify — 個人產品開發',
-    org: '個人專案',
-    description:
-      '以「必須真的能上線」為前提自學前後端，獨力完成並營運 snapbrify.com：' +
-      '照片轉 PBR 材質的線上服務，含帳號與配額系統、端上 AI 推論，以及 Blender 外掛。',
-  },
-  {
-    year: '2026',
     period: '2026/01 — 現在',
     title: '3D 動畫 & AI 工作流程開發',
     org: '寶成國際集團',
@@ -716,5 +699,14 @@ export const EXPERIENCE: ExperienceEntry[] = [
       '負責 3D 動畫製作，涵蓋動態、PBR 渲染與燈光、後製。' +
       '同時獨立建置生成式 AI 工作流程與模型訓練架構，並參與相關前端開發。',
     highlight: true,
+  },
+  {
+    year: '2026',
+    period: '2026/04 — 現在',
+    title: 'Snapbrify — 個人產品開發',
+    org: '個人專案',
+    description:
+      '以「必須真的能上線」為前提自學前後端，獨力完成並營運 snapbrify.com：' +
+      '照片轉 PBR 材質的線上服務，含帳號與配額系統、端上 AI 推論，以及 Blender 外掛。',
   },
 ];

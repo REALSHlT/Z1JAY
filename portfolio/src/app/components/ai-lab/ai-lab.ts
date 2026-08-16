@@ -123,6 +123,24 @@ export class AiLab implements AfterViewInit, OnDestroy {
   }
 
   /**
+   * 只有「我們自己產生、可以直接給使用者看」的訊息會用這個型別丟出。
+   * 其餘例外（最典型的是 fetch 的 TypeError: Failed to fetch）訊息是英文的瀏覽器內部字串，
+   * 直接顯示給訪客會很難看 — 那些一律換成通用中文訊息。
+   */
+  private userError(message: string): Error {
+    const err = new Error(message);
+    (err as Error & { userFacing?: boolean }).userFacing = true;
+    return err;
+  }
+
+  private friendly(err: unknown, fallback: string): string {
+    const e = err as Error & { userFacing?: boolean };
+    if (e?.userFacing && e.message) return e.message;
+    // 連不上（離線、CORS、Worker 掛了）都走這裡
+    return fallback;
+  }
+
+  /**
    * 把 Worker 的錯誤回應轉成可以直接顯示的中文。
    * Worker 對 429（個人限速）與 503（全站當日預算用完）會帶 message 欄位，
    * 這些訊息比前端硬寫的通用字串精準得多。
@@ -371,7 +389,7 @@ export class AiLab implements AfterViewInit, OnDestroy {
     } catch (err) {
       // Worker 會在 429（單人太頻繁）與 503（全站當日預算用完）帶回可直接顯示的
       // 中文訊息，優先用它；其餘情況才退回通用字串。
-      this.chatError.set((err as Error).message || '發生錯誤，請稍後再試');
+      this.chatError.set(this.friendly(err, '連不上 AI 服務，請檢查網路後再試'));
       // 移除空的 assistant 佔位
       this.messages.update((m) => (m[m.length - 1]?.content === '' ? m.slice(0, -1) : m));
       this.chatInput = prompt;
@@ -392,7 +410,7 @@ export class AiLab implements AfterViewInit, OnDestroy {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages: [{ role: 'user', content: userMsg }] }),
     });
-    if (!res.ok) throw new Error(await this.errorMessage(res));
+    if (!res.ok) throw this.userError(await this.errorMessage(res));
     const data = await res.json();
     const text = this.stopRepetition(data.response ?? '');
     this.updateLastAssistant(this.display(text));
@@ -454,7 +472,7 @@ export class AiLab implements AfterViewInit, OnDestroy {
         // SDXL Base 需要 1024 才有好畫質（768 會嚴重過曝糊掉）
         body: JSON.stringify({ prompt: imgPrompt, width: 1024, height: 1024 }),
       });
-      if (!res.ok) throw new Error(await this.errorMessage(res));
+      if (!res.ok) throw this.userError(await this.errorMessage(res));
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       this.patchLastAssistant({ imageLoading: false, imageUrl: url });
@@ -467,7 +485,7 @@ export class AiLab implements AfterViewInit, OnDestroy {
       // 生圖失敗要講清楚原因（可能是伺服器端審核擋下、限速、或當日額度用完），
       // 舊版靜靜地什麼都不顯示，使用者只會看到轉圈消失後毫無下文。
       this.patchLastAssistant({ imageLoading: false });
-      this.chatError.set((err as Error).message || '圖片生成失敗，請稍後再試');
+      this.chatError.set(this.friendly(err, '圖片生成失敗，請稍後再試'));
     }
   }
 

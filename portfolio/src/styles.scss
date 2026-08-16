@@ -115,13 +115,18 @@ html.lenis, html.lenis body { scroll-behavior: auto !important; }
   .reveal-clip { clip-path: none !important; }
 }
 
-/* ── 圖片遮罩式進場 ─────────────────────────── */
+/* ── 圖片遮罩式進場 ─────────────────────────────
+   ⚠️ .reveal-clip 一定要放在「被觀察元素的內層」，不能放在觀察元素本身。
+   clip-path 會把元素裁成零寬度，而 IntersectionObserver 計算交集時會把裁切算進去 —
+   零寬度＝零交集，永遠達不到 threshold，.visible 就永遠不會被加上，
+   結果是元素卡在畫面裡永久隱形（自我鎖死）。
+   所以這裡用「父層有 .visible」的後代選擇器來開啟。 */
 @media (prefers-reduced-motion: no-preference) {
   .reveal-clip {
     clip-path: inset(0 100% 0 0);
     transition: clip-path 1s cubic-bezier(.76, 0, .24, 1);
   }
-  .reveal-clip.visible { clip-path: inset(0 0 0 0); }
+  .visible .reveal-clip { clip-path: inset(0 0 0 0); }
 }
 
 /* ── 鍵盤可及性 ─────────────────────────────── */

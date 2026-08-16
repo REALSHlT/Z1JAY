@@ -17,9 +17,7 @@ export type ImageEntry = {
 
 export const IMAGES: Record<string, ImageEntry> = {
   // 《The Gentle Trigger》成品影格
-  // tgt-npr-before 取自舊版《Where do we stand》，與 tgt-npr 是同一顆鏡頭
   'tgt-npr': { w: 2560, h: 1080, widths: [400, 800, 1200, 1600, 2560], fb: 2560 },
-  'tgt-npr-before': { w: 2560, h: 1080, widths: [400, 800, 1200, 1600, 2560], fb: 2560 },
   'tgt-water': { w: 2560, h: 1080, widths: [400, 800, 1200, 1600, 2560], fb: 2560 },
   'tgt-hand': { w: 2560, h: 1080, widths: [400, 800, 1200, 1600, 2560], fb: 2560 },
   'tgt-rooftop': { w: 2560, h: 1080, widths: [400, 800, 1200, 1600, 2560], fb: 2560 },
