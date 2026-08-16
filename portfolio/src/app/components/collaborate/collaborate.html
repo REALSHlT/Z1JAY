@@ -1,4 +1,4 @@
-<section id="collaborate" class="section-py sec-volt-tint relative overflow-hidden">
+<section id="collaborate" class="section-py sec-volt-tint relative overflow-hidden" appScene>
   <!-- Comic decorations -->
   <div class="hidden md:block absolute top-14 left-4 w-[26vw] h-56 hatch hatch-90 hatch-wide hatch-fade -rotate-2 pointer-events-none"></div>
 
@@ -6,7 +6,7 @@
 
     <div class="flex flex-wrap items-end gap-x-6 gap-y-1 mb-4" appScrollReveal>
       <span class="sec-index w-full">10 — 10</span>
-      <h2 class="display-bleed !mb-0" appSplitText>合作方式</h2>
+      <h2 class="display-bleed !mb-0 xslide" appSplitText>合作方式</h2>
     </div>
     <p class="text-[15px] leading-[1.8] text-on-surface-variant max-w-2xl mb-10 md:mb-14" appScrollReveal>
       以下是我平常負責的範圍，以及一個專案實際會怎麼跑。
@@ -34,16 +34,16 @@
       <span class="brut-label text-on-surface-variant mb-1">Blocking → Final</span>
     </div>
 
-    <ol class="relative">
+    <!-- 路牌翻字：步驟依捲動進度逐段滑入，編號牌像路牌一樣翻開（可倒放） -->
+    <ol class="relative" appScene>
       <!-- 垂直軸線（桌機） -->
       <span class="hidden md:block absolute left-[27px] top-4 bottom-4 w-[3px] bg-ink" aria-hidden="true"></span>
 
       @for (step of process; track step.phase; let i = $index) {
-        <li class="relative md:pl-20 mb-6 last:mb-0"
-            appScrollReveal [revealDelay]="i * 80" revealClass="reveal-left">
+        <li class="relative md:pl-20 mb-6 last:mb-0 step-scrub" [style.--i]="i">
 
           <!-- 階段編號圓標 -->
-          <span class="hidden md:flex absolute left-0 top-5 w-14 h-14 bg-acid border-[3px] border-ink
+          <span class="step-badge hidden md:flex absolute left-0 top-5 w-14 h-14 bg-acid border-[3px] border-ink
                        items-center justify-center font-display text-[17px] z-10">
             {{ step.phase }}
           </span>

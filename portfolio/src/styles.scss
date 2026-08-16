@@ -22,7 +22,9 @@
 
 html { scroll-behavior: smooth; }
 
-html, body { overflow-x: hidden; }
+/* 橫向裁切只能放在 html：body 一旦設了 overflow-x:hidden 就會變成捲動容器，
+   所有 position:sticky（水平畫廊、疊卡）都會停止吸附。根元素是特例，不受影響。 */
+html { overflow-x: hidden; }
 
 body {
   font-family: "Noto Sans TC", system-ui, sans-serif;
@@ -798,3 +800,356 @@ body, section, footer, header,
   direction: ltr;
   font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
 }
+
+/* ═════════════════════════════════════════════════════════════
+   捲動場景 — scroll = 時間軸
+   ─────────────────────────────────────────────────────────────
+   appScene 指令把每個區塊的捲動進度寫成 CSS 變數 --p（0–1），
+   這裡的規則全部用 calc(var(--p)) 把進度翻譯成動作。
+   因為驅動來源是捲動位置本身（不是計時動畫），所有效果
+   往回捲就會倒放 — 這是使用者指名要的「可重複捲動」。
+
+   規約：
+   - 一律 var(--p, 預設值)，預設值＝動畫完成後的自然狀態，
+     rAF 萬一沒跑，版面停在可讀的終點而不是半途。
+   - 場景動畫盡量用獨立的 translate / scale / rotate 屬性，
+     不碰 transform — reveal 進場動畫用的是 transform，
+     兩邊各走各的軌道才不會互相覆蓋。
+   - 全部包在 html.motion-ok 之下：這個 class 由 MotionService
+     在 rAF 迴圈啟動時加上；prefers-reduced-motion 或 rAF 失效
+     時不存在，整套場景 CSS 失效，版面回到靜態排版。
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── 水平畫廊（fallback 佈局：普通網格）───────
+   基礎樣式是「沒有場景系統時」的樣子 — 手機與減少動態
+   模式直接用這套，桌機 + motion-ok 才升級成釘住畫廊。 */
+.hs-track {
+  display: grid;
+  gap: 1.25rem;
+}
+@media (min-width: 640px)  { .hs-track { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .hs-track { grid-template-columns: repeat(3, 1fr); } }
+
+.hs-item { min-width: 0; }
+
+.hs-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  border: 3px dashed rgb(var(--ink-rgb));
+  background: rgb(var(--acid-rgb) / .25);
+  min-height: 180px;
+  padding: 28px;
+}
+
+.hs-hud { display: none; }
+
+html.motion-ok {
+  @media (min-width: 768px) {
+    /* 300vh 的軌道長度 = 垂直捲兩個螢幕高換完整幅水平位移 */
+    .hs {
+      height: 300vh;
+      /* 掙脫 .edge 的內距做成滿版 */
+      margin-inline: calc(clamp(20px, 4vw, 72px) * -1);
+    }
+    .hs-view {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .hs-track {
+      display: flex;
+      align-items: stretch;
+      gap: clamp(24px, 3vw, 48px);
+      width: max-content;
+      padding-inline: clamp(20px, 4vw, 72px);
+      transform: translate3d(calc(var(--p, 0) * -1 * var(--shift, 0px)), 0, 0);
+      will-change: transform;
+    }
+    .hs-item {
+      width: clamp(480px, 60vw, 880px);
+      flex-shrink: 0;
+    }
+    .hs-cta { min-height: 0; width: clamp(300px, 26vw, 420px); }
+    /* 畫格內的影像反向微移 — 畫廊在動、畫面內容也在動，層次才出得來 */
+    .hs-img {
+      translate: calc((var(--p, .5) - .5) * -7%) 0;
+      scale: 1.12;
+    }
+    .hs-hud {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-inline: clamp(20px, 4vw, 72px);
+      margin-bottom: 20px;
+    }
+    .hs-bar {
+      position: relative;
+      flex: 1;
+      max-width: 320px;
+      height: 6px;
+      border: 2px solid rgb(var(--ink-rgb));
+      background: rgb(255 255 255);
+      i {
+        position: absolute;
+        inset: 0;
+        background: rgb(var(--punch-rgb));
+        transform: scaleX(var(--p, 0));
+        transform-origin: left;
+      }
+    }
+  }
+}
+
+/* ── Hero 散場：逐字四散 ─────────────────────
+   #hero 用 exit 進度（0＝還在頂端、1＝完全捲出）。
+   每個字母帶自己的方向向量（--sx/--sy/--sr，寫在 HTML inline），
+   離場越多飛得越遠 — 回捲時會飛回來組回字標。 */
+html.motion-ok #hero {
+  .hl {
+    display: inline-block;
+    translate: calc(var(--p, 0) * var(--sx, 0) * 1vw) calc(var(--p, 0) * var(--sy, 0) * 1vh);
+    rotate: calc(var(--p, 0) * var(--sr, 0) * 1deg);
+  }
+  /* 副標整條往右滑出（與字母反向），裝飾色塊依 --z 深度反向上浮 */
+  .hero-sub { translate: calc(var(--p, 0) * 9vw) 0; }
+  .pz { translate: 0 calc(var(--p, 0) * var(--z, 1) * -16vh); }
+}
+
+/* ── 通用 scrub 進場（工具開發的左右滑軌）────
+   進度 0.42 前完成滑入（min 封頂），之後靜止；
+   反向捲動時會順著同一條軌道滑出去。 */
+html.motion-ok {
+  .scrub-l, .scrub-r {
+    will-change: transform, opacity;
+    opacity: calc(.15 + min(var(--p, 1) * 3, 1) * .85);
+  }
+  .scrub-l {
+    translate: calc((min(var(--p, 1) * 2.4, 1) - 1) * 16vw) 0;
+    rotate: calc((min(var(--p, 1) * 2.4, 1) - 1) * 2deg);
+  }
+  .scrub-r {
+    translate: calc((1 - min(var(--p, 1) * 2.4, 1)) * 16vw) 0;
+    rotate: calc((1 - min(var(--p, 1) * 2.4, 1)) * -2deg);
+  }
+
+  /* ═══ 下半部：連續 3D 場景 ═══════════════════
+     與上半部「滑入後定格」不同，這批是**中心峰值的連續映射**：
+     --c 是有號進度（-1 進場 → 0 視窗中央 → +1 離場），元素在
+     整段穿越過程都在演 — 進場時轉開、中央立正、離場往反向轉走，
+     回捲就整段倒放。--cc 是拋物線（中央 0、兩端 1），給縮放與淡出用。
+     --mx/--my 由 appTilt3d 指令寫入（滑鼠 3D 傾斜，單位＝度），
+     直接加進同一個 transform 運算式，捲動與滑鼠互動疊加不打架。 */
+
+  /* ── 迴轉展示（產品卡）：像展示台上緩緩轉向你的卡片 ── */
+  .swing {
+    --c: calc((var(--p, .5) - .5) * 2);
+    --cc: calc(var(--c) * var(--c));
+    transform: perspective(1200px)
+               rotateY(calc(var(--c) * var(--dir, 1) * -14deg + var(--mx, 0) * 1deg))
+               rotateX(calc(var(--my, 0) * 1deg));
+    scale: calc(1.02 - var(--cc) * .08);
+    opacity: calc(1 - var(--cc) * .45);
+    will-change: transform, opacity;
+  }
+  .swing-alt { --dir: -1; }
+
+  /* ── 檔案抽屜（經歷卡）：像翻檔案櫃，卡片以側邊為軸翻過去 ── */
+  .drawer-l, .drawer-r {
+    --c: calc((var(--p, .5) - .5) * 2);
+    --cc: calc(var(--c) * var(--c));
+    opacity: calc(1 - var(--cc) * .55);
+    will-change: transform, opacity;
+  }
+  .drawer-l {
+    transform: perspective(1000px) rotateY(calc(var(--c) * 15deg));
+    transform-origin: 0% 50%;
+    translate: calc(var(--c) * -32px) 0;
+  }
+  .drawer-r {
+    transform: perspective(1000px) rotateY(calc(var(--c) * -15deg));
+    transform-origin: 100% 50%;
+    translate: calc(var(--c) * 32px) 0;
+  }
+
+  /* ── 掀牌浪（資歷）：像釘在牆上的拍立得被逐張掀開 ──
+     容器有 --p，每張卡用序號 --i 切出自己的進度窗（--w 0→1），
+     以「膠帶」為鉸鏈從上緣往下翻開；--tilt 保留各卡的基礎歪斜。 */
+  .wave-item {
+    --w: clamp(0, calc(var(--p, 1) * 4.6 - var(--i, 0) * 1.1 - .6), 1);
+    transform: perspective(900px)
+               rotateX(calc((1 - var(--w)) * -58deg + var(--my, 0) * 1deg))
+               rotateY(calc(var(--mx, 0) * 1deg));
+    transform-origin: 50% -8px;
+    rotate: var(--tilt, 0deg);
+    translate: 0 calc((1 - var(--w)) * 26px);
+    opacity: calc(.08 + var(--w) * .92);
+    will-change: transform, opacity;
+  }
+
+  /* ── 路牌翻字（製作流程）：步驟依序滑入，編號牌像路牌一樣翻開 ── */
+  .step-scrub {
+    --w: clamp(0, calc(var(--p, 1) * 5.4 - var(--i, 0) * 1.05 - .5), 1);
+    opacity: calc(.08 + var(--w) * .92);
+    translate: calc((1 - var(--w)) * -56px) 0;
+    will-change: translate, opacity;
+    .step-badge {
+      transform: perspective(600px) rotateY(calc((1 - var(--w)) * 86deg));
+      transform-origin: 0% 50%;
+    }
+  }
+
+  /* ── 鬆脫牆（早期作品）：磁磚經過視窗中央時擺正，離開又歪掉 ── */
+  .loose {
+    --c: calc((var(--p, .5) - .5) * 2);
+    --cc: calc(var(--c) * var(--c));
+    rotate: calc(var(--c) * var(--lw, 1) * 4deg);
+    scale: calc(1 - var(--cc) * .06);
+    will-change: rotate, scale;
+  }
+  .loose:nth-child(even) { --lw: -1; }
+
+  /* ── 開機展開（AI 對話視窗）：clip 拉開進場 + 穿越期間的空間漂移 ── */
+  .scrub-boot {
+    --c: calc((var(--p, .5) - .5) * 2);
+    clip-path: inset(calc((1 - min(var(--p, 1) * 2.2, 1)) * 44%)
+                     calc((1 - min(var(--p, 1) * 2.2, 1)) * 20%));
+    transform: perspective(1300px)
+               rotateY(calc(var(--c) * 8deg))
+               rotateX(calc(var(--c) * -4deg));
+    scale: calc(.92 + min(var(--p, 1) * 2.2, 1) * .08);
+    will-change: clip-path, transform;
+  }
+
+  /* ── 廣告牌駛過（動捕視窗）：進場後仰 → 中央立正 → 離場前傾 ── */
+  .scrub-tilt {
+    --c: calc((var(--p, .5) - .5) * 2);
+    --cc: calc(var(--c) * var(--c));
+    transform: perspective(1400px) rotateX(calc(var(--c) * -11deg));
+    scale: calc(1 - var(--cc) * .05);
+    opacity: calc(1 - var(--cc) * .4);
+    will-change: transform, opacity;
+  }
+
+  /* ── 對流欄（關於我的故事卡、研究整合卡）──
+     奇數往上、偶數往下，中點（--p = .5）對齊 —
+     捲動時兩欄朝相反方向流動。 */
+  @media (min-width: 640px) {
+    .flow > :nth-child(odd)  { translate: 0 calc((var(--p, .5) - .5) * -52px); }
+    .flow > :nth-child(even) { translate: 0 calc((var(--p, .5) - .5) *  52px); }
+    /* 3D 變體（關於我的故事卡）：對流之外再加一點朝向彼此的微傾 */
+    .flow-3d > :nth-child(odd)  { rotate: calc((var(--p, .5) - .5) * -2.4deg); }
+    .flow-3d > :nth-child(even) { rotate: calc((var(--p, .5) - .5) *  2.4deg); }
+  }
+
+  /* ── 標題橫滑：巨型標題隨區塊進度橫向漂移 ──
+     位移量與捲動方向垂直 — 這是「不只往下」的最便宜證明。 */
+  @media (min-width: 768px) {
+    .xslide   { translate: calc((var(--p, .5) - .5) * -6vw) 0; }
+    .xslide-r { translate: calc((var(--p, .5) - .5) *  6vw) 0; }
+  }
+
+  /* ── 捲動速度傾斜：跑馬燈與巨標吃 --sv（±1）──
+     快速捲動時字體向捲動方向剪斜，停下來就彈回。 */
+  .marquee-band {
+    transform: skewY(calc(var(--sv, 0) * -1.2deg));
+    /* transform 之外要保留主題切換的顏色過渡（styles 前段有共用的 .8s 清單） */
+    transition: transform .25s ease-out, background-color .8s ease, border-color .8s ease, color .8s ease;
+  }
+  .display-bleed {
+    transform: skewX(calc(var(--sv, 0) * -5deg));
+    transition: transform .22s ease-out;
+  }
+}
+
+/* ── 疊卡（核心專業）─────────────────────────
+   卡片依序黏在視窗頂端，下一張蓋上來時，
+   被蓋住的縮小、壓暗、微退 — 進度全部來自容器的 pin 進度。
+   覆蓋量 --cov：第 k 張卡在容器進度约 (k+1)/3 前後被下一張蓋住。 */
+html.motion-ok {
+  @media (min-width: 768px) {
+    .deck { gap: 13vh; }
+    .deck-item {
+      position: sticky;
+      top: calc(96px + var(--k, 0) * 18px);
+    }
+    .deck-item > article {
+      --cov: clamp(0, calc((var(--p, 0) * 3 - var(--k, 0) - .92) * 2.6), 1);
+      scale: calc(1 - var(--cov) * .05);
+      translate: 0 calc(var(--cov) * -10px);
+      filter: brightness(calc(1 - var(--cov) * .16)) saturate(calc(1 - var(--cov) * .3));
+      transform-origin: 50% 0;
+    }
+    /* 最上面那張永遠不會被蓋住 */
+    .deck-item:last-child > article { --cov: 0; }
+  }
+}
+.deck { display: flex; flex-direction: column; gap: 2rem; }
+
+/* ── 逐字上墨（關於我開場白）─────────────────
+   split-text 的 scrub 模式：--n 個字、各帶序號 --i，
+   祖先的 --p 走到哪、墨就上到哪。--fill 先把進度
+   重映射到「進入視窗 22% 後開始、約 60% 前完成」。 */
+@media (prefers-reduced-motion: no-preference) {
+  html.motion-ok .split-scrub {
+    --fill: clamp(0, calc((var(--p, 1) - .22) * 2.6), 1);
+    .split-unit {
+      transition: none;
+      transform: none;
+      opacity: calc(.13 + .87 * clamp(0, calc(var(--fill) * (var(--n, 1) + 4) - var(--i, 0)), 1));
+    }
+  }
+}
+
+/* ── 時間軸脊線（經歷）───────────────────────
+   左側一條底線 + 一條 punch 色的進度線隨捲動長高，
+   每張卡左緣一顆節點。 */
+html.motion-ok {
+  @media (min-width: 768px) {
+    .tl { padding-left: 56px; }
+    .tl::before,
+    .tl::after {
+      content: '';
+      position: absolute;
+      left: 18px;
+      top: 0;
+      width: 3px;
+      height: 100%;
+    }
+    .tl::before { background: rgb(var(--ink-rgb) / .14); }
+    .tl::after {
+      background: rgb(var(--punch-rgb));
+      transform: scaleY(min(var(--p, 1) * 1.55, 1));
+      transform-origin: top;
+    }
+    .tl-node::before {
+      content: '';
+      position: absolute;
+      left: -45px;
+      top: 34px;
+      width: 15px;
+      height: 15px;
+      background: rgb(var(--acid-rgb));
+      border: 3px solid rgb(var(--ink-rgb));
+      rotate: 45deg;
+    }
+  }
+}
+.tl { position: relative; }
+
+/* ── 終幕（Let's Talk）：巨字隨進度撐大、字距張開 ── */
+html.motion-ok #contact {
+  .finale {
+    scale: calc(.8 + min(var(--p, 1) * 2.1, 1) * .2);
+    letter-spacing: calc(-.03em + (1 - min(var(--p, 1) * 2.1, 1)) * -.08em);
+    transform-origin: 50% 100%;
+    display: block;
+  }
+}
+

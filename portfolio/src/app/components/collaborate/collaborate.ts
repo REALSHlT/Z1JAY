@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ScrollRevealDirective } from '../../directives/scroll-reveal.directive';
+import { ScrollSceneDirective } from '../../directives/scroll-scene.directive';
 import { SplitTextDirective } from '../../directives/split-text.directive';
 import { COLLAB_NOTE, LINKS, PROCESS, ProcessStep, SERVICES, ServiceEntry } from '../../data/config';
 import { MagneticDirective } from '../../directives/magnetic.directive';
@@ -7,7 +8,7 @@ import { MagneticDirective } from '../../directives/magnetic.directive';
 @Component({
   selector: 'app-collaborate',
   standalone: true,
-  imports: [ScrollRevealDirective, SplitTextDirective, MagneticDirective],
+  imports: [ScrollRevealDirective, ScrollSceneDirective, SplitTextDirective, MagneticDirective],
   templateUrl: './collaborate.html',
   styleUrl: './collaborate.scss',
 })

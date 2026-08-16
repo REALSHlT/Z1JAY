@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ScrollRevealDirective } from '../../directives/scroll-reveal.directive';
+import { ScrollSceneDirective } from '../../directives/scroll-scene.directive';
 import { SplitTextDirective } from '../../directives/split-text.directive';
 import { LINKS } from '../../data/config';
 import { ThemeService } from '../../services/theme.service';
@@ -60,7 +61,7 @@ const BIO_DEFAULT = [0, 2, 3];
 @Component({
   selector: 'app-ai-lab',
   standalone: true,
-  imports: [FormsModule, ScrollRevealDirective, SplitTextDirective],
+  imports: [FormsModule, ScrollRevealDirective, ScrollSceneDirective, SplitTextDirective],
   templateUrl: './ai-lab.html',
   styleUrl: './ai-lab.scss',
 })

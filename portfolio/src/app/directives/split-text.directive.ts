@@ -21,6 +21,12 @@ export class SplitTextDirective implements AfterViewInit, OnDestroy {
   readonly stagger = input(28);
   /** 整體延遲 */
   readonly splitDelay = input(0);
+  /**
+   * 上墨模式：不用 IntersectionObserver 播一次，而是把每個字的序號寫成 --i、
+   * 總數寫成 --n，讓 CSS 依祖先的捲動進度 --p 逐字填墨（往回捲會逐字褪回去）。
+   * 搭配同一元素或祖先上的 appScene 使用。
+   */
+  readonly scrub = input(false);
 
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
   private observer?: IntersectionObserver;
@@ -35,6 +41,8 @@ export class SplitTextDirective implements AfterViewInit, OnDestroy {
     host.setAttribute('aria-label', text);
     host.textContent = '';
     host.classList.add('split-text');
+    const scrub = this.scrub();
+    if (scrub) host.classList.add('split-scrub');
 
     // CJK 逐字、拉丁逐詞：用「是否含 CJK」決定切法
     const hasCJK = /[㐀-鿿豈-﫿]/.test(text);
@@ -53,11 +61,20 @@ export class SplitTextDirective implements AfterViewInit, OnDestroy {
       const inner = document.createElement('span');
       inner.className = 'split-unit';
       inner.textContent = unit;
-      inner.style.transitionDelay = `${this.splitDelay() + index * this.stagger()}ms`;
+      if (scrub) {
+        inner.style.setProperty('--i', String(index));
+      } else {
+        inner.style.transitionDelay = `${this.splitDelay() + index * this.stagger()}ms`;
+      }
 
       mask.appendChild(inner);
       host.appendChild(mask);
       index++;
+    }
+
+    if (scrub) {
+      host.style.setProperty('--n', String(index));
+      return; // 進度由 --p 驅動，不需要 IO
     }
 
     /**

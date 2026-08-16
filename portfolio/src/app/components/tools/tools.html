@@ -1,21 +1,25 @@
-<section id="tools" class="section-py panel-ink hair-t hair-b relative overflow-hidden">
+<section id="tools" class="section-py panel-ink hair-t hair-b relative overflow-hidden" appScene>
   <div class="hidden md:block absolute top-0 right-0 w-[38vw] h-80 hatch hatch-135 hatch-paper hatch-wide hatch-fade pointer-events-none"></div>
 
   <div class="edge rule-grid relative">
 
     <div class="flex flex-wrap items-end gap-x-6 gap-y-1 mb-4" appScrollReveal>
       <span class="sec-index w-full">03 — 10</span>
-      <h2 class="display-bleed !mb-0" appSplitText>工具開發</h2>
+      <h2 class="display-bleed !mb-0 xslide" appSplitText>工具開發</h2>
       <span class="burst w-24 h-24 rotate-12 hidden lg:inline-flex ml-auto -mb-4 !text-[11px]">Build!</span>
     </div>
     <p class="text-[15px] leading-[1.8] text-on-surface-variant max-w-2xl mb-10 md:mb-14" appScrollReveal>
       研究成果跟能上工的工具之間，隔著一段沒人想做的距離。我做的就是這段。
     </p>
 
-    <!-- ══ 自製工具 ══ -->
+    <!-- ══ 自製工具 ══
+         滑入不是計時動畫而是 scrub：位置直接綁捲動進度（appScene 的 --p），
+         往回捲視窗會順著同一條軌道滑出去。 -->
     <div class="flex flex-col gap-8">
       @for (tool of toolProjects; track tool.name; let i = $index) {
-        <article class="win" appScrollReveal [revealClass]="i % 2 === 0 ? 'reveal-left' : 'reveal-right'">
+        <article class="win" appScene
+                 [class.scrub-l]="i % 2 === 0"
+                 [class.scrub-r]="i % 2 === 1">
 
           <div class="win-titlebar">
             <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
@@ -67,7 +71,8 @@
         {{ integrationNote }}
       </p>
 
-      <div class="grid sm:grid-cols-2 gap-5">
+      <!-- 對流欄：捲動時左欄上浮、右欄下沉 -->
+      <div class="grid sm:grid-cols-2 gap-5 flow" appScene>
         @for (item of integrations; track item.name) {
           <div class="brut-card p-5">
             <div class="flex items-baseline gap-3 mb-2 flex-wrap">

@@ -1,4 +1,4 @@
-<section id="about" class="section-py relative overflow-hidden">
+<section id="about" class="section-py relative overflow-hidden" appScene>
   <!-- Comic decorations -->
   <div class="hidden md:block absolute top-16 right-0 w-[30vw] h-72 hatch hatch-135 hatch-punch hatch-fade pointer-events-none"></div>
   <div class="hidden md:block absolute bottom-16 -left-12 w-40 h-40 bg-volt border-[3px] border-ink rounded-full block-hatched overflow-hidden pointer-events-none"></div>
@@ -7,19 +7,21 @@
 
     <div class="flex flex-wrap items-end gap-x-6 gap-y-1 mb-4" appScrollReveal>
       <span class="sec-index w-full">05 — 10</span>
-      <h2 class="display-bleed !mb-0" appSplitText>關於我</h2>
+      <h2 class="display-bleed !mb-0 xslide" appSplitText>關於我</h2>
       <span class="burst burst-acid w-24 h-24 -rotate-12 hidden lg:inline-flex ml-auto -mb-4 !text-[12px]">Hi!</span>
     </div>
 
-    <!-- 開場白 —— 用引號版面拉出份量 -->
-    <div class="max-w-3xl mb-12 md:mb-16" appScrollReveal>
-      <p class="text-[20px] md:text-[28px] leading-[1.6] font-bold border-l-[6px] border-punch pl-5 md:pl-7">
+    <!-- 開場白 —— 逐字上墨：字的透明度綁捲動進度，捲到哪、墨上到哪，
+         回捲會逐字褪回去（appSplitText scrub 模式 + appScene 的 --p） -->
+    <div class="max-w-3xl mb-12 md:mb-16" appScene>
+      <p class="text-[20px] md:text-[28px] leading-[1.6] font-bold border-l-[6px] border-punch pl-5 md:pl-7"
+         appSplitText [scrub]="true">
         {{ intro }}
       </p>
     </div>
 
-    <!-- 故事區塊 —— 交錯排版，避免變成一整片文字牆 -->
-    <div class="grid md:grid-cols-2 gap-6 md:gap-8">
+    <!-- 故事區塊 —— 交錯排版 + 3D 對流：捲動時左右欄反向流動並朝彼此微傾 -->
+    <div class="grid md:grid-cols-2 gap-6 md:gap-8 flow flow-3d" appScene>
       @for (block of story; track block.heading; let i = $index) {
         <article class="brut-card p-6 md:p-8 relative"
                  [class.md:mt-10]="i % 2 === 1"

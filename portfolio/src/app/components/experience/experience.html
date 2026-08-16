@@ -1,4 +1,4 @@
-<section id="experience" class="section-py sec-white relative overflow-hidden">
+<section id="experience" class="section-py sec-white relative overflow-hidden" appScene>
   <!-- Comic decorations -->
   <div class="hidden md:block absolute top-1/4 right-0 w-[32vw] h-96 hatch hatch-45 hatch-acid hatch-bold hatch-fade pointer-events-none"></div>
   <div class="hidden md:block absolute bottom-10 right-24 w-24 h-24 bg-volt border-[3px] border-ink block-hatched rotate-12 pointer-events-none"></div>
@@ -7,16 +7,19 @@
 
   <div class="flex flex-wrap items-end gap-x-6 gap-y-1 mb-10 md:mb-14" appScrollReveal>
     <span class="sec-index w-full">06 — 10</span>
-    <h2 class="display-bleed !mb-0" appSplitText>經歷</h2>
+    <h2 class="display-bleed !mb-0 xslide" appSplitText>經歷</h2>
   </div>
 
-  <div class="flex flex-col gap-8 max-w-4xl">
+  <!-- 時間軸：左側 punch 色脊線隨捲動進度長高（.tl 系列，appScene 供 --p） -->
+  <div class="flex flex-col gap-8 max-w-4xl tl" appScene>
     <!-- track 用 title 不用 year：2025 有三筆（畢業／兵役／義聖香），year 會撞鍵 -->
+    <!-- 檔案抽屜：每張卡有自己的場景進度，穿越視窗時像檔案櫃翻頁 —
+         進場從側邊翻進來、中央攤平、離場往反向翻走（連續、可倒放） -->
     @for (entry of experiences; track entry.title; let i = $index) {
-      <div class="brut-card brut-hover grid md:grid-cols-12 gap-4 md:gap-8 p-6 md:p-8 relative"
-           [class.md:-rotate-[0.4deg]]="i % 2 === 0"
-           [class.md:rotate-[0.4deg]]="i % 2 === 1"
-           appScrollReveal [revealClass]="i % 2 === 0 ? 'reveal-left' : 'reveal-right'">
+      <div class="brut-card grid md:grid-cols-12 gap-4 md:gap-8 p-6 md:p-8 relative tl-node"
+           [class.drawer-l]="i % 2 === 0"
+           [class.drawer-r]="i % 2 === 1"
+           appScene>
 
         @if (entry.highlight) {
           <span class="sticker inline-flex bg-punch text-white absolute -top-4 right-6 rotate-2 !text-[10px]">Highlight</span>

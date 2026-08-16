@@ -1,26 +1,33 @@
-<section id="skills" class="section-py sec-white relative overflow-hidden">
-  <!-- Comic decorations -->
-  <div class="hidden md:block absolute top-10 right-0 w-[30vw] h-64 hatch hatch-cross hatch-volt hatch-fine hatch-fade rotate-2 pointer-events-none"></div>
-  <div class="hidden md:block absolute -bottom-8 -left-8 w-44 h-44 bg-acid border-[3px] border-ink rounded-full block-hatched overflow-hidden pointer-events-none"></div>
+<!-- ⚠️ 這個 section 不能有 overflow-hidden：疊卡靠 position:sticky，
+     任何 overflow 非 visible 的祖先都會讓 sticky 失效 —
+     所以裝飾另外包一層 inset-0 的裁切層。 -->
+<section id="skills" class="section-py sec-white relative" appScene>
+  <!-- Comic decorations（裁切層，避免在 section 上開 overflow-hidden） -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+    <div class="hidden md:block absolute top-10 right-0 w-[30vw] h-64 hatch hatch-cross hatch-volt hatch-fine hatch-fade rotate-2"></div>
+    <div class="hidden md:block absolute -bottom-8 -left-8 w-44 h-44 bg-acid border-[3px] border-ink rounded-full block-hatched overflow-hidden"></div>
+  </div>
 
   <div class="edge rule-grid relative">
 
   <div class="flex flex-wrap items-end gap-x-6 gap-y-1 mb-4" appScrollReveal>
     <span class="sec-index w-full">02 — 10</span>
-    <h2 class="display-bleed !mb-0" appSplitText>核心專業</h2>
+    <h2 class="display-bleed !mb-0 xslide-r" appSplitText>核心專業</h2>
     <span class="burst burst-volt w-24 h-24 rotate-12 hidden lg:inline-flex ml-auto -mb-4">3<br/>Core</span>
   </div>
   <p class="text-[15px] leading-[1.8] text-on-surface-variant max-w-2xl mb-10 md:mb-14" appScrollReveal>
     三個主要投入的方向。每一項都列出實際做得到的事，而不是「精通」兩個字。
   </p>
 
-  <!-- ══ 三個核心強項 ══ -->
-  <div class="flex flex-col gap-8 md:gap-12">
+  <!-- ══ 三個核心強項 — 疊卡 ══
+       桌機上卡片依序黏在視窗頂端，下一張蓋上來時被蓋住的縮小壓暗；
+       進度來自容器的 pin 進度（--p），每張卡用 --k 算自己的覆蓋量。
+       reveal 放外層 wrapper、場景縮放放 article — transform 各走各的不打架。 -->
+  <div class="deck" appScene sceneMode="pin">
     @for (skill of coreSkills; track skill.en; let i = $index) {
-      <article class="brut-card p-6 md:p-10 relative"
-               [class.md:-rotate-[0.3deg]]="i % 2 === 0"
-               [class.md:rotate-[0.3deg]]="i % 2 === 1"
-               appScrollReveal [revealClass]="i % 2 === 0 ? 'reveal-left' : 'reveal-right'">
+      <div class="deck-item" [style.--k]="i"
+           appScrollReveal [revealClass]="i % 2 === 0 ? 'reveal-left' : 'reveal-right'">
+      <article class="brut-card p-6 md:p-10 relative">
 
         <!-- 大編號 -->
         <span class="absolute -top-8 -left-3 md:-left-5 font-display text-[64px] md:text-[88px] leading-none
@@ -82,6 +89,7 @@
           </div>
         </div>
       </article>
+      </div>
     }
   </div>
 

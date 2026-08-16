@@ -1,5 +1,6 @@
 import { Component, ElementRef, HostListener, OnDestroy, ViewChild, signal } from '@angular/core';
 import { ScrollRevealDirective } from '../../directives/scroll-reveal.directive';
+import { ScrollSceneDirective } from '../../directives/scroll-scene.directive';
 import { SplitTextDirective } from '../../directives/split-text.directive';
 import type {
   FilesetResolver as FilesetResolverT,
@@ -19,7 +20,7 @@ const FACE_MODEL = 'assets/models/face_landmarker.task';
 @Component({
   selector: 'app-pose-lab',
   standalone: true,
-  imports: [ScrollRevealDirective, SplitTextDirective],
+  imports: [ScrollRevealDirective, ScrollSceneDirective, SplitTextDirective],
   templateUrl: './pose-lab.html',
   styleUrl: './pose-lab.scss',
 })

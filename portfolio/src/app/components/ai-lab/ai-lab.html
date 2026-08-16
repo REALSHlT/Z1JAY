@@ -1,4 +1,4 @@
-<section id="ai-lab" class="section-py relative overflow-hidden">
+<section id="ai-lab" class="section-py relative overflow-hidden" appScene>
 
   <!-- 生成圖片的模糊背景（隨捲動淡入淡出） -->
   @if (bgUrl()) {
@@ -9,7 +9,7 @@
 
     <div class="flex flex-wrap items-end gap-x-6 gap-y-1 mb-6" appScrollReveal>
       <span class="sec-index w-full">07 — 10</span>
-      <h2 class="display-bleed !mb-0" appSplitText>AI 助手</h2>
+      <h2 class="display-bleed !mb-0 xslide-r" appSplitText>AI 助手</h2>
       <span class="burst burst-volt w-24 h-24 -rotate-6 hidden lg:inline-flex ml-auto -mb-4 !text-[10px]">Beep<br/>Boop!</span>
     </div>
     <p class="text-[15px] leading-[1.8] text-on-surface-variant max-w-2xl mb-8" appScrollReveal>
@@ -17,7 +17,8 @@
       可切換<strong>雲端</strong>（Llama 3.1 8B，強）或<strong>本地</strong>（Qwen 0.5B，完全在你瀏覽器裡跑）。
     </p>
 
-    <div class="win max-w-3xl mx-auto md:-rotate-[0.3deg]" appScrollReveal revealClass="reveal-scale">
+    <!-- 開機展開：clip-path 隨捲動進度從中央拉開（scrub-boot） -->
+    <div class="win max-w-3xl mx-auto md:-rotate-[0.3deg] scrub-boot" appScene>
       <div class="win-titlebar">
         <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
         <span class="ml-2">chat.exe — {{ mode() === 'cloud' ? 'cloudflare llama 3.1' : 'webllm qwen 0.5b' }}</span>

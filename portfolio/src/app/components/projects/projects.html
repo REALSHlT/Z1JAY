@@ -1,9 +1,10 @@
-<section id="work" class="section-py">
+<!-- 區塊層級的 through 進度：巨標橫滑（xslide）吃它 -->
+<section id="work" class="section-py" appScene>
   <div class="edge rule-grid">
 
   <div class="flex flex-wrap items-end gap-x-6 gap-y-1 mb-10 md:mb-14" appScrollReveal>
     <span class="sec-index w-full">01 — 10</span>
-    <h2 class="display-bleed !mb-0" appSplitText>作品</h2>
+    <h2 class="display-bleed !mb-0 xslide" appSplitText>作品</h2>
     <span class="brut-label text-on-surface-variant hidden md:block mb-2 ml-auto">Selected works 2021 — 2025</span>
   </div>
 
@@ -23,31 +24,43 @@
       <span class="brut-label text-punch">我的角色 —</span> {{ featured.role }}
     </p>
 
-    <!-- 成品影格 -->
-    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      @for (still of stills; track still.image; let i = $index) {
-        <figure class="bg-white border-[3px] border-ink shadow-brut-sm p-2.5"
-                appScrollReveal revealClass="reveal-scale" [revealDelay]="i * 70">
-          <!-- reveal-clip 放內層：放在被觀察的 figure 上會裁成零寬度，
-               讓 IntersectionObserver 永遠測不到交集而自我鎖死 -->
-          <div class="aspect-[21/9] overflow-hidden border-2 border-ink reveal-clip">
-            <app-img [name]="still.image" [alt]="still.caption"
-                     sizes="(min-width: 1024px) 30vw, (min-width: 640px) 46vw, 92vw"
-                     imgClass="w-full h-full object-cover" />
+    <!-- 成品影格 — 釘住式水平畫廊：
+         桌機上這一段高 300vh，畫面釘住，垂直捲動被翻譯成軌道的水平位移
+         （styles.scss 的 .hs 系列；手機與減少動態模式退回普通網格）。
+         appScene pin 量容器進度，sceneTrack 量軌道要平移的總寬。 -->
+    <div class="hs" appScene sceneMode="pin" [sceneTrack]="true">
+      <div class="hs-view">
+        <div class="hs-hud" aria-hidden="true">
+          <span class="brut-label text-punch">往下捲 → 橫向看片</span>
+          <span class="hs-bar"><i></i></span>
+        </div>
+        <div class="hs-track">
+          @for (still of stills; track still.image; let i = $index) {
+            <figure class="hs-item bg-white border-[3px] border-ink shadow-brut-sm p-2.5"
+                    appScrollReveal revealClass="reveal-scale" [revealDelay]="i * 70">
+              <!-- reveal-clip 放內層：放在被觀察的 figure 上會裁成零寬度，
+                   讓 IntersectionObserver 永遠測不到交集而自我鎖死 -->
+              <div class="aspect-[21/9] overflow-hidden border-2 border-ink reveal-clip">
+                <app-img [name]="still.image" [alt]="still.caption"
+                         sizes="(min-width: 768px) 60vw, 92vw"
+                         imgClass="w-full h-full object-cover hs-img" />
+              </div>
+              <figcaption class="pt-3 px-1 pb-1">
+                <span class="brut-label text-punch block mb-1">{{ still.caption }}</span>
+                <span class="text-[12.5px] leading-[1.65] text-on-surface-variant">{{ still.note }}</span>
+              </figcaption>
+            </figure>
+          }
+          <!-- 軌道終點：行動呼籲卡 -->
+          <div class="hs-item hs-cta">
+            <span class="font-display text-[40px] md:text-[56px] leading-none select-none">完</span>
+            <a [href]="featured.link" target="_blank" rel="noopener" class="brut-btn">
+              看預告片
+              <span class="material-symbols-outlined" style="font-size:16px;" aria-hidden="true">north_east</span>
+            </a>
           </div>
-          <figcaption class="pt-3 px-1 pb-1">
-            <span class="brut-label text-punch block mb-1">{{ still.caption }}</span>
-            <span class="text-[12.5px] leading-[1.65] text-on-surface-variant">{{ still.note }}</span>
-          </figcaption>
-        </figure>
-      }
-    </div>
-
-    <div class="mt-8" appScrollReveal>
-      <a [href]="featured.link" target="_blank" rel="noopener" class="brut-btn">
-        看預告片
-        <span class="material-symbols-outlined" style="font-size:16px;" aria-hidden="true">north_east</span>
-      </a>
+        </div>
+      </div>
     </div>
   </article>
 
@@ -139,10 +152,12 @@
       <p class="text-[14px] leading-[1.8] text-on-surface-variant max-w-2xl mb-8" appScrollReveal>{{ earlyNote }}</p>
     }
 
+    <!-- 鬆脫牆：磁磚穿越視窗時擺正、離開又歪掉（每格自己的場景進度） -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
       @for (w of earlyWorks; track w.image; let i = $index) {
-        <figure class="group relative bg-white border-[3px] border-ink shadow-brut-sm overflow-hidden"
+        <figure class="group relative bg-white border-[3px] border-ink shadow-brut-sm overflow-hidden loose"
                 [class.row-span-2]="w.tall"
+                appScene
                 appScrollReveal revealClass="reveal-scale" [revealDelay]="i * 55">
           <app-img [name]="w.image" [alt]="w.title"
                    sizes="(min-width: 768px) 22vw, 45vw"

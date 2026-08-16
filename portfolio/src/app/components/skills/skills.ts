@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ScrollRevealDirective } from '../../directives/scroll-reveal.directive';
+import { ScrollSceneDirective } from '../../directives/scroll-scene.directive';
 import { SplitTextDirective } from '../../directives/split-text.directive';
 import { Img } from '../shared/img';
 import { CORE_SKILLS, CoreSkill, OTHER_ABILITIES, TOOLS, ToolEntry } from '../../data/config';
@@ -7,7 +8,7 @@ import { CORE_SKILLS, CoreSkill, OTHER_ABILITIES, TOOLS, ToolEntry } from '../..
 @Component({
   selector: 'app-skills',
   standalone: true,
-  imports: [ScrollRevealDirective, Img, SplitTextDirective],
+  imports: [ScrollRevealDirective, ScrollSceneDirective, Img, SplitTextDirective],
   templateUrl: './skills.html',
   styleUrl: './skills.scss',
 })

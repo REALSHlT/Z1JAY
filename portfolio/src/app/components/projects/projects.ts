@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ScrollRevealDirective } from '../../directives/scroll-reveal.directive';
+import { ScrollSceneDirective } from '../../directives/scroll-scene.directive';
 import { SplitTextDirective } from '../../directives/split-text.directive';
 import { Img } from '../shared/img';
 import {
@@ -10,7 +11,7 @@ import {
 @Component({
   selector: 'app-projects',
   standalone: true,
-  imports: [ScrollRevealDirective, Img, SplitTextDirective],
+  imports: [ScrollRevealDirective, ScrollSceneDirective, Img, SplitTextDirective],
   templateUrl: './projects.html',
   styleUrl: './projects.scss',
 })
